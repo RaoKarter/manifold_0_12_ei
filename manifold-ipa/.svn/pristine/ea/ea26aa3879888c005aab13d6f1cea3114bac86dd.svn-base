@@ -1,0 +1,106 @@
+#include "mc_builder.h"
+#include "sysBuilder_llp.h"
+#include "cache_builder.h"
+#include "mcp-cache/coh_mem_req.h"
+#include "CaffDRAM/McMap.h"
+
+using namespace libconfig;
+using namespace manifold::kernel;
+using namespace manifold::uarch;
+using namespace manifold::mcp_cache_namespace;
+using namespace manifold::caffdram;
+using namespace manifold::iris;
+
+void CaffDRAM_builder :: read_config(Config& config)
+{
+    try {
+	m_MC_DOWNSTREAM_CREDITS = config.lookup("mc.downstream_credits");
+
+	m_MEM_MSG_TYPE = config.lookup("network.mem_msg_type");
+	m_CREDIT_MSG_TYPE = config.lookup("network.credit_msg_type");
+    }
+    catch (SettingNotFoundException e) {
+	cout << e.getPath() << " not set." << endl;
+	exit(1);
+    }
+    catch (SettingTypeException e) {
+	cout << e.getPath() << " has incorrect type." << endl;
+	exit(1);
+    }
+
+}
+
+
+
+void CaffDRAM_builder :: create_mcs(map<int, int>& id_lp)
+{
+    Controller :: Set_msg_types(m_MEM_MSG_TYPE, m_CREDIT_MSG_TYPE);
+
+    for(map<int,int>::iterator it = id_lp.begin(); it != id_lp.end(); ++it) {
+        int node_id = (*it).first;
+	int lp = (*it).second;
+	int cid = Component :: Create<Controller>(lp, node_id, m_dram_settings, m_MC_DOWNSTREAM_CREDITS);
+	m_mc_id_cid_map[node_id] = cid;
+    }
+
+}
+
+
+
+void CaffDRAM_builder :: connect_mc_network(NetworkBuilder* net_builder)
+{
+    switch(net_builder->get_type()) {
+        case NetworkBuilder::IRIS: {
+		Iris_builder* irisBuilder = dynamic_cast<Iris_builder*>(net_builder);
+		assert(irisBuilder != 0);
+
+		const std::vector<CompId_t>& ni_cids = net_builder->get_interface_cid();
+		for(map<int, int>::iterator it = m_mc_id_cid_map.begin(); it != m_mc_id_cid_map.end(); ++it) {
+		    int node_id = (*it).first;
+		    assert(node_id >= 0 && node_id < int(ni_cids.size()) );
+		    int mc_cid = (*it).second;
+		    //????????????????????????? todo: use proper clock!!
+		    //???????????????????????? todo: Mem_msg is MCP-cache
+		    switch(m_sysBuilder->get_cache_builder()->get_type()) {
+		        case CacheBuilder::MCP_CACHE:
+		        case CacheBuilder::MCP_L1L2:
+			    Manifold :: Connect(mc_cid, Controller::PORT0, &Controller::handle_request<Mem_msg>,
+						ni_cids[node_id], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
+						&GenNetworkInterface<NetworkPacket>::handle_new_packet_event, Clock::Master(), Clock::Master(), 1, 1);
+			    break;
+			default:
+			    assert(0);
+		    }
+
+
+		}//for
+	    }
+	    break;
+        default:
+	    assert(0);
+	    break;
+    }//switch
+
+}
+
+
+
+void CaffDRAM_builder :: print_config(std::ostream& out)
+{
+    out << "MC type: CaffDRAM\n";
+}
+
+
+void CaffDRAM_builder :: print_stats(std::ostream& out)
+{
+    for(map<int, int>::iterator it = m_mc_id_cid_map.begin(); it != m_mc_id_cid_map.end(); ++it) {
+        int cid = (*it).second;
+	Controller* mc = Component :: GetComponent<Controller>(cid);
+	if(mc)
+	    mc->print_stats(out);
+    }
+}
+
+
+
+

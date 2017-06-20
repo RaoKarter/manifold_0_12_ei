@@ -1,0 +1,50 @@
+CXX = mpic++
+MODELS_DIR = ../../../models
+CPPFLAGS += -DUSE_QSIM -Wall -g -I ../../.. -I$(MODELS_DIR)/cache -I$(MODELS_DIR)/network -I$(MODELS_DIR)/processor -I$(MODELS_DIR)/memory
+LDFLAGS = -lqsim -lsimple-proc -L$(MODELS_DIR)/processor/simple-proc -lsimple-cache -L$(MODELS_DIR)/cache/simple-cache -lsimple-net -L$(MODELS_DIR)/network/simple-net -lsimple-mc -L$(MODELS_DIR)/memory/simple-mc -lmanifold -L../../../kernel -lconfig++
+
+CAFFDRAM_LDFLAGS = -lqsim -lsimple-proc -L$(MODELS_DIR)/processor/simple-proc -lsimple-cache -L$(MODELS_DIR)/cache/simple-cache -lsimple-net -L$(MODELS_DIR)/network/simple-net -lcaffdram -L$(MODELS_DIR)/memory/CaffDRAM -lmanifold -L../../../kernel -lconfig++
+
+IRIS_LDFLAGS = -lqsim -lsimple-proc -L$(MODELS_DIR)/processor/simple-proc -lsimple-cache -L$(MODELS_DIR)/cache/simple-cache -liris -L$(MODELS_DIR)/network/iris -lsimple-mc -L$(MODELS_DIR)/memory/simple-mc -lmanifold -L../../../kernel -lconfig++
+
+ZESTO_LDFLAGS = -lqsim -lZesto -L$(MODELS_DIR)/processor/zesto -lsimple-cache -L$(MODELS_DIR)/cache/simple-cache -lsimple-net -L$(MODELS_DIR)/network/simple-net -lsimple-mc -L$(MODELS_DIR)/memory/simple-mc -lmanifold -L../../../kernel -lconfig++
+
+
+EXECS = prog1 prog2 caffdram iris_ring iris_torus zesto1
+
+
+ALL: $(EXECS)
+
+
+#$(CXX) $(LDFLAGS)  $^ -o$@   NOT working
+#$(CXX) $(LDFLAGS)  -o$@ $^   NOT working
+# it seems LDFLAGS must be the last parameter
+prog1: prog1.o
+	$(CXX) $^ -o$@  $(LDFLAGS)
+
+prog2: prog2.o
+	$(CXX) $^ -o$@  $(LDFLAGS)
+
+caffdram: caffdram.o
+	$(CXX) $^ -o$@  $(CAFFDRAM_LDFLAGS)
+
+iris_ring: iris_ring.o
+	$(CXX) $^ -o$@  $(IRIS_LDFLAGS)
+
+iris_torus: iris_torus.o
+	$(CXX) $^ -o$@  $(IRIS_LDFLAGS)
+
+zesto1: zesto1.o
+	$(CXX) $^ -o$@  $(ZESTO_LDFLAGS)
+
+
+%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+-include $(wildcard dep/*.d)
+
+.PHONY: clean
+clean:
+	rm -f $(EXECS) *.d *.o DBG* core*.out
+	rm -rf dep

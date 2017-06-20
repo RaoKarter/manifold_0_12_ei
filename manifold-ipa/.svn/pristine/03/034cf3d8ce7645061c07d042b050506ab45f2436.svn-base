@@ -1,0 +1,117 @@
+#ifndef PROC_BUILDER_H
+#define PROC_BUILDER_H
+
+#include <libconfig.h++>
+#include <map>
+
+#include "kernel/component-decl.h"
+#include "cache_builder.h"
+#include "qsim.h"
+
+
+
+class ProcBuilder {
+public:
+    enum ProcType {INVALID_TYPE=0, QSIMCLIENT, QSIMLIB, TRACE};
+
+    ProcBuilder(ProcType t) : m_type(t) {}
+    virtual ~ProcBuilder() {}
+
+    virtual void create_qsimclient_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk) = 0;
+    virtual void create_qsimlib_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk) = 0;
+    virtual void create_trace_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk) = 0;
+
+    virtual void connect_proc_cache(CacheBuilder* cache_builder) = 0;
+    virtual void print_config(std::ostream&) {}
+    virtual void print_stats(std::ostream&) {}
+
+protected:
+    std::map<int, int> m_proc_id_cid_map;
+    ProcType m_type;
+};
+
+
+
+//#####################################################################
+//#####################################################################
+class Zesto_builder : public ProcBuilder {
+public:
+    Zesto_builder(ProcType type, char* conf, const char* server, int port) :  //qsim server
+          ProcBuilder(type), m_conf(conf), m_server(server), m_port(port) {}
+    Zesto_builder(ProcType type, char* conf, Qsim::OSDomain* osd) :  //qsim lib
+          ProcBuilder(type), m_conf(conf), m_qsim_osd(osd) {}
+    Zesto_builder(ProcType type, char* conf, const char* trace) :  //trace
+          ProcBuilder(type), m_conf(conf), m_trace(trace) {}
+
+    void create_qsimclient_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+    void create_qsimlib_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+    void create_trace_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+
+    void connect_proc_cache(CacheBuilder* cache_builder);
+
+    void print_config(std::ostream&);
+    void print_stats(std::ostream&);
+private:
+    char* m_conf; //config file name
+    const char* m_server; //server name or IP
+    int m_port; //server port
+    Qsim::OSDomain* m_qsim_osd;
+    const char* m_trace; //trace file name
+};
+
+
+//#####################################################################
+//#####################################################################
+//for simple-proc
+class Simple_builder : public ProcBuilder {
+public:
+    Simple_builder(ProcType type, int l1_line_sz, const char* server, int port) :  //qsim server
+          ProcBuilder(type), m_l1_line_sz(l1_line_sz), m_server(server), m_port(port) {}
+    Simple_builder(ProcType type, int l1_line_sz, Qsim::OSDomain* osd) :  //qsim lib
+          ProcBuilder(type), m_l1_line_sz(l1_line_sz), m_qsim_osd(osd) {}
+    Simple_builder(ProcType type, int l1_line_sz, const char* trace) :  //trace file
+          ProcBuilder(type), m_l1_line_sz(l1_line_sz), m_trace(trace) {}
+
+    void create_qsimclient_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+    void create_qsimlib_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+    void create_trace_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+
+    void connect_proc_cache(CacheBuilder* cache_builder);
+    void print_config(std::ostream&);
+    void print_stats(std::ostream&);
+private:
+    int m_l1_line_sz; //L1 line size
+    const char* m_server; //server name or IP
+    int m_port; //server port
+    Qsim::OSDomain* m_qsim_osd;
+    const char* m_trace; //trace file name
+};
+
+
+//#####################################################################
+//#####################################################################
+class Spx_builder : public ProcBuilder {
+public:
+    Spx_builder(ProcType type, const char* conf) :  //qsim server
+          ProcBuilder(type), m_conf(conf) {}
+    Spx_builder(ProcType type, const char* conf, Qsim::OSDomain* osd) :  //qsim lib
+          ProcBuilder(type), m_conf(conf), m_qsim_osd(osd) {}
+
+    void create_qsimclient_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+    void create_qsimlib_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);
+    void create_trace_procs(std::map<int,int>& id_lp,  manifold::kernel::Clock& clk);//trace not supported
+
+    void connect_proc_cache(CacheBuilder* cache_builder);
+
+    void print_config(std::ostream&);
+    //void print_stats(std::ostream&);
+private:
+    const char* m_conf; //config file name
+    Qsim::OSDomain* m_qsim_osd;
+    //const char* m_trace; //trace file name
+};
+
+
+
+
+#endif // #ifndef PROC_BUILDER_H

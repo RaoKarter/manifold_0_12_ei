@@ -1,0 +1,4 @@
+MAINTAINERCLEANFILES= aclocal.m4 config.log config.status configure COPYING depcomp \
+		    Makefile.in INSTALL install-sh missing 
+
+SUBDIRS = kernel models/network/iris models/network/CaffNet models/cache/CaffCache models/memory/CaffMC models/processor/CaffProc models/processor/zesto models/energy_introspector

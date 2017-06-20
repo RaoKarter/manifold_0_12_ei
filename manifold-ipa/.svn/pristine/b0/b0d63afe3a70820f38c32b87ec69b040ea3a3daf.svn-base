@@ -1,0 +1,7 @@
+SimpleProcessor gets instructions from QSim, therefore, the test program requires
+some symbolic links so it can work with QSim:
+
+1. Create the following symbolic links: libqemu.so, linux, qemu-0.12.3
+2. Create a symbolic link for libqsim.so in /usr/local/lib
+3. make
+

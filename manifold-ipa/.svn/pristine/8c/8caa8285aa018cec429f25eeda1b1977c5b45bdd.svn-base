@@ -1,0 +1,430 @@
+#include "pipeline.h"
+#include "core.h"
+
+using namespace std;
+using namespace manifold;
+using namespace manifold::spx;
+
+pipeline_t::pipeline_t() :
+next_inst(NULL),
+Mop_count(0),
+uop_count(0)
+{
+}
+
+void pipeline_t::Qsim_inst_cb(int core_id, uint64_t vaddr, uint64_t paddr, uint8_t len, const uint8_t *bytes, enum inst_type type)
+{
+  if(!next_inst)
+    return;
+  
+  #ifdef SPX_QSIM_DEBUG
+  fprintf(stdout,"SPX_QSIM_DEBUG (core %d): uop %lu (Mop %lu) | ",core_id,next_inst->uop_sequence,next_inst->Mop_sequence);
+  switch(type)
+  {
+    case QSIM_INST_NULL: fprintf(stdout,"QSIM_INST_NULL"); break;
+    case QSIM_INST_INTBASIC: fprintf(stdout,"QSIM_INST_INTBASIC"); break;
+    case QSIM_INST_INTMUL: fprintf(stdout,"QSIM_INST_INTMUL"); break;
+    case QSIM_INST_INTDIV: fprintf(stdout,"QSIM_INST_INTDIV"); break;
+    case QSIM_INST_STACK: fprintf(stdout,"QSIM_INST_STACK"); break;
+    case QSIM_INST_BR: fprintf(stdout,"QSIM_INST_BR"); break;
+    case QSIM_INST_CALL: fprintf(stdout,"QSIM_INST_CALL"); break;
+    case QSIM_INST_RET: fprintf(stdout,"QSIM_INST_RET"); break;
+    case QSIM_INST_TRAP: fprintf(stdout,"QSIM_INST_TRAP"); break;
+    case QSIM_INST_FPBASIC: fprintf(stdout,"QSIM_INST_FPBASIC"); break;
+    case QSIM_INST_FPMUL: fprintf(stdout,"QSIM_INST_FPMUL"); break;
+    case QSIM_INST_FPDIV: fprintf(stdout,"QSIM_INST_FPDIV"); break;
+    default: break;
+  }
+  fprintf(stdout,"\n");
+  #endif
+  
+  next_inst->opcode = type;
+  Qsim_cb_status = SPX_QSIM_INST_CB;
+}
+
+void pipeline_t::Qsim_mem_cb(int core_id, uint64_t vaddr, uint64_t paddr, uint8_t size, int type)
+{
+  if(!next_inst)
+    return;
+  
+  if(type) // store
+  {
+    // there can't be mem_cb after mem_cb or dest_reg/flag_cb
+    if(Qsim_cb_status > SPX_QSIM_MEM_CB)
+    {
+      Qsim_post_cb(next_inst);
+      fetch(next_inst);
+      
+      stats.uop_count++;
+      stats.interval.uop_count++;
+      next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_ST);
+      
+      #ifdef SPX_QSIM_DEBUG
+      fprintf(stdout,"SPX_QSIM_DEBUG (core %d): uop %lu (Mop %lu) | ",core_id,next_inst->uop_sequence,next_inst->Mop_sequence);
+      switch(type)
+      {
+        case QSIM_INST_NULL: fprintf(stdout,"QSIM_INST_NULL"); break;
+        case QSIM_INST_INTBASIC: fprintf(stdout,"QSIM_INST_INTBASIC"); break;
+        case QSIM_INST_INTMUL: fprintf(stdout,"QSIM_INST_INTMUL"); break;
+        case QSIM_INST_INTDIV: fprintf(stdout,"QSIM_INST_INTDIV"); break;
+        case QSIM_INST_STACK: fprintf(stdout,"QSIM_INST_STACK"); break;
+        case QSIM_INST_BR: fprintf(stdout,"QSIM_INST_BR"); break;
+        case QSIM_INST_CALL: fprintf(stdout,"QSIM_INST_CALL"); break;
+        case QSIM_INST_RET: fprintf(stdout,"QSIM_INST_RET"); break;
+        case QSIM_INST_TRAP: fprintf(stdout,"QSIM_INST_TRAP"); break;
+        case QSIM_INST_FPBASIC: fprintf(stdout,"QSIM_INST_FPBASIC"); break;
+        case QSIM_INST_FPMUL: fprintf(stdout,"QSIM_INST_FPMUL"); break;
+        case QSIM_INST_FPDIV: fprintf(stdout,"QSIM_INST_FPDIV"); break;
+        default: break;
+      }
+      fprintf(stdout,"\n");
+      #endif
+    }
+    else
+      next_inst->memcode = SPX_MEM_ST;
+    
+    #ifdef SPX_QSIM_DEBUG
+    fprintf(stdout,"SPX_QSIM_DEBUG (core %d):      mem STORE | 0x%x\n",core_id,paddr);
+    #endif
+    
+    next_inst->data.vaddr = vaddr;
+    next_inst->data.paddr = paddr;
+    Qsim_cb_status = SPX_QSIM_ST_CB;
+  }
+  else // load
+  {
+    // ther can't be mem_cb after mem_cb or dest_reg/flag_cb
+    if(Qsim_cb_status > SPX_QSIM_MEM_CB)
+    {
+      Qsim_post_cb(next_inst);
+      fetch(next_inst);
+      
+      stats.uop_count++;
+      stats.interval.uop_count++;
+      next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_LD);
+      
+      #ifdef SPX_QSIM_DEBUG
+      fprintf(stdout,"SPX_QSIM_DEBUG (core %d): uop %lu (Mop %lu) | ",core_id,next_inst->uop_sequence,next_inst->Mop_sequence);
+      switch(type)
+      {
+        case QSIM_INST_NULL: fprintf(stdout,"QSIM_INST_NULL"); break;
+        case QSIM_INST_INTBASIC: fprintf(stdout,"QSIM_INST_INTBASIC"); break;
+        case QSIM_INST_INTMUL: fprintf(stdout,"QSIM_INST_INTMUL"); break;
+        case QSIM_INST_INTDIV: fprintf(stdout,"QSIM_INST_INTDIV"); break;
+        case QSIM_INST_STACK: fprintf(stdout,"QSIM_INST_STACK"); break;
+        case QSIM_INST_BR: fprintf(stdout,"QSIM_INST_BR"); break;
+        case QSIM_INST_CALL: fprintf(stdout,"QSIM_INST_CALL"); break;
+        case QSIM_INST_RET: fprintf(stdout,"QSIM_INST_RET"); break;
+        case QSIM_INST_TRAP: fprintf(stdout,"QSIM_INST_TRAP"); break;
+        case QSIM_INST_FPBASIC: fprintf(stdout,"QSIM_INST_FPBASIC"); break;
+        case QSIM_INST_FPMUL: fprintf(stdout,"QSIM_INST_FPMUL"); break;
+        case QSIM_INST_FPDIV: fprintf(stdout,"QSIM_INST_FPDIV"); break;
+        default: break;
+      }
+      fprintf(stdout,"\n");
+      #endif
+    }
+    else
+      next_inst->memcode = SPX_MEM_LD;
+    
+    #ifdef SPX_QSIM_DEBUG
+    fprintf(stdout,"SPX_QSIM_DEBUG (core %d):      mem LOAD | 0x%x\n",core_id,paddr);
+    #endif
+    
+    next_inst->data.vaddr = vaddr;
+    next_inst->data.paddr = paddr;
+    Qsim_cb_status = SPX_QSIM_LD_CB;
+  }
+}
+
+void pipeline_t::Qsim_reg_cb(int core_id, int reg, uint8_t size, int type)
+{
+  if(!next_inst)
+    return;
+  
+  if(type) // dest
+  {
+    if(size > 0) // regs
+    {
+      // there can be multiple dest regs (e.g., div/mul) - don't use >= sign
+      if(Qsim_cb_status > SPX_QSIM_DEST_REG_CB)
+      {
+        Qsim_post_cb(next_inst);
+        fetch(next_inst);
+        
+        stats.uop_count++;
+        stats.interval.uop_count++;
+        next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_NONE);
+        
+        #ifdef SPX_QSIM_DEBUG
+        fprintf(stdout,"SPX_QSIM_DEBUG (core %d): uop %lu (Mop %lu) | ",core_id,next_inst->uop_sequence,next_inst->Mop_sequence);
+        switch(type)
+        {
+          case QSIM_INST_NULL: fprintf(stdout,"QSIM_INST_NULL"); break;
+          case QSIM_INST_INTBASIC: fprintf(stdout,"QSIM_INST_INTBASIC"); break;
+          case QSIM_INST_INTMUL: fprintf(stdout,"QSIM_INST_INTMUL"); break;
+          case QSIM_INST_INTDIV: fprintf(stdout,"QSIM_INST_INTDIV"); break;
+          case QSIM_INST_STACK: fprintf(stdout,"QSIM_INST_STACK"); break;
+          case QSIM_INST_BR: fprintf(stdout,"QSIM_INST_BR"); break;
+          case QSIM_INST_CALL: fprintf(stdout,"QSIM_INST_CALL"); break;
+          case QSIM_INST_RET: fprintf(stdout,"QSIM_INST_RET"); break;
+          case QSIM_INST_TRAP: fprintf(stdout,"QSIM_INST_TRAP"); break;
+          case QSIM_INST_FPBASIC: fprintf(stdout,"QSIM_INST_FPBASIC"); break;
+          case QSIM_INST_FPMUL: fprintf(stdout,"QSIM_INST_FPMUL"); break;
+          case QSIM_INST_FPDIV: fprintf(stdout,"QSIM_INST_FPDIV"); break;
+          default: break;
+        }
+        fprintf(stdout,"\n");
+        #endif
+      }
+      else if(Qsim_cb_status == SPX_MEM_ST)
+        next_inst->split_store = true;
+      else if(Qsim_cb_status == SPX_MEM_LD)
+        next_inst->split_load = true;
+     
+      
+      #ifdef SPX_QSIM_DEBUG
+      fprintf(stdout,"SPX_QSIM_DEBUG (core %d):      reg dest %d\n",core_id,reg);
+      #endif
+
+      next_inst->dest_reg |= (0x01<<reg); // bit mask the dest reg position
+      Qsim_cb_status = SPX_QSIM_DEST_REG_CB;
+    }
+    else // flags
+    {
+      if(Qsim_cb_status >= SPX_QSIM_DEST_FLAG_CB)
+      {
+        Qsim_post_cb(next_inst);
+        fetch(next_inst);
+        
+        stats.uop_count++;
+        stats.interval.uop_count++;
+        next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_NONE);
+        
+        #ifdef SPX_QSIM_DEBUG
+        fprintf(stdout,"SPX_QSIM_DEBUG (core %d): uop %lu (Mop %lu) | ",core_id,next_inst->uop_sequence,next_inst->Mop_sequence);
+        switch(type)
+        {
+          case QSIM_INST_NULL: fprintf(stdout,"QSIM_INST_NULL"); break;
+          case QSIM_INST_INTBASIC: fprintf(stdout,"QSIM_INST_INTBASIC"); break;
+          case QSIM_INST_INTMUL: fprintf(stdout,"QSIM_INST_INTMUL"); break;
+          case QSIM_INST_INTDIV: fprintf(stdout,"QSIM_INST_INTDIV"); break;
+          case QSIM_INST_STACK: fprintf(stdout,"QSIM_INST_STACK"); break;
+          case QSIM_INST_BR: fprintf(stdout,"QSIM_INST_BR"); break;
+          case QSIM_INST_CALL: fprintf(stdout,"QSIM_INST_CALL"); break;
+          case QSIM_INST_RET: fprintf(stdout,"QSIM_INST_RET"); break;
+          case QSIM_INST_TRAP: fprintf(stdout,"QSIM_INST_TRAP"); break;
+          case QSIM_INST_FPBASIC: fprintf(stdout,"QSIM_INST_FPBASIC"); break;
+          case QSIM_INST_FPMUL: fprintf(stdout,"QSIM_INST_FPMUL"); break;
+          case QSIM_INST_FPDIV: fprintf(stdout,"QSIM_INST_FPDIV"); break;
+          default: break;
+        }
+        fprintf(stdout,"\n");
+        #endif
+      }
+
+      #ifdef SPX_QSIM_DEBUG
+      fprintf(stdout,"SPX_QSIM_DEBUG (core %d):      flag dest 0x%x\n",core_id,reg);
+      #endif
+     
+      next_inst->dest_flag = (0x3f&reg); // bit maks the dest flags position
+      Qsim_cb_status = SPX_QSIM_DEST_FLAG_CB;
+    }
+  }
+  else // src
+  {
+    if(size > 0) // regs
+    {
+      // there can be multiple src regs - don't use >= sign
+      if(Qsim_cb_status > SPX_QSIM_SRC_REG_CB)
+      {
+        Qsim_post_cb(next_inst);
+        fetch(next_inst);
+        
+        stats.uop_count++;
+        stats.interval.uop_count++;
+        next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_NONE);
+
+        #ifdef SPX_QSIM_DEBUG
+        fprintf(stdout,"SPX_QSIM_DEBUG (core %d): uop %lu (Mop %lu) | ",core_id,next_inst->uop_sequence,next_inst->Mop_sequence);
+        switch(type)
+        {
+          case QSIM_INST_NULL: fprintf(stdout,"QSIM_INST_NULL"); break;
+          case QSIM_INST_INTBASIC: fprintf(stdout,"QSIM_INST_INTBASIC"); break;
+          case QSIM_INST_INTMUL: fprintf(stdout,"QSIM_INST_INTMUL"); break;
+          case QSIM_INST_INTDIV: fprintf(stdout,"QSIM_INST_INTDIV"); break;
+          case QSIM_INST_STACK: fprintf(stdout,"QSIM_INST_STACK"); break;
+          case QSIM_INST_BR: fprintf(stdout,"QSIM_INST_BR"); break;
+          case QSIM_INST_CALL: fprintf(stdout,"QSIM_INST_CALL"); break;
+          case QSIM_INST_RET: fprintf(stdout,"QSIM_INST_RET"); break;
+          case QSIM_INST_TRAP: fprintf(stdout,"QSIM_INST_TRAP"); break;
+          case QSIM_INST_FPBASIC: fprintf(stdout,"QSIM_INST_FPBASIC"); break;
+          case QSIM_INST_FPMUL: fprintf(stdout,"QSIM_INST_FPMUL"); break;
+          case QSIM_INST_FPDIV: fprintf(stdout,"QSIM_INST_FPDIV"); break;
+          default: break;
+        }
+        fprintf(stdout,"\n");
+        #endif
+      }
+      
+      #ifdef SPX_QSIM_DEBUG
+      fprintf(stdout,"SPX_QSIM_DEBUG (core %d):      reg src %d\n",core_id,reg);
+      #endif
+      
+      next_inst->src_reg |= (0x01<<reg); // bit mask the src reg position
+      Qsim_cb_status = SPX_QSIM_SRC_REG_CB;
+    }
+    else // flags
+    {
+      if(Qsim_cb_status >= SPX_QSIM_SRC_FLAG_CB)
+      {
+        Qsim_post_cb(next_inst);
+        fetch(next_inst);
+        
+        stats.uop_count++;
+        stats.interval.uop_count++;
+        next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_NONE);
+        
+        #ifdef SPX_QSIM_DEBUG
+        fprintf(stdout,"SPX_QSIM_DEBUG (core %d): uop %lu (Mop %lu) | ",core_id,next_inst->uop_sequence,next_inst->Mop_sequence);
+        switch(type)
+        {
+          case QSIM_INST_NULL: fprintf(stdout,"QSIM_INST_NULL"); break;
+          case QSIM_INST_INTBASIC: fprintf(stdout,"QSIM_INST_INTBASIC"); break;
+          case QSIM_INST_INTMUL: fprintf(stdout,"QSIM_INST_INTMUL"); break;
+          case QSIM_INST_INTDIV: fprintf(stdout,"QSIM_INST_INTDIV"); break;
+          case QSIM_INST_STACK: fprintf(stdout,"QSIM_INST_STACK"); break;
+          case QSIM_INST_BR: fprintf(stdout,"QSIM_INST_BR"); break;
+          case QSIM_INST_CALL: fprintf(stdout,"QSIM_INST_CALL"); break;
+          case QSIM_INST_RET: fprintf(stdout,"QSIM_INST_RET"); break;
+          case QSIM_INST_TRAP: fprintf(stdout,"QSIM_INST_TRAP"); break;
+          case QSIM_INST_FPBASIC: fprintf(stdout,"QSIM_INST_FPBASIC"); break;
+          case QSIM_INST_FPMUL: fprintf(stdout,"QSIM_INST_FPMUL"); break;
+          case QSIM_INST_FPDIV: fprintf(stdout,"QSIM_INST_FPDIV"); break;
+          default: break;
+        }
+        fprintf(stdout,"\n");
+        #endif
+      }
+      
+      #ifdef SPX_QSIM_DEBUG
+      fprintf(stdout,"SPX_QSIM_DEBUG (core %d):      flag src 0x%x\n",core_id,reg);
+      #endif
+      
+      next_inst->src_flag = (0x3f&reg); // bit mask the src flags position
+      Qsim_cb_status = SPX_QSIM_SRC_FLAG_CB;
+    }
+  }
+}
+
+void pipeline_t::Qsim_post_cb(inst_t* inst)
+{
+  switch(inst->opcode)
+  {
+    case QSIM_INST_NULL: // do not split mov
+      inst->excode = SPX_FU_MOV;
+      inst->split_store = false;
+      inst->split_load = false;
+      break;
+    case QSIM_INST_INTBASIC:
+      inst->excode = SPX_FU_INT;
+      break;
+    case QSIM_INST_INTMUL:
+      inst->excode = SPX_FU_MUL;
+      break;
+    case QSIM_INST_INTDIV:
+      inst->excode = SPX_FU_MUL;
+      break;
+    case QSIM_INST_STACK: // do not split stack
+      inst->excode = SPX_FU_INT;
+      inst->split_store = false;
+      inst->split_load = false;
+      break;
+    case QSIM_INST_BR: // do not split branch
+      inst->excode = SPX_FU_BR;
+      inst->split_store = false;
+      inst->split_load = false;
+      break;
+    case QSIM_INST_CALL: // do not split call
+      inst->excode = SPX_FU_INT;
+      inst->split_store = false;
+      inst->split_load = false;
+      break;
+    case QSIM_INST_RET: // do not split return
+      inst->excode = SPX_FU_INT;
+      inst->split_store = false;
+      inst->split_load = false;
+      break;
+    case QSIM_INST_TRAP: // do not split trap
+      inst->excode = SPX_FU_INT;
+      inst->split_store = false;
+      inst->split_load = false;
+      break;
+    case QSIM_INST_FPBASIC:
+      inst->excode = SPX_FU_FP;
+      break;
+    case QSIM_INST_FPMUL:
+      inst->excode = SPX_FU_MUL;
+      break;
+    case QSIM_INST_FPDIV:
+      inst->excode = SPX_FU_MUL;
+      break;
+    default:
+      inst->excode = SPX_FU_INT;
+      break;
+  }
+
+  switch(inst->memcode)
+  {
+    case SPX_MEM_LD:
+      if(inst->split_load)
+      {
+        // create another inst that computes with a memory operand
+        next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_NONE);
+        next_inst->excode = inst->excode;
+        next_inst->src_dep.insert(pair<uint64_t,inst_t*>(inst->uop_sequence,inst));
+        next_inst->data.vaddr = 0;
+        next_inst->data.paddr = 0;
+
+        // previous inst is a load inst
+        inst->excode = SPX_FU_LD;
+        inst->dest_dep.insert(pair<uint64_t,inst_t*>(next_inst->uop_sequence,next_inst));
+        fetch(inst);
+      }
+      else
+        inst->excode = SPX_FU_LD;
+      break;
+    case SPX_MEM_ST:
+      if(inst->split_store)
+      {
+        // create another inst that stores the result
+        next_inst = new inst_t(next_inst,core,Mop_count,++uop_count,SPX_MEM_ST);
+        next_inst->excode = SPX_FU_ST;
+        next_inst->src_dep.insert(pair<uint64_t,inst_t*>(inst->uop_sequence,inst));
+        next_inst->src_reg |= inst->dest_reg; // this store depends on the result of a previous inst
+        // previous inst is a compute inst
+        inst->memcode = SPX_MEM_NONE;
+        inst->dest_dep.insert(pair<uint64_t,inst_t*>(next_inst->uop_sequence,next_inst));
+        inst->data.vaddr = 0;
+        inst->data.paddr = 0;
+        fetch(inst);
+      }
+      else
+        inst->excode = SPX_FU_ST;
+      break;
+    default:
+      break;
+  }
+}
+
+void pipeline_t::handle_long_inst(inst_t *inst)
+{
+  inst_t *uop = inst->Mop_head;
+  while(uop)
+  {
+    uop->Mop_head = uop;
+    uop->Mop_length = 1;
+    uop = uop->next_inst;
+  }
+}
+

@@ -1,0 +1,56 @@
+CXX = mpic++
+CPPFLAGS += -g -DSIMPLE_PROC_UTEST  -DKERNEL_UTEST -DNO_MPI -DUSE_QSIM  -I/usr/include/cppunit -I../.. -I../../../../.. -I../../../../../models/cache
+LDFLAGS += -lcppunit -lqsim
+EXECS = trace_procTest trace_procTest_1 trace_procTest2 qsim_procTest
+
+VPATH = ../.. ../../../../../kernel
+
+# If the kernel directory already has an object, say clock.o, then the object is
+# not built. This may be wrong. So we use different names for kernel objects. This
+# way the objects in the kernel directory are not picked up.
+KERNEL_OBJS = KERNEL-clock.o KERNEL-component.o KERNEL-manifold.o KERNEL-messenger.o KERNEL-stat_engine.o KERNEL-scheduler.o KERNEL-syncalg.o KERNEL-link.o KERNEL-lookahead.o
+
+# Do the same for simple-proc
+SIMPLE_PROC_OBJS = SIMPLEPROC-trace-proc.o  SIMPLEPROC-simple-proc.o SIMPLEPROC-instruction.o
+SIMPLE_PROC_OBJS2 =  SIMPLEPROC-qsim-proc.o
+
+
+
+ALL: $(EXECS)
+
+qsim_procTest: qsim_procTest.o $(SIMPLE_PROC_OBJS) $(SIMPLE_PROC_OBJS2) $(KERNEL_OBJS)
+	$(CXX) -o$@ $^ $(LDFLAGS) -lqsim-client -L/usr/local/lib
+
+trace_procTest: trace_procTest.o $(SIMPLE_PROC_OBJS) $(KERNEL_OBJS)
+	$(CXX) -o$@ $^ $(LDFLAGS)
+
+trace_procTest_1: trace_procTest_1.o $(SIMPLE_PROC_OBJS) $(KERNEL_OBJS)
+	$(CXX) -o$@ $^ $(LDFLAGS)
+
+trace_procTest2: trace_procTest2.o $(SIMPLE_PROC_OBJS) $(KERNEL_OBJS)
+	$(CXX) -o$@ $^ $(LDFLAGS)
+
+
+
+KERNEL-%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o KERNEL-$*.o
+
+SIMPLEPROC-%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o SIMPLEPROC-$*.o
+
+%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+%.o: %.cpp
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+-include $(wildcard dep/*.d)
+
+.PHONY: clean
+clean:
+	rm -f $(EXECS) *.o DBG*
+	rm -rf dep

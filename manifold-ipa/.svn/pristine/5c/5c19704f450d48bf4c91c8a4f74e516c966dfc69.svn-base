@@ -1,0 +1,21 @@
+1_cpu_arrayw0:
+
+This trace file contains traces obtained in the following settings:
+
+- No. of CPUs is 1
+- The application is static-linked arrayw (array write, which writes to an
+  int array of 1000 elements. The value i is written to index i.).
+
+The physical address of the array elements are in 2 pages:
+0x7f410124 - 0x7f410ffc, and 0x7f41c000 - 0x7f41c0c0
+
+
+2_cpu_arrayw0, 2_cpu_arrayw1:
+
+- No. of CPUs is 2
+- application is arrayw.
+
+The physical address of the array elements are in 2 pages:
+0x7f421354 - 0x7f421ffc (811 elements), and 0x7f41a000 - 0x7f41a2f0 (189 elements)
+
+2_cpu_arrayw0 has the trace of arrayw; 2_cpu_arrayw1 contains I don't know what.

@@ -1,0 +1,30 @@
+#ifndef SIMPLE_CACHE
+#define SIMPLE_CACHE
+
+#include "kernel/component.h"
+#include "kernel/manifold.h"
+#include "kernel/clock.h"
+#include "../../../../cache/simple-cache/cache_messages.h"
+#include <stdlib.h>
+#include <fstream>
+
+namespace manifold {
+namespace simple_cache {
+
+
+class simple_cache : public manifold::kernel::Component
+{
+  public:
+    simple_cache(int id); 
+    void LinkArrival(int src, cache_req* req);
+    enum{ Input0 };
+    enum{ Output0 };
+
+  private:
+    int myID; // id of this component
+};
+
+
+}
+}
+#endif

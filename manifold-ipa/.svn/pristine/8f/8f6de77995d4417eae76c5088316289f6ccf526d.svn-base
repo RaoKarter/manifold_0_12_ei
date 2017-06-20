@@ -1,0 +1,30 @@
+CXX = mpic++
+MODELS_DIR = ../../../models
+CPPFLAGS += -Wall -g -I ../../.. -I$(MODELS_DIR)/cache -I$(MODELS_DIR)/network -I$(MODELS_DIR)/memory
+LDFLAGS = -lsimple-net -L$(MODELS_DIR)/network/simple-net -lsimple-cache -L$(MODELS_DIR)/cache/simple-cache -lsimple-mc -L$(MODELS_DIR)/memory/simple-mc -L../../../kernel -lmanifold
+
+EXECS = prog1 prog2
+
+
+ALL: $(EXECS)
+
+
+#$(CXX) $(LDFLAGS)  $^ -o$@   NOT working
+#$(CXX) $(LDFLAGS)  -o$@ $^   NOT working
+# it seems LDFLAGS must be the last parameter
+prog1: prog1.o mockProc.o
+	$(CXX) $^ -o$@  $(LDFLAGS)
+
+prog2: prog2.o mockProc.o
+	$(CXX) $^ -o$@  $(LDFLAGS) -lconfig++
+
+%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+-include $(wildcard dep/*.d)
+
+.PHONY: clean
+clean:
+	rm -f $(EXECS) *.d *.o DBG*
+	rm -rf dep

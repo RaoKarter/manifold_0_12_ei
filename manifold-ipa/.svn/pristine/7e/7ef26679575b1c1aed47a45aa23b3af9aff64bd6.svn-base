@@ -1,0 +1,29 @@
+AC_PREREQ([2.65])
+AC_INIT([manifold], [1.0])
+AM_INIT_AUTOMAKE([foreign -Wall -Werror])
+#LT_PREREQ([2.2])
+#LT_INIT
+
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_RANLIB
+AC_CHECK_PROGS(MPICXX,$CC)
+
+AC_CONFIG_SUBDIRS([kernel
+                   models/network/iris 
+                   models/cache/CaffCache
+                   models/memory/CaffMC 
+                   models/network/CaffNet
+                   models/processor/CaffProc
+                   models/processor/zesto
+                   models/energy_introspector])
+
+AC_CONFIG_FILES([Makefile 
+                 kernel/Makefile 
+                 models/network/iris/Makefile
+                 models/cache/CaffCache/Makefile 
+                 models/memory/CaffMC/Makefile
+                 models/network/CaffNet/Makefile
+                 models/processor/CaffProc/Makefile])
+
+AC_OUTPUT

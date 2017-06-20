@@ -1,0 +1,42 @@
+#include "simple-cache/cache_messages.h"
+#include "kernel/component-decl.h"
+#include <set>
+#include <iostream>
+
+//! This class emulates a processor model. Upon receiving a response for a memory request,
+//! it sends another one.
+class MockProc : public manifold::kernel::Component {
+public:
+    enum {OUT=0};
+    enum {IN=0};
+
+    MockProc(int nid);
+
+    void send_creq();
+
+    void handle_incoming(int, manifold::simple_cache::cache_req* cresp);
+
+    int get_nid() { return m_nid; }
+    void print_stats(std::ostream&);
+private:
+    int m_nid;  //node id
+    std::set<manifold::simple_cache::paddr_t> m_addrs_set; //set of unique addresses to guarantee a miss.
+    std::vector<manifold::simple_cache::paddr_t> m_hit_pool; //previous used LOAD addresses; we use this to get a hit
+
+    //for stats
+    int m_stats_loads;
+    int m_stats_load_misses;
+    int m_stats_stores;
+
+    struct Req_info {
+        Req_info(int t, manifold::simple_cache::paddr_t a, const char* s) : type(t), addr(a), status(s) {}
+        int type;
+	manifold::simple_cache::paddr_t addr;
+	const char* status;
+    };
+
+    std::multimap<manifold::simple_cache::paddr_t, Req_info> m_req_info;
+
+    //int m_count; //this is used for the random number generator so the sequence can be repeated.
+};
+

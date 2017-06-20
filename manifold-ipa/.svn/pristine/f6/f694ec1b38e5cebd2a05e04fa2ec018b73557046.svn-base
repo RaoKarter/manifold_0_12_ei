@@ -1,0 +1,93 @@
+#include <TestFixture.h>
+#include <TestAssert.h>
+#include <TestSuite.h>
+#include <Test.h>
+#include <TestCaller.h>
+#include <cppunit/ui/text/TestRunner.h>
+#include "kernel/manifold.h"
+#include "kernel/component.h"
+#include "kernel/link.h"
+#include "kernel/clock.h"
+#include "simple_cache.h"
+#include "../../trace-core.h"
+#include <stdlib.h>
+#include <time.h>
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::zesto;
+
+//####################################################################
+// Class TraceCoreIdTest is the unit test class for class Component.
+//####################################################################
+class TraceCoreIdTest : public CppUnit::TestFixture {
+  private:
+
+  public:
+    void setUp()
+    {
+    }
+
+    void tearDown()
+    {
+    }
+
+    void testRandomCoreId()
+    {
+      srand( time(NULL) );
+      int rand_id;
+
+      for ( int i = 0; i < 100; i++ )
+      {
+        rand_id = rand() % 100000 + 1;
+        trace_core_t* current_core = new trace_core_t(rand_id, "6.cfg", "itrace_array.out");
+        CPPUNIT_ASSERT( current_core->id == rand_id ); 
+        CPPUNIT_ASSERT( current_core->id == current_core->current_thread->id ); 
+        CPPUNIT_ASSERT( current_core->id == current_core->current_thread->current_core ); 
+        delete (current_core);
+      }
+    }
+
+    void testRandomCoreIdWithManifold()
+    {
+      srand( time(NULL) );
+      int CoreID;
+      int rand_id;
+
+      for (int i = 0; i < 100; i++ )
+      {
+        CoreID = Component::Create<trace_core_t,int,char*,char*>(0,rand_id,"6.cfg","itrace_array.out");
+        trace_core_t* current_core = Component::GetComponent<trace_core_t>(CoreID);
+        CPPUNIT_ASSERT( current_core->id == rand_id ); 
+        CPPUNIT_ASSERT( current_core->id == current_core->current_thread->id ); 
+        CPPUNIT_ASSERT( current_core->id == current_core->current_thread->current_core ); 
+        delete (current_core);
+      }
+    }
+
+   /**
+	 * Build a test suite.
+	 */
+	static CppUnit::Test* suite()
+	{
+	    CppUnit::TestSuite* mySuite = new CppUnit::TestSuite("TraceCoreIdTest");
+
+	    mySuite->addTest(new CppUnit::TestCaller<TraceCoreIdTest>("testRandomCoreId", &TraceCoreIdTest::testRandomCoreId));
+	    mySuite->addTest(new CppUnit::TestCaller<TraceCoreIdTest>("testRandomCoreIdWithManifold", &TraceCoreIdTest::testRandomCoreIdWithManifold));
+
+	    return mySuite;
+	}
+};
+
+
+int main()
+{
+  CppUnit::TextUi::TestRunner runner;
+  runner.addTest( TraceCoreIdTest::suite() );
+  if(runner.run("", false))
+	return 0; //all is well
+    else
+	return 1;
+}
+
+

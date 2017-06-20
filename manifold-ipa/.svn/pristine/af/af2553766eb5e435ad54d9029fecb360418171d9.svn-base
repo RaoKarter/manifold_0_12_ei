@@ -1,0 +1,32 @@
+simulation_stop = 840000;
+clock_frequency = 1000;
+
+network:
+{
+    x_dimension = 2;
+    y_dimension = 1;
+    buffer_size = 4;
+};
+
+processor:
+{
+    node_idx = [1];
+};
+
+cache:
+{
+    name = "testCache";
+    type = "DATA";
+    size = 0x4000; //16K
+    assoc = 4;
+    block_size = 32;
+    hit_time = 2;
+    lookup_time = 5;
+    replacement_policy = "LRU";
+};
+
+mc: //memory controller
+{
+    node_idx = [0];
+    latency = 53;
+};

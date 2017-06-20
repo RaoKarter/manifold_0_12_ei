@@ -1,0 +1,186 @@
+//! @file singleCore.cc
+//! @brief This program builds and simulates a single core system, as follows.
+//!
+//! @verbatim
+//!
+//!      -----------  
+//!     | processor |
+//!      ----------- 
+//!           | 
+//!        -------
+//!       |  L1   |
+//!        -------
+//!           |   
+//!        -------
+//!       |  L2   |
+//!        -------
+//!           |   
+//!   ------------------- 
+//!  | memory controller |
+//!   ------------------- 
+//!
+//! @endverbatim
+//!
+//!
+//! The components used in this program are:
+//! - qsimclient_core_t: a processor model from Zesto that uses QSim server for instructions.
+//! - simple_cache: a simple write-back write-no-allocate cache.
+//! - CaffDRAM: a memory controller model.
+//!
+//! To run this program, type:
+//! @code
+//! singleCore  <zesto_conf_file> <server> <port>
+//! @endcode
+//! where,
+//!
+//! <zesto_conf_file>: the name of the Zesto configuration file.
+//! <server>: the name or IP of the QSim server
+//! <port>: the tcp port that is used to connect to the QSim server.
+//!
+//!
+#include "kernel/clock.h"
+#include "kernel/component.h"
+#include "kernel/manifold.h"
+#include "uarch/DestMap.h"
+#include "zesto/qsimclient-core.h"
+#include "simple-cache/simple_cache.h"
+#include "CaffDRAM/ControllerSimple.h"
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include "mpi.h"
+
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::uarch;
+using namespace manifold::zesto;
+using namespace manifold::simple_cache;
+using namespace manifold::caffdram;
+
+
+class SingleNodeDestMap : public DestMap {
+public:
+    SingleNodeDestMap(int node) : m_node_id(node) {}
+    int lookup(uint64_t addr) { return m_node_id; }
+private:
+    const int m_node_id;
+};
+
+
+int main(int argc, char** argv)
+{
+    if(argc != 4) {
+        cerr << "Usage: " << argv[0] << " <zesto_config_file>  <server>  <port>" << endl;
+	exit(1);
+    }
+
+    Manifold :: Init();
+
+#define REDIRECT_COUT
+
+#ifdef REDIRECT_COUT
+    // create a file into which to write debug/stats info.
+    ofstream DBG_LOG("LOG");
+
+    //redirect cout to file.
+    std::streambuf* cout_sbuf = std::cout.rdbuf(); // save original sbuf
+    std::cout.rdbuf(DBG_LOG.rdbuf()); // redirect cout
+#endif
+
+
+    //==========================================================================
+    // create all the components.
+    //==========================================================================
+    Simple_cache_parameters l1_parameters;
+    l1_parameters.size = 0x1 << 14; //16K
+    l1_parameters.assoc = 4;
+    l1_parameters.block_size = 32;
+    l1_parameters.hit_time = 1;
+    l1_parameters.lookup_time = 2;
+
+    Simple_cache_init l1_init;
+    l1_init.dmap = 0;
+    l1_init.first_level = true;
+    l1_init.last_level = false;
+
+
+    const int NODE_ID = 0;
+
+    Simple_cache_parameters l2_parameters;
+    l2_parameters.size = 0x1 << 16; //64K
+    l2_parameters.assoc = 8;
+    l2_parameters.block_size = 32;
+    l2_parameters.hit_time = 2;
+    l2_parameters.lookup_time = 4;
+
+    Simple_cache_init l2_init;
+    l2_init.dmap = new SingleNodeDestMap(NODE_ID);
+    l2_init.first_level = false;
+    l2_init.last_level = true;
+
+
+    int FREQ = 1;
+    Clock myClock(FREQ);
+
+    const char* server = argv[2];
+    int port = atoi(argv[3]);
+    QsimClient_Settings proc_settings(server, port);
+
+    const int CPU_ID = 0;
+    CompId_t proc_cid = Component :: Create<qsimclient_core_t>(0, NODE_ID, argv[1], CPU_ID, proc_settings);
+    CompId_t l1_cache_cid = Component :: Create<simple_cache>(0, NODE_ID, "L1", l1_parameters, l1_init);
+    CompId_t l2_cache_cid = Component :: Create<simple_cache>(0, NODE_ID, "L2", l2_parameters, l2_init);
+
+    Dsettings dram_settings;
+    CompId_t mc_cid = Component :: Create<ControllerSimple>(0, NODE_ID, dram_settings);
+
+
+    //==========================================================================
+    //Now connect the components
+    //==========================================================================
+
+    //proc and L1 cache
+    Manifold :: Connect(proc_cid, core_t::PORT0, &core_t::cache_response_handler,
+			l1_cache_cid, simple_cache::PORT_LOWER,
+			&simple_cache::handle_processor_request<ZestoCacheReq>, myClock, myClock, 1, 1);
+    //L1 cache and L2 cache
+    Manifold :: Connect(l1_cache_cid, simple_cache::PORT_UPPER, &simple_cache::handle_cache_response,
+			l2_cache_cid, simple_cache::PORT_LOWER,
+			&simple_cache::handle_request, myClock, myClock, 1, 1);
+    //L2 cache and MC
+    Manifold :: Connect(l2_cache_cid, simple_cache::PORT_UPPER, &simple_cache::handle_response,
+			mc_cid, ControllerSimple::PORT,
+			&ControllerSimple::handle_request<Mem_req>, myClock, myClock, 1, 1);
+
+
+
+    //==========================================================================
+    // Register processor with the clock
+    //==========================================================================
+
+    qsimclient_core_t* proc = Component :: GetComponent<qsimclient_core_t>(proc_cid);
+    assert(proc);
+    Clock :: Register((core_t*)proc, &qsimclient_core_t::tick, (void(core_t::*)(void))0);
+
+    int STOP = 100000;
+    Manifold::StopAt(STOP);
+    Manifold::Run();
+
+
+    proc->print_stats();
+    proc->print_stats(cout);
+    simple_cache* l1 = Component :: GetComponent<simple_cache>(l1_cache_cid);
+    l1->print_stats(cout);
+    simple_cache* l2 = Component :: GetComponent<simple_cache>(l2_cache_cid);
+    l2->print_stats(cout);
+    ControllerSimple* mc = Component :: GetComponent<ControllerSimple>(mc_cid);
+    mc->print_stats(cout);
+
+#ifdef REDIRECT_COUT
+    std::cout.rdbuf(cout_sbuf);
+#endif
+
+    //Manifold :: Finalize();
+
+}

@@ -1,0 +1,70 @@
+Manifold Release Note
+
+Current release: 0.8
+Release date: 06-28-2012
+
+
+What's New in This Version
+
+This is the first beta release of Manifold. It includes the parallel simulation kernel,
+four computer architecture models, and six simulator programs. The focus of the release
+is the sequential simulator programs in the directory QsimLib, which have been tested
+with the PARSEC and SPLASH benchmarks for 100M cycles.
+
+Brief description of the components is as follows:
+
+1. The parallel simulation kernel.
+The simulation kernel can be used in both sequential mode (one logical process) and
+parallel mode (multiple logical processes). However, in this release, the focus is
+on sequential mode.
+
+2. Architecture Models:
+
+2.1 Zesto
+This is cycle-level x86 processor model built on top of SimpleScalar and modified for
+Manifold. The model can take instruction input from three different sources: Qsim
+server, Qsim library, and PIN traces.
+
+2.2 MCP-cache
+This is coherence cache model using the methodology called Manager-Client Pairing (MCP).
+MCP-cache models a cache system that consists of two levels: the L1 cache where the
+coherence is enforced, and the L2 cache that serves as the directory. Two configurations
+are supported. In the 1st configuration, each processor has a private L1. The L2 is shared
+but each processor node has an L2 slice. In the second configuration, each processor has
+a private L1. The L2 is shared but resides in a separate node of its own. Only the MESI
+protocol is supported.
+
+2.3 Iris
+This is a cycle level interconnection network model. Two network topologies are supported:
+torus and ring. For each topology, the network consists of a set of network interfaces, 
+each connected to a router. Virtual channel is supported.
+
+2.4 CaffDRAM
+This is a DRAM controller model. In this model, the memory is orgainzed as a hierarchy of
+channels, ranks, and banks. For each request, the memory access latency is calculated based
+on the state of the target bank.
+
+
+3. Simulators.
+The release includes six simulator programs to cover the 2 system configurations and 3 sources
+of instruction input. Simulators under QsimClient users Qsim server for instructions, simulators
+under QsimLib users Qsim library, and simulators under TraceProc use PIN traces. The open-source
+package libconfig++ is used to parse system configurations.
+
+
+
+
+Limitations
+
+A few important limitations of this release are:
+
+1. Flow control between components are not supported.
+
+2. Iris does not support request-reply networks in this version. The next
+version will.
+
+3. Performance of the parallel simulators needs improvement.
+
+
+
+

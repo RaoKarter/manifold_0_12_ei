@@ -1,0 +1,204 @@
+#include <TestFixture.h>
+#include <TestAssert.h>
+#include <TestSuite.h>
+#include <Test.h>
+#include <TestCaller.h>
+#include <cppunit/ui/text/TestRunner.h>
+#include "kernel/manifold.h"
+#include "kernel/component.h"
+#include "kernel/link.h"
+#include "../../trace-core.h"
+#include "../../ZPIPE-fetch/fetch-DPM.h"
+#include "../../zesto-bpred.h"
+#include <stdlib.h>
+#include <time.h>
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::zesto;
+
+
+
+//####################################################################
+//####################################################################
+class FetchDPMTest : public CppUnit::TestFixture {
+private:
+
+public:
+    void setUp() {}
+
+    void tearDown() {}
+
+    //
+    void testConstructor_0()
+    {
+	int id = random() % 1024;
+        trace_core_t* myCore = new trace_core_t(id, "6.cfg", "itrace_array.out");
+
+	int N = 10; //test N core_fetch_DPM_t objects
+	for (int i = 0; i < N; i++ ) {
+	    //branch predictor
+	    myCore->knobs->fetch.num_bpred_components = random() % 2 + 1; //max 2; see core_t::core_pre_init
+
+	    #if 0
+	    if(i % 10 == 0)
+		myCore->knobs->fetch.jeclear_delay = 0;
+            else
+		myCore->knobs->fetch.jeclear_delay = random() % 5 + 1;
+
+	    myCore->knobs->fetch.byteQ_size = random() % 100 + 1;
+	    myCore->knobs->fetch.depth = random() % 100 + 1;
+	    myCore->knobs->fetch.width = random() % 100 + 1;
+	    myCore->knobs->fetch.IQ_size = random() % 100 + 1;
+	    #endif
+	    
+
+	    //create core_fetch_DPM_t
+	    core_fetch_DPM_t* myFetch = new core_fetch_DPM_t(myCore);
+
+	    CPPUNIT_ASSERT_EQUAL(myCore->knobs->fetch.num_bpred_components, (int)myFetch->bpred->num_pred);
+
+	    //unfortunately the constructor uses calloc to allocate arrays, and we cannot know the
+	    //size of the allocated memory block.
+	    CPPUNIT_ASSERT_EQUAL(0, (int)myFetch->byteQ_head);
+	    CPPUNIT_ASSERT_EQUAL(0, (int)myFetch->byteQ_tail);
+	    CPPUNIT_ASSERT_EQUAL(0, (int)myFetch->byteQ_num);
+
+	    CPPUNIT_ASSERT_EQUAL(0, (int)myFetch->IQ_head);
+	    CPPUNIT_ASSERT_EQUAL(0, (int)myFetch->IQ_tail);
+	    CPPUNIT_ASSERT_EQUAL(0, (int)myFetch->IQ_num);
+	}
+
+
+        delete myCore;
+    }
+
+
+    //======================================================================
+    //======================================================================
+    //! @brief Test predecode_enqueue(): stage 0 of predecode pipe is completely empty
+    //
+    void test_predecode_enqueue_0()
+    {
+	int id = random() % 1024;
+        trace_core_t* myCore = new trace_core_t(id, "6.cfg", "itrace_array.out");
+
+	myCore->knobs->fetch.width = random() % 19 + 2; // random number in [2, 20]
+
+	//create core_fetch_DPM_t
+	core_fetch_DPM_t* myFetch = new core_fetch_DPM_t(myCore);
+
+
+	//stage 0 of predecode pipe is completely empty
+	for(int i=0; i<myCore->knobs->fetch.width; i++)
+	    myFetch->pipe[0][i] = 0;
+
+
+	//call the function
+	Mop_t* myMop = new Mop_t;
+	bool rc = myFetch->predecode_enqueue(myMop);
+
+	CPPUNIT_ASSERT_EQUAL(myMop, myFetch->pipe[0][0]);
+	CPPUNIT_ASSERT_EQUAL(true, rc);
+
+        delete myCore;
+	delete myMop;
+    }
+
+
+    //======================================================================
+    //======================================================================
+    //! @brief Test predecode_enqueue(): stage 0 of predecode pipe is partially full.
+    //
+    void test_predecode_enqueue_1()
+    {
+	int id = random() % 1024;
+        trace_core_t* myCore = new trace_core_t(id, "6.cfg", "itrace_array.out");
+
+	myCore->knobs->fetch.width = random() % 19 + 2; // random number in [2, 20]
+	int size = random() % (myCore->knobs->fetch.width);
+
+	//create core_fetch_DPM_t
+	core_fetch_DPM_t* myFetch = new core_fetch_DPM_t(myCore);
+
+
+	//stage 0 of predecode pipe is partially full
+	for(int i=0; i<size; i++)
+	    myFetch->pipe[0][i] = new Mop_t;
+
+
+	//call the function
+	Mop_t* myMop = new Mop_t;
+	bool rc = myFetch->predecode_enqueue(myMop);
+
+	CPPUNIT_ASSERT_EQUAL(myMop, myFetch->pipe[0][size]);
+	CPPUNIT_ASSERT_EQUAL(true, rc);
+
+        delete myCore;
+	for(int i=0; i<=size; i++)
+	    delete myFetch->pipe[0][i];
+    }
+
+
+    //======================================================================
+    //======================================================================
+    //! @brief Test predecode_enqueue(): stage 0 of predecode pipe is full.
+    //
+    void test_predecode_enqueue_2()
+    {
+	int id = random() % 1024;
+        trace_core_t* myCore = new trace_core_t(id, "6.cfg", "itrace_array.out");
+
+	myCore->knobs->fetch.width = random() % 19 + 2; // random number in [2, 20]
+
+	//create core_fetch_DPM_t
+	core_fetch_DPM_t* myFetch = new core_fetch_DPM_t(myCore);
+
+
+	//stage 0 of predecode pipe is partially full
+	for(int i=0; i<myCore->knobs->fetch.width; i++)
+	    myFetch->pipe[0][i] = new Mop_t;
+
+
+	//call the function
+	Mop_t* myMop = new Mop_t;
+	bool rc = myFetch->predecode_enqueue(myMop);
+
+	CPPUNIT_ASSERT_EQUAL(false, rc);
+	for(int i=0; i<myCore->knobs->fetch.width; i++)
+	    CPPUNIT_ASSERT(myMop != myFetch->pipe[0][i]);
+
+        delete myCore;
+	for(int i=0; i<myCore->knobs->fetch.width; i++)
+	    delete myFetch->pipe[0][i];
+    }
+
+
+   /**
+     * Build a test suite.
+     */
+    static CppUnit::Test* suite()
+    {
+	CppUnit::TestSuite* mySuite = new CppUnit::TestSuite("FetchDPMTest");
+
+	mySuite->addTest(new CppUnit::TestCaller<FetchDPMTest>("testConstructor_0", &FetchDPMTest::testConstructor_0));
+	mySuite->addTest(new CppUnit::TestCaller<FetchDPMTest>("test_predecode_enqueue_0", &FetchDPMTest::test_predecode_enqueue_0));
+	mySuite->addTest(new CppUnit::TestCaller<FetchDPMTest>("test_predecode_enqueue_1", &FetchDPMTest::test_predecode_enqueue_1));
+	mySuite->addTest(new CppUnit::TestCaller<FetchDPMTest>("test_predecode_enqueue_2", &FetchDPMTest::test_predecode_enqueue_2));
+
+	return mySuite;
+    }
+};
+
+
+int main()
+{
+  CppUnit::TextUi::TestRunner runner;
+  runner.addTest( FetchDPMTest::suite() );
+  if(runner.run("", false))
+	return 0; //all is well
+    else
+	return 1;
+}
+
+

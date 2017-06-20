@@ -1,0 +1,6 @@
+Simulators here use TraceProcessor as processor model. This model gets instructions
+from a trace file. Format of the trace file is as follows:
+
+Each line is either "I 0" or "R 1234" or "W 1234", where 1234 represents a generic
+address. "I 0" represents an ALU instruction that is executed in one cycle.
+"R 1234" and "W 1234" are LOAD and STORE, repectively.

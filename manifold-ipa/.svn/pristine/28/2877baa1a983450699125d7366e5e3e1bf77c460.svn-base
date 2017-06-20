@@ -1,0 +1,38 @@
+#ifndef __SPX_CORE_H__
+#define __SPX_CORE_H__
+
+#include "qsim.h"
+#include "kernel/component.h"
+#include "kernel/clock.h"
+#include "pipeline.h"
+
+namespace manifold {
+namespace spx {
+
+class spx_core_t : public manifold::kernel::Component
+{
+public:
+  spx_core_t(manifold::kernel::Clock *clk, const int nodeID, Qsim::OSDomain *osd, const char *configFileName, const int coreID);
+  ~spx_core_t();
+
+  enum { IN_FROM_CACHE = 0 };
+  enum { OUT_TO_CACHE = 0 };
+
+  // manifold component functions
+  void tick();
+  void handle_cache_response(int temp, cache_request_t *cache_request);
+
+  int node_id; // manifold node ID
+  int core_id; // processor ID
+  uint64_t clock_cycle;
+
+private:
+  pipeline_t *pipeline; // base class of pipeline models
+  manifold::kernel::Clock *clock;
+};
+
+} // namespace spx
+} // namespace manifold
+
+#endif
+

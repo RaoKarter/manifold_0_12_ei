@@ -1,0 +1,6 @@
+libiris_a-mapping.o: interfaces/mapping.cc /usr/include/stdc-predef.h \
+ interfaces/mapping.h
+
+/usr/include/stdc-predef.h:
+
+interfaces/mapping.h:

@@ -1,0 +1,11 @@
+move configure.ac and Makefile.am to /trunk/code directory and do autogen.
+
+$ mv configure.ac Makefile.am ../../
+$ cd ../../autogen.sh
+$ cd models/energy_introspector/
+$ make
+$ cd ../processor/zesto
+$ make
+$ cd ../../../simulator/zesto-ei
+$ make
+$ ./sim_manifold

@@ -1,0 +1,35 @@
+#include <iostream>
+#include "kernel/manifold.h"
+#include "kernel/component.h"
+#include "kernel/link.h"
+#include "kernel/clock.h"
+#include "simple_cache.h"
+#include "../../qsimlib-core.h"
+#include <assert.h>
+#include <stdlib.h>
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::simple_cache;
+using namespace manifold::zesto;
+
+
+int main(int argc, char *argv[])
+{
+  Clock globalClock(1000.0);
+
+  Manifold::Init();
+
+  Qsim::OSDomain* qsim_osd = new Qsim::OSDomain(1, "/your path to image/linux/bzImage");
+  int CoreID = Component::Create<qsimlib_core_t,int,char*, Qsim::OSDomain*>(0,0,"6.cfg", qsim_osd);
+  qsimlib_core_t* current_core = Component::GetComponent<qsimlib_core_t>(CoreID);
+  Clock::Register<qsimlib_core_t> (current_core, &qsimlib_core_t::tick, &qsimlib_core_t::tock);
+  int CacheID = Component::Create<simple_cache, int>(0, 1);
+  Manifold::Connect(CoreID, qsimlib_core_t::Output0, CacheID, simple_cache::Input0, &simple_cache::LinkArrival, 2);
+  Manifold::Connect(CacheID, simple_cache::Output0, CoreID, qsimlib_core_t::Input0, &qsimlib_core_t::cache_response_handler, 2);
+  
+  Manifold::StopAt(80000);
+  Manifold::Run();
+  Manifold::Finalize();
+}
+

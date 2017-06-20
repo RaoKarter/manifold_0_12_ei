@@ -1,0 +1,904 @@
+#ifdef USE_QSIM
+
+#ifdef LIBEI
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <cmath>
+#include "core.h"
+
+#include "ei_handler.h"
+
+using namespace std;
+using namespace libconfig;
+using namespace manifold;
+using namespace spx;
+using namespace libEI;
+using namespace EIController;
+
+EI_handler_t::EI_handler_t(spx_core_t *c) :
+    EI_client(NULL),
+    energy_introspector(NULL),
+    INTERCOMM(NULL),
+    core(c), 
+    time(0.0), 
+    sampling_interval(1e-4), 
+    next_sampling_time(1e-4), 
+    start_time(0.0), 
+    status(SPX_EI_HANDLER_WAIT), 
+    log_file(stdout)
+{
+}
+
+EI_handler_t::~EI_handler_t()
+{
+    delete EI_client;
+}
+
+void EI_handler_t::connect_EI(energy_introspector_t *EI)
+{
+    assert(EI != NULL);
+    
+    energy_introspector = EI;
+    
+    stringstream ss;
+    ss << core->core_id;
+    string core_name = "core"+ss.str();
+    
+    pipeline_t *pipeline = core->pipeline;
+    pipeline->counter.package.id = energy_introspector->get_component_id("package");
+    assert(pipeline->counter.package.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package.id=" << pipeline->counter.package.id << endl;
+#endif
+    pipeline->counter.core.id = energy_introspector->get_component_id("package."+core_name);
+    assert(pipeline->counter.core.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".id=" << pipeline->counter.core.id << endl;
+#endif        
+    pipeline->counter.l1_btb.id = energy_introspector->get_component_id("package."+core_name+".l1_btb");
+    assert(pipeline->counter.l1_btb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l1_btb.id=" << pipeline->counter.l1_btb.id << endl;
+#endif
+    pipeline->counter.l2_btb.id = energy_introspector->get_component_id("package."+core_name+".l2_btb");
+    assert(pipeline->counter.l2_btb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l2_btb.id=" << pipeline->counter.l2_btb.id << endl;
+#endif
+    pipeline->counter.predictor_chooser.id = energy_introspector->get_component_id("package."+core_name+".predictor_chooser");
+    assert(pipeline->counter.predictor_chooser.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".predictor_chooser.id=" << pipeline->counter.predictor_chooser.id << endl;
+#endif
+    pipeline->counter.global_predictor.id = energy_introspector->get_component_id("package."+core_name+".global_predictor");
+    assert(pipeline->counter.global_predictor.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".global_predictor.id=" << pipeline->counter.global_predictor.id << endl;
+#endif
+    pipeline->counter.l1_local_predictor.id = energy_introspector->get_component_id("package."+core_name+".l1_local_predictor");
+    assert(pipeline->counter.l1_local_predictor.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l1_local_predictor.id=" << pipeline->counter.l1_local_predictor.id << endl;
+#endif
+    pipeline->counter.l2_local_predictor.id = energy_introspector->get_component_id("package."+core_name+".l2_local_predictor");
+    assert(pipeline->counter.l2_local_predictor.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l2_local_predictor.id=" << pipeline->counter.l2_local_predictor.id << endl;
+#endif
+    pipeline->counter.ras.id = energy_introspector->get_component_id("package."+core_name+".ras");
+    assert(pipeline->counter.ras.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".ras.id=" << pipeline->counter.ras.id << endl;
+#endif
+    pipeline->counter.inst_cache.id = energy_introspector->get_component_id("package."+core_name+".inst_cache");
+    assert(pipeline->counter.inst_cache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_cache.id=" << pipeline->counter.inst_cache.id << endl;
+#endif
+    pipeline->counter.inst_cache_miss_buffer.id = energy_introspector->get_component_id("package."+core_name+".inst_cache_miss_buffer");
+    assert(pipeline->counter.inst_cache_miss_buffer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_cache_miss_buffer.id=" << pipeline->counter.inst_cache_miss_buffer.id << endl;
+#endif
+    pipeline->counter.inst_cache_prefetch_buffer.id = energy_introspector->get_component_id("package."+core_name+".inst_cache_prefetch_buffer");
+    assert(pipeline->counter.inst_cache_prefetch_buffer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_cache_prefetch_buffer.id=" << pipeline->counter.inst_cache_prefetch_buffer.id << endl;
+#endif
+    pipeline->counter.inst_tlb.id = energy_introspector->get_component_id("package."+core_name+".inst_tlb");
+    assert(pipeline->counter.inst_tlb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_tlb.id=" << pipeline->counter.inst_tlb.id << endl;
+#endif
+    pipeline->counter.latch_ic2ib.id = energy_introspector->get_component_id("package."+core_name+".latch_ic2ib");
+    assert(pipeline->counter.latch_ic2ib.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".latch_ic2ib.id=" << pipeline->counter.latch_ic2ib.id << endl;
+#endif        
+    pipeline->counter.pc.id = energy_introspector->get_component_id("package."+core_name+".pc");
+    assert(pipeline->counter.pc.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".pc.id=" << pipeline->counter.pc.id << endl;
+#endif  
+    pipeline->counter.inst_buffer.id = energy_introspector->get_component_id("package."+core_name+".inst_buffer");
+    assert(pipeline->counter.inst_buffer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_buffer.id=" << pipeline->counter.inst_buffer.id << endl;
+#endif  
+    pipeline->counter.latch_ib2id.id = energy_introspector->get_component_id("package."+core_name+".latch_ib2id");
+    assert(pipeline->counter.latch_ib2id.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".latch_ib2id.id=" << pipeline->counter.latch_ib2id.id << endl;
+#endif  
+    pipeline->counter.inst_decoder.id = energy_introspector->get_component_id("package."+core_name+".inst_decoder");
+    assert(pipeline->counter.inst_decoder.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_decoder.id=" << pipeline->counter.inst_decoder.id << endl;
+#endif  
+    pipeline->counter.operand_decoder.id = energy_introspector->get_component_id("package."+core_name+".operand_decoder");
+    assert(pipeline->counter.operand_decoder.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".operand_decoder.id=" << pipeline->counter.operand_decoder.id << endl;
+#endif  
+    pipeline->counter.uop_sequencer.id = energy_introspector->get_component_id("package."+core_name+".uop_sequencer");
+    assert(pipeline->counter.uop_sequencer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".uop_sequencer.id=" << pipeline->counter.uop_sequencer.id << endl;
+#endif
+    pipeline->counter.data_tlb.id = energy_introspector->get_component_id("package."+core_name+".data_tlb");
+    assert(pipeline->counter.data_tlb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".data_tlb.id=" << pipeline->counter.data_tlb.id << endl;
+#endif
+    pipeline->counter.l2_tlb.id = energy_introspector->get_component_id("package."+core_name+".l2_tlb");
+    assert(pipeline->counter.l2_tlb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l2_tlb.id=" << pipeline->counter.l2_tlb.id << endl;
+#endif
+    pipeline->counter.undiff.id = energy_introspector->get_component_id("package."+core_name+".undiff");
+    assert(pipeline->counter.undiff.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".undiff.id=" << pipeline->counter.undiff.id << endl;
+#endif
+
+    if(pipeline->type == SPX_PIPELINE_OUTORDER) {
+        pipeline->counter.latch_id2uq.id = energy_introspector->get_component_id("package."+core_name+".latch_id2uq");
+        assert(pipeline->counter.latch_id2uq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_id2uq.id=" << pipeline->counter.latch_id2uq.id << endl;
+#endif
+        pipeline->counter.uop_queue.id = energy_introspector->get_component_id("package."+core_name+".uop_queue");
+        assert(pipeline->counter.uop_queue.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".uop_queue.id=" << pipeline->counter.uop_queue.id << endl;
+#endif
+        pipeline->counter.latch_uq2rr.id = energy_introspector->get_component_id("package."+core_name+".latch_uq2rr");
+        assert(pipeline->counter.latch_uq2rr.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_uq2rr.id=" << pipeline->counter.latch_uq2rr.id << endl;
+#endif
+        pipeline->counter.rat.id = energy_introspector->get_component_id("package."+core_name+".rat");
+        assert(pipeline->counter.rat.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".rat.id=" << pipeline->counter.rat.id << endl;
+#endif
+        pipeline->counter.freelist.id = energy_introspector->get_component_id("package."+core_name+".freelist");
+        assert(pipeline->counter.freelist.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".freelist.id=" << pipeline->counter.freelist.id << endl;
+#endif
+        pipeline->counter.dependency_check.id = energy_introspector->get_component_id("package."+core_name+".dependency_check");
+        assert(pipeline->counter.dependency_check.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".dependency_check.id=" << pipeline->counter.dependency_check.id << endl;
+#endif
+        pipeline->counter.latch_rr2rs.id = energy_introspector->get_component_id("package."+core_name+".latch_rr2rs");
+        assert(pipeline->counter.latch_rr2rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rr2rs.id=" << pipeline->counter.latch_rr2rs.id << endl;
+#endif
+        pipeline->counter.rs.id = energy_introspector->get_component_id("package."+core_name+".rs");
+        assert(pipeline->counter.rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".rs.id=" << pipeline->counter.rs.id << endl;
+#endif
+        pipeline->counter.issue_select.id = energy_introspector->get_component_id("package."+core_name+".issue_select");
+        assert(pipeline->counter.issue_select.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".issue_select.id=" << pipeline->counter.issue_select.id << endl;
+#endif
+        pipeline->counter.latch_rs2ex.id = energy_introspector->get_component_id("package."+core_name+".latch_rs2ex");
+        assert(pipeline->counter.latch_rs2ex.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rs2ex.id=" << pipeline->counter.latch_rs2ex.id << endl;
+#endif
+        pipeline->counter.reg_int.id = energy_introspector->get_component_id("package."+core_name+".reg_int");
+        assert(pipeline->counter.reg_int.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_int.id=" << pipeline->counter.reg_int.id << endl;
+#endif 
+        pipeline->counter.reg_fp.id = energy_introspector->get_component_id("package."+core_name+".reg_fp");
+        assert(pipeline->counter.reg_fp.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_fp.id=" << pipeline->counter.reg_fp.id << endl;
+#endif
+        pipeline->counter.rob.id = energy_introspector->get_component_id("package."+core_name+".rob");
+        assert(pipeline->counter.rob.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".rob.id=" << pipeline->counter.rob.id << endl;
+#endif
+        pipeline->counter.latch_rob2rs.id = energy_introspector->get_component_id("package."+core_name+".latch_rob2rs");
+        assert(pipeline->counter.latch_rob2rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rob2rs.id=" << pipeline->counter.latch_rob2rs.id << endl;
+#endif
+        pipeline->counter.latch_rob2reg.id = energy_introspector->get_component_id("package."+core_name+".latch_rob2reg");
+        assert(pipeline->counter.latch_rob2reg.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rob2reg.id=" << pipeline->counter.latch_rob2reg.id << endl;
+#endif
+        pipeline->counter.alu.id = energy_introspector->get_component_id("package."+core_name+".alu");
+        assert(pipeline->counter.alu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".alu.id=" << pipeline->counter.alu.id << endl;
+#endif
+        pipeline->counter.mul.id = energy_introspector->get_component_id("package."+core_name+".mul");
+        assert(pipeline->counter.mul.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".mul.id=" << pipeline->counter.mul.id << endl;
+#endif
+        pipeline->counter.int_bypass.id = energy_introspector->get_component_id("package."+core_name+".int_bypass");
+        assert(pipeline->counter.int_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".int_bypass.id=" << pipeline->counter.int_bypass.id << endl;
+#endif
+        pipeline->counter.latch_ex_int2rob.id = energy_introspector->get_component_id("package."+core_name+".latch_ex_int2rob");
+        assert(pipeline->counter.latch_ex_int2rob.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ex_int2rob.id=" << pipeline->counter.latch_ex_int2rob.id << endl;
+#endif
+        pipeline->counter.fpu.id = energy_introspector->get_component_id("package."+core_name+".fpu");
+        assert(pipeline->counter.fpu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fpu.id=" << pipeline->counter.fpu.id << endl;
+#endif
+        pipeline->counter.fp_bypass.id = energy_introspector->get_component_id("package."+core_name+".fp_bypass");
+        assert(pipeline->counter.fp_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fp_bypass.id=" << pipeline->counter.fp_bypass.id << endl;
+#endif
+        pipeline->counter.latch_ex_fp2rob.id = energy_introspector->get_component_id("package."+core_name+".latch_ex_fp2rob");
+        assert(pipeline->counter.latch_ex_fp2rob.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ex_fp2rob.id=" << pipeline->counter.latch_ex_fp2rob.id << endl;
+#endif
+        pipeline->counter.stq.id = energy_introspector->get_component_id("package."+core_name+".stq");
+        assert(pipeline->counter.stq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".stq.id=" << pipeline->counter.stq.id << endl;
+#endif
+        pipeline->counter.latch_stq2dcache.id = energy_introspector->get_component_id("package."+core_name+".latch_stq2dcache");
+        assert(pipeline->counter.latch_stq2dcache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_stq2dcache.id=" << pipeline->counter.latch_stq2dcache.id << endl;
+#endif
+        pipeline->counter.latch_stq2ldq.id = energy_introspector->get_component_id("package."+core_name+".latch_stq2ldq");
+        assert(pipeline->counter.latch_stq2ldq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_stq2ldq.id=" << pipeline->counter.latch_stq2ldq.id << endl;
+#endif
+        pipeline->counter.ldq.id = energy_introspector->get_component_id("package."+core_name+".ldq");
+        assert(pipeline->counter.ldq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".ldq.id=" << pipeline->counter.ldq.id << endl;
+#endif
+        pipeline->counter.latch_ldq2dcache.id = energy_introspector->get_component_id("package."+core_name+".latch_ldq2dcache");
+        assert(pipeline->counter.latch_ldq2dcache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ldq2dcache.id=" << pipeline->counter.latch_ldq2dcache.id << endl;
+#endif
+        pipeline->counter.latch_ldq2rs.id = energy_introspector->get_component_id("package."+core_name+".latch_ldq2rs");
+        assert(pipeline->counter.latch_ldq2rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ldq2rs.id=" << pipeline->counter.latch_ldq2rs.id << endl;
+#endif
+    }
+    else { // SPX_PIPELINE_INORDER
+        pipeline->counter.latch_id2iq.id = energy_introspector->get_component_id("package."+core_name+".latch_id2iq");
+        assert(pipeline->counter.latch_id2iq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_id2iq.id=" << pipeline->counter.latch_id2iq.id << endl;
+#endif
+        pipeline->counter.dependency_check.id = energy_introspector->get_component_id("package."+core_name+".dependency_check");
+        assert(pipeline->counter.dependency_check.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".dependency_check.id=" << pipeline->counter.dependency_check.id << endl;
+#endif
+        pipeline->counter.reg_int.id = energy_introspector->get_component_id("package."+core_name+".reg_int");
+        assert(pipeline->counter.reg_int.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_int.id=" << pipeline->counter.reg_int.id << endl;
+#endif
+        pipeline->counter.reg_fp.id = energy_introspector->get_component_id("package."+core_name+".reg_fp");
+        assert(pipeline->counter.reg_fp.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_fp.id=" << pipeline->counter.reg_fp.id << endl;
+#endif
+        pipeline->counter.alu.id = energy_introspector->get_component_id("package."+core_name+".alu");
+        assert(pipeline->counter.alu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".alu.id=" << pipeline->counter.alu.id << endl;
+#endif
+        pipeline->counter.mul.id = energy_introspector->get_component_id("package."+core_name+".mul");
+        assert(pipeline->counter.mul.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".mul.id=" << pipeline->counter.mul.id << endl;
+#endif
+        pipeline->counter.int_bypass.id = energy_introspector->get_component_id("package."+core_name+".int_bypass");
+        assert(pipeline->counter.int_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".int_bypass.id=" << pipeline->counter.int_bypass.id << endl;
+#endif
+        pipeline->counter.fpu.id = energy_introspector->get_component_id("package."+core_name+".fpu");
+        assert(pipeline->counter.fpu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fpu.id=" << pipeline->counter.fpu.id << endl;
+#endif
+        pipeline->counter.fp_bypass.id = energy_introspector->get_component_id("package."+core_name+".fp_bypass");
+        assert(pipeline->counter.fp_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fp_bypass.id=" << pipeline->counter.fp_bypass.id << endl;
+#endif
+        pipeline->counter.inst_queue.id = energy_introspector->get_component_id("package."+core_name+".inst_queue");
+        assert(pipeline->counter.inst_queue.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".inst_queue.id=" << pipeline->counter.inst_queue.id << endl;
+#endif
+        pipeline->counter.latch_iq2ex.id = energy_introspector->get_component_id("package."+core_name+".latch_iq2ex");
+        assert(pipeline->counter.latch_iq2ex.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_iq2ex.id=" << pipeline->counter.latch_iq2ex.id << endl;
+#endif
+        pipeline->counter.latch_ex2reg.id = energy_introspector->get_component_id("package."+core_name+".latch_ex2reg");
+        assert(pipeline->counter.latch_ex2reg.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ex2reg.id=" << pipeline->counter.latch_ex2reg.id << endl;
+#endif
+        pipeline->counter.lsq.id = energy_introspector->get_component_id("package."+core_name+".lsq");
+        assert(pipeline->counter.lsq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".lsq.id=" << pipeline->counter.lsq.id << endl;
+#endif
+        pipeline->counter.latch_lsq2dcache.id = energy_introspector->get_component_id("package."+core_name+".latch_lsq2dcache");
+        assert(pipeline->counter.latch_lsq2dcache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_lsq2dcache.id=" << pipeline->counter.latch_lsq2dcache.id << endl;
+#endif
+        pipeline->counter.latch_lsq2reg.id = energy_introspector->get_component_id("package."+core_name+".latch_lsq2reg");
+        assert(pipeline->counter.latch_lsq2reg.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_lsq2reg.id=" << pipeline->counter.latch_lsq2reg.id << endl;
+#endif
+    };
+}
+
+void EI_handler_t::connect_EI(MPI_Comm *InterComm, const int EIRank)
+{
+    INTERCOMM = InterComm;
+    assert(INTERCOMM!=NULL);
+    EI_client = new client_t(INTERCOMM,core->getComponentId());
+    
+    // This connection request is blocking until the EI becomes ready
+    EI_client->connect_server(EIRank);
+    
+    stringstream ss;
+    ss << core->core_id;
+    string core_name = "core"+ss.str();
+    
+    pipeline_t *pipeline = core->pipeline;
+    pipeline->counter.package.id = EI_client->get_component_id("package");
+    assert(pipeline->counter.package.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package.id=" << pipeline->counter.package.id << endl;
+#endif
+    
+    pipeline->counter.core.id = EI_client->get_component_id("package."+core_name);
+    assert(pipeline->counter.core.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".id=" << pipeline->counter.core.id << endl;
+#endif        
+    pipeline->counter.l1_btb.id = EI_client->get_component_id("package."+core_name+".l1_btb");
+    assert(pipeline->counter.l1_btb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l1_btb.id=" << pipeline->counter.l1_btb.id << endl;
+#endif
+    pipeline->counter.l2_btb.id = EI_client->get_component_id("package."+core_name+".l2_btb");
+    assert(pipeline->counter.l2_btb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l2_btb.id=" << pipeline->counter.l2_btb.id << endl;
+#endif
+    pipeline->counter.predictor_chooser.id = EI_client->get_component_id("package."+core_name+".predictor_chooser");
+    assert(pipeline->counter.predictor_chooser.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".predictor_chooser.id=" << pipeline->counter.predictor_chooser.id << endl;
+#endif
+    pipeline->counter.global_predictor.id = EI_client->get_component_id("package."+core_name+".global_predictor");
+    assert(pipeline->counter.global_predictor.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".global_predictor.id=" << pipeline->counter.global_predictor.id << endl;
+#endif
+    pipeline->counter.l1_local_predictor.id = EI_client->get_component_id("package."+core_name+".l1_local_predictor");
+    assert(pipeline->counter.l1_local_predictor.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l1_local_predictor.id=" << pipeline->counter.l1_local_predictor.id << endl;
+#endif
+    pipeline->counter.l2_local_predictor.id = EI_client->get_component_id("package."+core_name+".l2_local_predictor");
+    assert(pipeline->counter.l2_local_predictor.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l2_local_predictor.id=" << pipeline->counter.l2_local_predictor.id << endl;
+#endif
+    pipeline->counter.ras.id = EI_client->get_component_id("package."+core_name+".ras");
+    assert(pipeline->counter.ras.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".ras.id=" << pipeline->counter.ras.id << endl;
+#endif
+    pipeline->counter.inst_cache.id = EI_client->get_component_id("package."+core_name+".inst_cache");
+    assert(pipeline->counter.inst_cache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_cache.id=" << pipeline->counter.inst_cache.id << endl;
+#endif
+    pipeline->counter.inst_cache_miss_buffer.id = EI_client->get_component_id("package."+core_name+".inst_cache_miss_buffer");
+    assert(pipeline->counter.inst_cache_miss_buffer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_cache_miss_buffer.id=" << pipeline->counter.inst_cache_miss_buffer.id << endl;
+#endif
+    pipeline->counter.inst_cache_prefetch_buffer.id = EI_client->get_component_id("package."+core_name+".inst_cache_prefetch_buffer");
+    assert(pipeline->counter.inst_cache_prefetch_buffer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_cache_prefetch_buffer.id=" << pipeline->counter.inst_cache_prefetch_buffer.id << endl;
+#endif
+    pipeline->counter.inst_tlb.id = EI_client->get_component_id("package."+core_name+".inst_tlb");
+    assert(pipeline->counter.inst_tlb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_tlb.id=" << pipeline->counter.inst_tlb.id << endl;
+#endif
+    pipeline->counter.latch_ic2ib.id = EI_client->get_component_id("package."+core_name+".latch_ic2ib");
+    assert(pipeline->counter.latch_ic2ib.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".latch_ic2ib.id=" << pipeline->counter.latch_ic2ib.id << endl;
+#endif        
+    pipeline->counter.pc.id = EI_client->get_component_id("package."+core_name+".pc");
+    assert(pipeline->counter.pc.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".pc.id=" << pipeline->counter.pc.id << endl;
+#endif  
+    pipeline->counter.inst_buffer.id = EI_client->get_component_id("package."+core_name+".inst_buffer");
+    assert(pipeline->counter.inst_buffer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_buffer.id=" << pipeline->counter.inst_buffer.id << endl;
+#endif  
+    pipeline->counter.latch_ib2id.id = EI_client->get_component_id("package."+core_name+".latch_ib2id");
+    assert(pipeline->counter.latch_ib2id.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".latch_ib2id.id=" << pipeline->counter.latch_ib2id.id << endl;
+#endif  
+    pipeline->counter.inst_decoder.id = EI_client->get_component_id("package."+core_name+".inst_decoder");
+    assert(pipeline->counter.inst_decoder.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".inst_decoder.id=" << pipeline->counter.inst_decoder.id << endl;
+#endif  
+    pipeline->counter.operand_decoder.id = EI_client->get_component_id("package."+core_name+".operand_decoder");
+    assert(pipeline->counter.operand_decoder.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".operand_decoder.id=" << pipeline->counter.operand_decoder.id << endl;
+#endif  
+    pipeline->counter.uop_sequencer.id = EI_client->get_component_id("package."+core_name+".uop_sequencer");
+    assert(pipeline->counter.uop_sequencer.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".uop_sequencer.id=" << pipeline->counter.uop_sequencer.id << endl;
+#endif
+    pipeline->counter.data_tlb.id = EI_client->get_component_id("package."+core_name+".data_tlb");
+    assert(pipeline->counter.data_tlb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".data_tlb.id=" << pipeline->counter.data_tlb.id << endl;
+#endif
+    pipeline->counter.l2_tlb.id = EI_client->get_component_id("package."+core_name+".l2_tlb");
+    assert(pipeline->counter.l2_tlb.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".l2_tlb.id=" << pipeline->counter.l2_tlb.id << endl;
+#endif
+    pipeline->counter.undiff.id = EI_client->get_component_id("package."+core_name+".undiff");
+    assert(pipeline->counter.undiff.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+    cout << "package."+core_name+".undiff.id=" << pipeline->counter.undiff.id << endl;
+#endif
+
+    if(pipeline->type == SPX_PIPELINE_OUTORDER) {
+        pipeline->counter.latch_id2uq.id = EI_client->get_component_id("package."+core_name+".latch_id2uq");
+        assert(pipeline->counter.latch_id2uq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_id2uq.id=" << pipeline->counter.latch_id2uq.id << endl;
+#endif
+        pipeline->counter.uop_queue.id = EI_client->get_component_id("package."+core_name+".uop_queue");
+        assert(pipeline->counter.uop_queue.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".uop_queue.id=" << pipeline->counter.uop_queue.id << endl;
+#endif
+        pipeline->counter.latch_uq2rr.id = EI_client->get_component_id("package."+core_name+".latch_uq2rr");
+        assert(pipeline->counter.latch_uq2rr.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_uq2rr.id=" << pipeline->counter.latch_uq2rr.id << endl;
+#endif
+        pipeline->counter.rat.id = EI_client->get_component_id("package."+core_name+".rat");
+        assert(pipeline->counter.rat.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".rat.id=" << pipeline->counter.rat.id << endl;
+#endif
+        pipeline->counter.freelist.id = EI_client->get_component_id("package."+core_name+".freelist");
+        assert(pipeline->counter.freelist.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".freelist.id=" << pipeline->counter.freelist.id << endl;
+#endif
+        pipeline->counter.dependency_check.id = EI_client->get_component_id("package."+core_name+".dependency_check");
+        assert(pipeline->counter.dependency_check.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".dependency_check.id=" << pipeline->counter.dependency_check.id << endl;
+#endif
+        pipeline->counter.latch_rr2rs.id = EI_client->get_component_id("package."+core_name+".latch_rr2rs");
+        assert(pipeline->counter.latch_rr2rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rr2rs.id=" << pipeline->counter.latch_rr2rs.id << endl;
+#endif
+        pipeline->counter.rs.id = EI_client->get_component_id("package."+core_name+".rs");
+        assert(pipeline->counter.rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".rs.id=" << pipeline->counter.rs.id << endl;
+#endif
+        pipeline->counter.issue_select.id = EI_client->get_component_id("package."+core_name+".issue_select");
+        assert(pipeline->counter.issue_select.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".issue_select.id=" << pipeline->counter.issue_select.id << endl;
+#endif
+        pipeline->counter.latch_rs2ex.id = EI_client->get_component_id("package."+core_name+".latch_rs2ex");
+        assert(pipeline->counter.latch_rs2ex.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rs2ex.id=" << pipeline->counter.latch_rs2ex.id << endl;
+#endif
+        pipeline->counter.reg_int.id = EI_client->get_component_id("package."+core_name+".reg_int");
+        assert(pipeline->counter.reg_int.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_int.id=" << pipeline->counter.reg_int.id << endl;
+#endif 
+        pipeline->counter.reg_fp.id = EI_client->get_component_id("package."+core_name+".reg_fp");
+        assert(pipeline->counter.reg_fp.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_fp.id=" << pipeline->counter.reg_fp.id << endl;
+#endif
+        pipeline->counter.rob.id = EI_client->get_component_id("package."+core_name+".rob");
+        assert(pipeline->counter.rob.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".rob.id=" << pipeline->counter.rob.id << endl;
+#endif
+        pipeline->counter.latch_rob2rs.id = EI_client->get_component_id("package."+core_name+".latch_rob2rs");
+        assert(pipeline->counter.latch_rob2rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rob2rs.id=" << pipeline->counter.latch_rob2rs.id << endl;
+#endif
+        pipeline->counter.latch_rob2reg.id = EI_client->get_component_id("package."+core_name+".latch_rob2reg");
+        assert(pipeline->counter.latch_rob2reg.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_rob2reg.id=" << pipeline->counter.latch_rob2reg.id << endl;
+#endif
+        pipeline->counter.alu.id = EI_client->get_component_id("package."+core_name+".alu");
+        assert(pipeline->counter.alu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".alu.id=" << pipeline->counter.alu.id << endl;
+#endif
+        pipeline->counter.mul.id = EI_client->get_component_id("package."+core_name+".mul");
+        assert(pipeline->counter.mul.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".mul.id=" << pipeline->counter.mul.id << endl;
+#endif
+        pipeline->counter.int_bypass.id = EI_client->get_component_id("package."+core_name+".int_bypass");
+        assert(pipeline->counter.int_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".int_bypass.id=" << pipeline->counter.int_bypass.id << endl;
+#endif
+        pipeline->counter.latch_ex_int2rob.id = EI_client->get_component_id("package."+core_name+".latch_ex_int2rob");
+        assert(pipeline->counter.latch_ex_int2rob.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ex_int2rob.id=" << pipeline->counter.latch_ex_int2rob.id << endl;
+#endif
+        pipeline->counter.fpu.id = EI_client->get_component_id("package."+core_name+".fpu");
+        assert(pipeline->counter.fpu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fpu.id=" << pipeline->counter.fpu.id << endl;
+#endif
+        pipeline->counter.fp_bypass.id = EI_client->get_component_id("package."+core_name+".fp_bypass");
+        assert(pipeline->counter.fp_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fp_bypass.id=" << pipeline->counter.fp_bypass.id << endl;
+#endif
+        pipeline->counter.latch_ex_fp2rob.id = EI_client->get_component_id("package."+core_name+".latch_ex_fp2rob");
+        assert(pipeline->counter.latch_ex_fp2rob.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ex_fp2rob.id=" << pipeline->counter.latch_ex_fp2rob.id << endl;
+#endif
+        pipeline->counter.stq.id = EI_client->get_component_id("package."+core_name+".stq");
+        assert(pipeline->counter.stq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".stq.id=" << pipeline->counter.stq.id << endl;
+#endif
+        pipeline->counter.latch_stq2dcache.id = EI_client->get_component_id("package."+core_name+".latch_stq2dcache");
+        assert(pipeline->counter.latch_stq2dcache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_stq2dcache.id=" << pipeline->counter.latch_stq2dcache.id << endl;
+#endif
+        pipeline->counter.latch_stq2ldq.id = EI_client->get_component_id("package."+core_name+".latch_stq2ldq");
+        assert(pipeline->counter.latch_stq2ldq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_stq2ldq.id=" << pipeline->counter.latch_stq2ldq.id << endl;
+#endif
+        pipeline->counter.ldq.id = EI_client->get_component_id("package."+core_name+".ldq");
+        assert(pipeline->counter.ldq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".ldq.id=" << pipeline->counter.ldq.id << endl;
+#endif
+        pipeline->counter.latch_ldq2dcache.id = EI_client->get_component_id("package."+core_name+".latch_ldq2dcache");
+        assert(pipeline->counter.latch_ldq2dcache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ldq2dcache.id=" << pipeline->counter.latch_ldq2dcache.id << endl;
+#endif
+        pipeline->counter.latch_ldq2rs.id = EI_client->get_component_id("package."+core_name+".latch_ldq2rs");
+        assert(pipeline->counter.latch_ldq2rs.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ldq2rs.id=" << pipeline->counter.latch_ldq2rs.id << endl;
+#endif
+    }
+    else { // SPX_PIPELINE_INORDER
+        pipeline->counter.latch_id2iq.id = EI_client->get_component_id("package."+core_name+".latch_id2iq");
+        assert(pipeline->counter.latch_id2iq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_id2iq.id=" << pipeline->counter.latch_id2iq.id << endl;
+#endif
+        pipeline->counter.dependency_check.id = EI_client->get_component_id("package."+core_name+".dependency_check");
+        assert(pipeline->counter.dependency_check.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".dependency_check.id=" << pipeline->counter.dependency_check.id << endl;
+#endif
+        pipeline->counter.reg_int.id = EI_client->get_component_id("package."+core_name+".reg_int");
+        assert(pipeline->counter.reg_int.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_int.id=" << pipeline->counter.reg_int.id << endl;
+#endif
+        pipeline->counter.reg_fp.id = EI_client->get_component_id("package."+core_name+".reg_fp");
+        assert(pipeline->counter.reg_fp.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".reg_fp.id=" << pipeline->counter.reg_fp.id << endl;
+#endif
+        pipeline->counter.alu.id = EI_client->get_component_id("package."+core_name+".alu");
+        assert(pipeline->counter.alu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".alu.id=" << pipeline->counter.alu.id << endl;
+#endif
+        pipeline->counter.mul.id = EI_client->get_component_id("package."+core_name+".mul");
+        assert(pipeline->counter.mul.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".mul.id=" << pipeline->counter.mul.id << endl;
+#endif
+        pipeline->counter.int_bypass.id = EI_client->get_component_id("package."+core_name+".int_bypass");
+        assert(pipeline->counter.int_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".int_bypass.id=" << pipeline->counter.int_bypass.id << endl;
+#endif
+        pipeline->counter.fpu.id = EI_client->get_component_id("package."+core_name+".fpu");
+        assert(pipeline->counter.fpu.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fpu.id=" << pipeline->counter.fpu.id << endl;
+#endif
+        pipeline->counter.fp_bypass.id = EI_client->get_component_id("package."+core_name+".fp_bypass");
+        assert(pipeline->counter.fp_bypass.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".fp_bypass.id=" << pipeline->counter.fp_bypass.id << endl;
+#endif
+        pipeline->counter.inst_queue.id = EI_client->get_component_id("package."+core_name+".inst_queue");
+        assert(pipeline->counter.inst_queue.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".inst_queue.id=" << pipeline->counter.inst_queue.id << endl;
+#endif
+        pipeline->counter.latch_iq2ex.id = EI_client->get_component_id("package."+core_name+".latch_iq2ex");
+        assert(pipeline->counter.latch_iq2ex.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_iq2ex.id=" << pipeline->counter.latch_iq2ex.id << endl;
+#endif
+        pipeline->counter.latch_ex2reg.id = EI_client->get_component_id("package."+core_name+".latch_ex2reg");
+        assert(pipeline->counter.latch_ex2reg.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_ex2reg.id=" << pipeline->counter.latch_ex2reg.id << endl;
+#endif
+        pipeline->counter.lsq.id = EI_client->get_component_id("package."+core_name+".lsq");
+        assert(pipeline->counter.lsq.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".lsq.id=" << pipeline->counter.lsq.id << endl;
+#endif
+        pipeline->counter.latch_lsq2dcache.id = EI_client->get_component_id("package."+core_name+".latch_lsq2dcache");
+        assert(pipeline->counter.latch_lsq2dcache.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_lsq2dcache.id=" << pipeline->counter.latch_lsq2dcache.id << endl;
+#endif
+        pipeline->counter.latch_lsq2reg.id = EI_client->get_component_id("package."+core_name+".latch_lsq2reg");
+        assert(pipeline->counter.latch_lsq2reg.id != INVALID_COMP_ID);
+#ifdef LIBEI_DEBUG
+        cout << "package."+core_name+".latch_lsq2reg.id=" << pipeline->counter.latch_lsq2reg.id << endl;
+#endif
+    };
+}
+
+void EI_handler_t::calculate_power()
+{
+    clock_period = 1.0/(core->m_clk->GetClockFrequency()*1e6);
+    time += clock_period;
+    
+    if((time-start_time) < MAX_TIME_PRECISION) {
+        pipeline_t *pipeline = core->pipeline;
+        pipeline->counter.clear();
+        pipeline->stats.interval.Mop_count = 0;
+        pipeline->stats.interval.uop_count = 0;
+    }
+    else {
+        if((time+clock_period-next_sampling_time) > MAX_TIME_PRECISION) {
+            pipeline_t *pipeline = core->pipeline;
+            if(EI_client) {
+                // Compute power.
+                EI_client->calculate_power(pipeline->counter.l1_btb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l1_btb);
+                EI_client->calculate_power(pipeline->counter.l2_btb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l2_btb);
+                EI_client->calculate_power(pipeline->counter.predictor_chooser.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.predictor_chooser);
+                EI_client->calculate_power(pipeline->counter.global_predictor.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.global_predictor);
+                EI_client->calculate_power(pipeline->counter.l1_local_predictor.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l1_local_predictor);
+                EI_client->calculate_power(pipeline->counter.l2_local_predictor.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l2_local_predictor);
+                EI_client->calculate_power(pipeline->counter.ras.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.ras);
+                EI_client->calculate_power(pipeline->counter.inst_cache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_cache);
+                EI_client->calculate_power(pipeline->counter.inst_cache_miss_buffer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_cache_miss_buffer);
+                EI_client->calculate_power(pipeline->counter.inst_cache_prefetch_buffer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_cache_prefetch_buffer);
+                EI_client->calculate_power(pipeline->counter.inst_tlb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_tlb);
+                EI_client->calculate_power(pipeline->counter.latch_ic2ib.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ic2ib);
+                EI_client->calculate_power(pipeline->counter.pc.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.pc);
+                EI_client->calculate_power(pipeline->counter.inst_buffer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_buffer);
+                EI_client->calculate_power(pipeline->counter.latch_ib2id.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ib2id);
+                EI_client->calculate_power(pipeline->counter.inst_decoder.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_decoder);
+                EI_client->calculate_power(pipeline->counter.operand_decoder.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.operand_decoder);
+                EI_client->calculate_power(pipeline->counter.uop_sequencer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.uop_sequencer);
+                EI_client->calculate_power(pipeline->counter.dependency_check.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.dependency_check);
+                EI_client->calculate_power(pipeline->counter.reg_int.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.reg_int);
+                EI_client->calculate_power(pipeline->counter.reg_fp.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.reg_fp);
+                EI_client->calculate_power(pipeline->counter.alu.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.alu);
+                EI_client->calculate_power(pipeline->counter.mul.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.mul);
+                EI_client->calculate_power(pipeline->counter.int_bypass.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.int_bypass);
+                EI_client->calculate_power(pipeline->counter.fpu.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.fpu);
+                EI_client->calculate_power(pipeline->counter.fp_bypass.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.fp_bypass);
+                EI_client->calculate_power(pipeline->counter.data_tlb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.data_tlb);
+                EI_client->calculate_power(pipeline->counter.l2_tlb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l2_tlb);
+                EI_client->calculate_power(pipeline->counter.undiff.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.undiff);
+                            
+                if(pipeline->type == SPX_PIPELINE_OUTORDER) {
+                    EI_client->calculate_power(pipeline->counter.latch_id2uq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_id2uq);
+                    EI_client->calculate_power(pipeline->counter.uop_queue.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.uop_queue);
+                    EI_client->calculate_power(pipeline->counter.latch_uq2rr.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_uq2rr);
+                    EI_client->calculate_power(pipeline->counter.rat.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.rat);
+                    EI_client->calculate_power(pipeline->counter.freelist.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.freelist);
+                    EI_client->calculate_power(pipeline->counter.latch_rr2rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rr2rs);
+                    EI_client->calculate_power(pipeline->counter.rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.rs);
+                    EI_client->calculate_power(pipeline->counter.issue_select.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.issue_select);
+                    EI_client->calculate_power(pipeline->counter.latch_rs2ex.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rs2ex);
+                    EI_client->calculate_power(pipeline->counter.rob.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.rob);
+                    EI_client->calculate_power(pipeline->counter.latch_rob2rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rob2rs);
+                    EI_client->calculate_power(pipeline->counter.latch_rob2reg.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rob2reg);
+                    EI_client->calculate_power(pipeline->counter.latch_ex_int2rob.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ex_int2rob);
+                    EI_client->calculate_power(pipeline->counter.latch_ex_fp2rob.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ex_fp2rob);
+                    EI_client->calculate_power(pipeline->counter.stq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.stq);
+                    EI_client->calculate_power(pipeline->counter.latch_stq2dcache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_stq2dcache);
+                    EI_client->calculate_power(pipeline->counter.latch_stq2ldq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_stq2ldq);
+                    EI_client->calculate_power(pipeline->counter.ldq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.ldq);
+                    EI_client->calculate_power(pipeline->counter.latch_ldq2dcache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ldq2dcache);
+                    EI_client->calculate_power(pipeline->counter.latch_ldq2rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ldq2rs);
+                }
+                else { // SPX_PIPELINE_INORDER
+                    EI_client->calculate_power(pipeline->counter.latch_id2iq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_id2iq);
+                    EI_client->calculate_power(pipeline->counter.inst_queue.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_queue);
+                    EI_client->calculate_power(pipeline->counter.latch_iq2ex.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_iq2ex);
+                    EI_client->calculate_power(pipeline->counter.latch_ex2reg.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ex2reg);
+                    EI_client->calculate_power(pipeline->counter.lsq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.lsq);
+                    EI_client->calculate_power(pipeline->counter.latch_lsq2dcache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_lsq2dcache);
+                    EI_client->calculate_power(pipeline->counter.latch_lsq2reg.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_lsq2reg);
+                }
+            }
+            else if(energy_introspector) {
+                // Compute power.
+                energy_introspector->calculate_power(pipeline->counter.l1_btb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l1_btb);
+                energy_introspector->calculate_power(pipeline->counter.l2_btb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l2_btb);
+                energy_introspector->calculate_power(pipeline->counter.predictor_chooser.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.predictor_chooser);
+                energy_introspector->calculate_power(pipeline->counter.global_predictor.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.global_predictor);
+                energy_introspector->calculate_power(pipeline->counter.l1_local_predictor.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l1_local_predictor);
+                energy_introspector->calculate_power(pipeline->counter.l2_local_predictor.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l2_local_predictor);
+                energy_introspector->calculate_power(pipeline->counter.ras.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.ras);
+                energy_introspector->calculate_power(pipeline->counter.inst_cache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_cache);
+                energy_introspector->calculate_power(pipeline->counter.inst_cache_miss_buffer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_cache_miss_buffer);
+                energy_introspector->calculate_power(pipeline->counter.inst_cache_prefetch_buffer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_cache_prefetch_buffer);
+                energy_introspector->calculate_power(pipeline->counter.inst_tlb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_tlb);
+                energy_introspector->calculate_power(pipeline->counter.latch_ic2ib.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ic2ib);
+                energy_introspector->calculate_power(pipeline->counter.pc.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.pc);
+                energy_introspector->calculate_power(pipeline->counter.inst_buffer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_buffer);
+                energy_introspector->calculate_power(pipeline->counter.latch_ib2id.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ib2id);
+                energy_introspector->calculate_power(pipeline->counter.inst_decoder.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_decoder);
+                energy_introspector->calculate_power(pipeline->counter.operand_decoder.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.operand_decoder);
+                energy_introspector->calculate_power(pipeline->counter.uop_sequencer.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.uop_sequencer);
+                energy_introspector->calculate_power(pipeline->counter.dependency_check.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.dependency_check);
+                energy_introspector->calculate_power(pipeline->counter.reg_int.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.reg_int);
+                energy_introspector->calculate_power(pipeline->counter.reg_fp.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.reg_fp);
+                energy_introspector->calculate_power(pipeline->counter.alu.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.alu);
+                energy_introspector->calculate_power(pipeline->counter.mul.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.mul);
+                energy_introspector->calculate_power(pipeline->counter.int_bypass.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.int_bypass);
+                energy_introspector->calculate_power(pipeline->counter.fpu.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.fpu);
+                energy_introspector->calculate_power(pipeline->counter.fp_bypass.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.fp_bypass);
+                energy_introspector->calculate_power(pipeline->counter.data_tlb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.data_tlb);
+                energy_introspector->calculate_power(pipeline->counter.l2_tlb.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.l2_tlb);
+                energy_introspector->calculate_power(pipeline->counter.undiff.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.undiff);
+                            
+                if(pipeline->type == SPX_PIPELINE_OUTORDER) {
+                    energy_introspector->calculate_power(pipeline->counter.latch_id2uq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_id2uq);
+                    energy_introspector->calculate_power(pipeline->counter.uop_queue.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.uop_queue);
+                    energy_introspector->calculate_power(pipeline->counter.latch_uq2rr.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_uq2rr);
+                    energy_introspector->calculate_power(pipeline->counter.rat.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.rat);
+                    energy_introspector->calculate_power(pipeline->counter.freelist.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.freelist);
+                    energy_introspector->calculate_power(pipeline->counter.latch_rr2rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rr2rs);
+                    energy_introspector->calculate_power(pipeline->counter.rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.rs);
+                    energy_introspector->calculate_power(pipeline->counter.issue_select.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.issue_select);
+                    energy_introspector->calculate_power(pipeline->counter.latch_rs2ex.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rs2ex);
+                    energy_introspector->calculate_power(pipeline->counter.rob.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.rob);
+                    energy_introspector->calculate_power(pipeline->counter.latch_rob2rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rob2rs);
+                    energy_introspector->calculate_power(pipeline->counter.latch_rob2reg.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_rob2reg);
+                    energy_introspector->calculate_power(pipeline->counter.latch_ex_int2rob.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ex_int2rob);
+                    energy_introspector->calculate_power(pipeline->counter.latch_ex_fp2rob.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ex_fp2rob);
+                    energy_introspector->calculate_power(pipeline->counter.stq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.stq);
+                    energy_introspector->calculate_power(pipeline->counter.latch_stq2dcache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_stq2dcache);
+                    energy_introspector->calculate_power(pipeline->counter.latch_stq2ldq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_stq2ldq);
+                    energy_introspector->calculate_power(pipeline->counter.ldq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.ldq);
+                    energy_introspector->calculate_power(pipeline->counter.latch_ldq2dcache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ldq2dcache);
+                    energy_introspector->calculate_power(pipeline->counter.latch_ldq2rs.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ldq2rs);
+                }
+                else { // SPX_PIPELINE_INORDER
+                    energy_introspector->calculate_power(pipeline->counter.latch_id2iq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_id2iq);
+                    energy_introspector->calculate_power(pipeline->counter.inst_queue.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.inst_queue);
+                    energy_introspector->calculate_power(pipeline->counter.latch_iq2ex.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_iq2ex);
+                    energy_introspector->calculate_power(pipeline->counter.latch_ex2reg.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_ex2reg);
+                    energy_introspector->calculate_power(pipeline->counter.lsq.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.lsq);
+                    energy_introspector->calculate_power(pipeline->counter.latch_lsq2dcache.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_lsq2dcache);
+                    energy_introspector->calculate_power(pipeline->counter.latch_lsq2reg.id,next_sampling_time-start_time,sampling_interval,pipeline->counter.latch_lsq2reg);
+                }
+            }
+
+            // IMPORTANT: Do not synchronize core-level data here since caches might not have been processed.
+            pipeline->counter.clear();
+
+            status = SPX_EI_HANDLER_POWER_IS_CALCULATED;        
+            next_sampling_time += sampling_interval;
+        }
+    } // end of else
+}
+
+void EI_handler_t::set_sampling_interval(const double SamplingInterval, const double StartTime, FILE *LogFile)
+{
+    assert(SamplingInterval > 0.0);
+    assert(StartTime >= 0.0);
+    sampling_interval = SamplingInterval;
+    start_time = StartTime;
+    next_sampling_time = start_time+sampling_interval;
+    assert(next_sampling_time > time);
+
+    log_file = LogFile;
+}
+
+#endif
+
+#endif

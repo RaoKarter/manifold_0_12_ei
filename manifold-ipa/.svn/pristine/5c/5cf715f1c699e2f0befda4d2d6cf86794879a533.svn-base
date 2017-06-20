@@ -1,0 +1,75 @@
+Manifold Release Note
+
+Current release: 0.10
+Release date: 05-17-2013
+
+
+New Components
+==============
+
+simple-proc
+    A simple 1-IPC processor model. It can use 3 different front-ends: tracefiles,
+    Qsim library, and Qsim server.
+
+spx
+    A superscalar processor model that is much lighter than Zesto. It currently uses
+    Qsim library for instructions.
+
+simple-cache
+    A basic, non-coherent cache model.
+
+
+Bug Fixes
+=========
+
+- A mis-defined virtual function in tracecore in zesto caused crashes when running
+certain benchmarks.
+
+- Deadlock in Iris. To avoid deadlock, Iris' route computation assigns different VCs to
+flits going from a lower-numbered node to a higher-numbered node and flits going from
+high to low. Therefore low-to-high flits should not depend on high-to-low flits, and
+vice versa. However, the FCFS (first-come-first-serve) policy used by the router components
+to enforce point-to-point order can create a dependence between low-to-high and high-to-low
+flits, and eventually cause deadlock. In the fix, the FCFS is enforced on a per-VC-basis
+as opposed to per-port-basis. However, if packets from the same source to the same destination
+can be assigned to different VCs, then point-to-point order is no longer guaranteed.
+
+
+Updates
+=======
+
+kernel
+------
+
+- Implemented the Forecast Null Message (FNM) algorithm for better performance.
+
+
+Zesto
+-----
+
+- Tracecore now has 2 subclasses that respectively support multiple tracefiles for each core,
+and loop around to the beginning of a tracefile.
+
+
+MCP-cache
+---------
+
+- A structure, LP_LLS_unit, encapsulates an LLP cache, an LLS cache, and a mux, so that the user
+no longer have to create the individual components and connect them.
+
+- L1_cache, LLP_cache, LLS_cache, mux all have a tick() function and are registered to a clock
+so that events from different input ports are handled in a deterministic manner. L2_cache is still
+not registered with a clock because it only has one input port.
+
+- Supports selective debug logging. A compiler flag, MCP_DBG_FILTER, allows a condition to be set
+such that logs are only produced when the condition is met. For example, this can be used to 
+generate logs only during a certain simulation period.
+
+
+Iris
+----
+
+- Routers can now be assigned to different LPs.
+- Support stats on end-to-end delays. This is controlled by the compiler flag IRIS_STATS_T2T_DELAY.
+
+

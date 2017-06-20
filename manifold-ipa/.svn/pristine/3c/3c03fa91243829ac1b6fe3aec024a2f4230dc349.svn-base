@@ -1,0 +1,26 @@
+#ifndef SIM_TRACE_H
+#define SIM_TRACE_H
+
+#include "../../uarch/settings.h"
+#include "../../uarch/types.h"
+
+#define RAND_SEED 0xBEEFDEAD
+#define NUM_REGIONS 64
+#define PER_REGION (1 << 12)
+#define TRACE_BURSTS (1 << 11)
+#define PROB_OF_RAND_ADVANCE 5
+#define MAX_CLOCK_SKIP 32
+#define PROD_CONS_SKIP 32
+#define MANIFOLD
+
+// Energy Introspector
+#include "../../models/energy_introspector/energy_introspector.h"
+
+// Zesto
+#include "../../models/processor/zesto/zesto-core.h"
+
+extern double sampling_period;
+
+extern class energy_introspector_t *energy_introspector;
+
+#endif // SIM_TRACE_H

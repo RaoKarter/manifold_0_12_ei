@@ -1,0 +1,3 @@
+Simulators here use QsimProcessor as the processor model. This model acts as
+a QSim client and gets its instructions from a QSim server.
+

@@ -1,0 +1,34 @@
+CXX = mpic++
+MODELS_DIR = ../../../models
+CPPFLAGS += -DUSE_QSIM -DSTATS -Wall -g -I ../../.. -I$(MODELS_DIR)/cache -I$(MODELS_DIR)/network -I$(MODELS_DIR)/processor -I$(MODELS_DIR)/memory -I$(MODELS_DIR)/cross
+LDFLAGS =  -lqsim -lmcp-iris -L$(MODELS_DIR)/cross/mcp_cache-iris -lZesto -L$(MODELS_DIR)/processor/zesto -lmcp-cache -L$(MODELS_DIR)/cache/mcp-cache -liris -L$(MODELS_DIR)/network/iris -lcaffdram -L$(MODELS_DIR)/memory/CaffDRAM -L../../../kernel -lmanifold -lconfig++
+
+VPATH = ../common
+
+EXECS = smp_l1l2 smp_llp
+
+
+ALL: $(EXECS)
+
+
+#$(CXX) $(LDFLAGS)  $^ -o$@   NOT working
+#$(CXX) $(LDFLAGS)  -o$@ $^   NOT working
+# it seems LDFLAGS must be the last parameter
+
+smp_l1l2: smp_l1l2.o sysBuilder_l1l2.o
+	$(CXX) $^ -o$@  $(LDFLAGS)
+
+smp_llp: smp_llp.o sysBuilder_llp.o
+	$(CXX) $^ -o$@  $(LDFLAGS)
+
+
+%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+-include $(wildcard dep/*.d)
+
+.PHONY: clean
+clean:
+	rm -f $(EXECS) *.d *.o DBG* core*.out
+	rm -rf dep

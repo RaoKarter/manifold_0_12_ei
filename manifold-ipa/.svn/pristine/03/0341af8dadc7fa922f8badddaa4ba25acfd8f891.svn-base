@@ -1,0 +1,19 @@
+1 cpu arrayw-static:
+
+- No. of CPUs is 1
+- The application is static-linked arrayw (array write, which writes to an
+  int array of 1000 elements. The value i is written to index i.).
+
+The physical address of the array elements are in 2 pages:
+0x3f41ebb4 - 0x3f41effc (275 items), and 0x3f420000 - 0x3f420b50 (725 items)
+
+
+2 cpu arrayw-static:
+
+- No. of CPUs is 2
+- application is arrayw-static.
+
+The physical address of the array elements are in 2 pages:
+0x3f41b254 - 0x3f41bffc (875 elements), and 0x3f402000 - 0x3f4021f0 (125 elements)
+
+cpu 0 has the trace of arrayw; cpu 1 contains I don't know what.

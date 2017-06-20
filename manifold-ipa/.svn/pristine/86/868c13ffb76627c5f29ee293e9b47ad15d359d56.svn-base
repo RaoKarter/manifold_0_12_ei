@@ -1,0 +1,61 @@
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <unistd.h>
+#include <signal.h>
+#include <csetjmp>
+
+#include "../../uarch/sim.h"
+#include "sim_manifold.h"
+
+// Manifold: kernel headers
+#include "../../kernel/include/kernel/manifold.h"
+#include "../../kernel/include/kernel/component.h"
+#include "../../kernel/include/kernel/link.h"
+#include "../../kernel/include/kernel/clock.h"
+
+// Manifold namespace
+using namespace manifold::kernel;
+
+DEQUE<Insn *> *trace_queue;
+
+extern Simulator Sim;
+
+energy_introspector_t *energy_introspector;
+double sampling_period = 1e-4;
+
+int main(int argc, char *argv[])
+{
+  Clock globalClock(1000.0);
+
+  Manifold::Init(argc, argv);
+
+  Sim.Manifold_instantiate();
+
+  int ei = Component::Create<energy_introspector_t,char*>(0,"../../models/energy_introspector/energy_introspector.config");
+
+  energy_introspector = (energy_introspector_t*)Component::GetComponent(ei);
+
+  for (int node = 0; node < Sim.settings.num_nodes; node++)
+  {
+/*
+    char input[64];
+    sprintf(input,"../models/processor/zesto/PIN/examples/itrace0.out");
+*/
+    int CoreID = Component::Create<core_t,int,char*,char*>(0,node,"../../models/processor/zesto/config/P6.cfg","../../models/processor/zesto/pin/source/itrace/itrace_0.out");
+
+    Sim.Nd[node]->mod[PR_M] = (Module*) Component::GetComponent(CoreID);
+    Clock::Register<core_t> ((core_t*)Sim.Nd[node]->mod[PR_M], &core_t::tick, &core_t::tock);
+  }
+
+  for (int node = 0; node < Sim.settings.num_nodes; node++)
+    Sim.Nd[node]->manifold_connect();
+
+  Sim.run ();
+  Sim.flush ();
+  Sim.fini ();
+
+  return 0;
+}
+

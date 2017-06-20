@@ -1,0 +1,64 @@
+Manifold Release Note
+
+Current release: 0.9
+Release date: 10-8-2012
+
+
+What's New in This Version
+
+This is another beta release of Manifold. The following is a list of what's new in
+this release.
+
+1. Flow control between components has been implemented. Specifically, we now have
+flow control between Iris (the network model) and MCP-cache, and between Iris and
+CaffDRAM. Iris, MCP-cache, and CaffDRAM have all been modified to support this.
+The flow control is credit-based. Therefore, in the configuration file for the
+simulators, the credits must be specified.
+
+1.1 Iris' network interface can only send out a packet if it has credits to do so.
+Otherwise, the packet stays in the output buffer, which is newly created in this version.
+The network interface sends back a credit packet whenever a packet is successfully pushed
+into the router.
+
+1.2 MCP-cache can only send message out to the network when it has credits. Otherwise,
+the message stays in the output buffer, which is newly created in this version. MCP-cache
+sends a credit to the network after it processes a message. In future releases, this
+may be changed so that there is a delay between processing the message and sending out
+a credit.
+
+1.3 CaffDRAM can only send message out to the network when it has credits. Otherwise,
+the message stays in the output buffer, which is newly created in this version. When
+a message is sent, a credit is sent at the same time. Therefore, the number of credits
+the network interface has limits the number of active requests to the memory controller.
+
+
+2. The simulator programs have been updated. The configurations include credits for the
+components.
+
+3. Iris supports simulated packet length. With this, the actual size of the network
+packet is not important anymore. the simulated length can be either greater or smaller
+than the actual size. Iris will convert a packet into flits based on the
+simulated size of the packet, not its actual size. For example, a packet whose size is
+40 bytes can have a simulated length of 16 bytes or 80 bytes. However, client code
+must provide a class that calculats the simulated length. The class must be a subclass
+of SimulatedLen, which is part of Iris.
+
+4. Iris now supports request-reply network. In other words, it supports two virtual networks:
+one for request and one for reply. However, client code must provide a class that maps network
+packets to the two virtual networks. The class must be a subclass of VnetAssign, which is part of Iris.
+
+5. Iris now supports single-flit packets.
+
+6. A few MCP-cache bugs have been fixed.
+
+
+
+Limitations
+
+Important limitations of this release include:
+
+1. Performance of the parallel simulators needs improvement.
+
+
+
+

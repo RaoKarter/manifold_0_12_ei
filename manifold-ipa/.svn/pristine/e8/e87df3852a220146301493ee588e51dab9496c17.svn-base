@@ -1,0 +1,478 @@
+//! @file zesto1.cc
+//! @brief This program builds a simple simulator of multicore systems. Its purpose is to
+//! demonstrate how to build such a simulator using the Manifold framework.
+//! The multicore system is illustrated as follows:
+//!
+//! @verbatim
+//!      -----------       -----------     ----------------     -----------
+//!     | processor |     | processor |   | mem controller |   | processor |
+//!      -----------       -----------     ----------------     -----------
+//!           |                 |                  |                 |
+//!        -------           -------               |              -------
+//!       | cache |         | cache |              |             | cache |    
+//!        -------           -------               |              -------
+//!           |                 |                  |                 |
+//!           |                 |                  |                 |
+//!  ---------------------------------------------------------------------------
+//!     ------------      ------------       ------------      ------------ 
+//!    | NetIntface |    | NetIntface |     | NetIntface |    | NetIntface |  
+//!     ------------      ------------       ------------      ------------ 
+//!  ---------------------------------------------------------------------------
+//! @endverbatim
+//!
+//! In this program, QsimProcessor is replaced by Zesto.
+//!
+//! The components used in this program are very simple ones:
+//! - qsimclient_core: a processor model from Zesto. It gets instructions from the QSim server.
+//! - SimpleMC: a simple memory controller model. Upon receiving a request, it sends
+//!           back a response after certain delay.
+//! - simple-cache: a simple write-through cache with no write-alloc.
+//! - simple-net: a simple mesh network.
+//!
+//! In this program the configuration for the components is provided by a configuration
+//! file which is parsed with libconfig++. An example can be found in conf1.cfg.
+//! 
+//! To run this program, type:
+//! @code
+//! mpirun -np <NP> zesto1 <conf_file> <server_name> <port>
+//! @endcode
+//! where <NP> is the number of MPI tasks, which must be 1, 2, or X*Y+1,
+//! where X and Y are the dimensions of the mesh network. <conf_file> is the name of
+//! the configuratio file.
+//!
+//! Partitioning of the components is also hard-coded based on the number of LPs:
+//!     - 1 LP: everything is on LP 0.
+//!     - 2 LPs: the network is on LP 0 and everything else is on LP 1.
+//!     - X*Y+1 LPs: the network is on LP, and each node (processor, cache and adapter or
+//!                mem controller and adapter) is on a separate LP.
+//!
+//! With simple-net, the IDs of the network interface are 0 to N-1 where N is X*Y.
+//! In this program the IDs of the nodes are also 0 to N-1, so the mapping from node ID
+//! to network interface ID is straightforward.
+//!
+//!
+#include "kernel/clock.h"
+#include "kernel/component.h"
+#include "kernel/manifold.h"
+#include "simple-net/interfaceCreator.h"
+#include "simple-net/network.h"
+#include "simple-net/networkInterface.h"
+#include "simple-cache/simple_cache.h"
+#include "simple-mc/simple_mc.h"
+#include "zesto/qsimclient-core.h"
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <libconfig.h++>
+#include "mpi.h"
+
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::simple_cache;
+using namespace manifold::simple_net;
+using namespace manifold::simple_mc;
+using namespace manifold::zesto;
+using namespace libconfig;
+
+
+// use a data structure to represent either a core node or a MC node
+enum {EMPTY_NODE=0, CORE_NODE, MC_NODE};
+struct Node_cid {
+    int type; //either a CORE_NODE or a MC_NODE
+    CompId_t proc_cid;
+    CompId_t cache_cid;
+    CompId_t mc_cid;
+};
+
+
+int main(int argc, char** argv)
+{
+    if(argc != 4) {
+        cerr << "Usage: mpirun -np <NP> " << argv[0] << " <config_file>  <server_name> <port>" << endl;
+	cerr << "  NP the number of MPI tasks." << endl;
+	exit(1);
+    }
+
+    Config config;
+    try {
+	config.readFile(argv[1]);
+    }
+    catch (FileIOException e) {
+        cerr << "Cannot read configuration file " << argv[1] << endl;
+	exit(1);
+    }
+    catch (ParseException e) {
+        cerr << "Cannot parse configuration file " << argv[1] << endl;
+	exit(1);
+    }
+
+    int temp_x_dimension;
+    int temp_y_dimension;
+
+    try {
+	temp_x_dimension = config.lookup("network.x_dimension");
+	temp_y_dimension = config.lookup("network.y_dimension");
+    }
+    catch (SettingNotFoundException e) {
+	cout << e.getPath() << " not set." << endl;
+	exit(1);
+    }
+    catch (SettingTypeException e) {
+	cout << e.getPath() << " has incorrect type." << endl;
+	exit(1);
+    }
+
+    const int X_DIMENSION = temp_x_dimension;
+    const int Y_DIMENSION = temp_y_dimension;
+    assert(X_DIMENSION > 0 && Y_DIMENSION > 0);
+    assert(X_DIMENSION * Y_DIMENSION > 1);
+
+    const int MAX_NODES = X_DIMENSION * Y_DIMENSION; //max no. of nodes
+
+    Manifold::Init(argc, argv);
+
+
+
+
+
+    //==========================================================================
+    // Configuration parameters
+    //==========================================================================
+    int FREQ;
+    Ticks_t STOP;
+    simple_cache_settings cache_settings;
+
+    int temp_network_credits;
+
+    int temp_mc_latency;
+    vector<int> mc_node_idx_vec;
+    set<int> mc_node_idx_set; //set is used to ensure each index is unique
+
+    vector<int> proc_node_idx_vec;
+    set<int> proc_node_idx_set; //set is used to ensure each index is unique
+
+    try {
+	FREQ = config.lookup("clock_frequency");
+	assert(FREQ > 0);
+	STOP = config.lookup("simulation_stop");
+
+	// No configuration for Processor
+
+	//cache parameters
+	cache_settings.name = config.lookup("cache.name");
+	string cache_type = config.lookup("cache.type");
+	if(cache_type == "DATA")
+	    cache_settings.type = CACHE_DATA;
+	else {
+	    assert(0);
+	}
+	cache_settings.size = config.lookup("cache.size");
+	cache_settings.assoc = config.lookup("cache.assoc");
+	cache_settings.block_size = config.lookup("cache.block_size");
+	cache_settings.hit_time = config.lookup("cache.hit_time");
+	cache_settings.lookup_time = config.lookup("cache.lookup_time");
+	cache_settings.replacement_policy = RP_LRU;
+	cache_settings.send_st_response = true;
+
+
+	//network parameters
+	// x and y dimensions already specified
+	temp_network_credits = config.lookup("network.credits");
+
+	//processor configuration
+	//the node indices of processors are in an array, each value between 0 and MAX_NODES-1
+	Setting& setting_proc = config.lookup("processor.node_idx");
+	int num_proc = setting_proc.getLength(); //number of processors
+	assert(num_proc >=1 && num_proc < MAX_NODES);
+
+	proc_node_idx_vec.resize(num_proc);
+
+	for(int i=0; i<num_proc; i++) {
+	    assert((int)setting_proc[i] >=0 && (int)setting_proc[i] < MAX_NODES);
+	    proc_node_idx_set.insert((int)setting_proc[i]);
+	    proc_node_idx_vec[i] = (int)setting_proc[i];
+	}
+	assert(proc_node_idx_set.size() == (unsigned)num_proc); //verify no 2 indices are the same
+
+
+	//memory controller configuration
+	//the node indices of MC are in an array, each value between 0 and MAX_NODES-1
+	Setting& setting_mc = config.lookup("mc.node_idx");
+	int num_mc = setting_mc.getLength(); //number of mem controllers
+	assert(num_mc >=1 && num_mc < MAX_NODES);
+
+	mc_node_idx_vec.resize(num_mc);
+
+	for(int i=0; i<num_mc; i++) {
+	    assert((int)setting_mc[i] >=0 && (int)setting_mc[i] < MAX_NODES);
+	    mc_node_idx_set.insert((int)setting_mc[i]);
+	    mc_node_idx_vec[i] = (int)setting_mc[i];
+	}
+	assert(mc_node_idx_set.size() == (unsigned)num_mc); //verify no 2 indices are the same
+
+	//verify MC indices are not used by processors
+	for(int i=0; i<num_mc; i++) {
+	    for(int j=0; j<num_proc; j++) {
+	        assert(mc_node_idx_vec[i] != proc_node_idx_vec[j]);
+	    }
+	}
+
+	temp_mc_latency = config.lookup("mc.latency");
+	assert(temp_mc_latency >=0);
+    }
+    catch (SettingNotFoundException e) {
+	cout << e.getPath() << " not set." << endl;
+	exit(1);
+    }
+    catch (SettingTypeException e) {
+	cout << e.getPath() << " has incorrect type." << endl;
+	exit(1);
+    }
+
+
+
+
+    int N_LPs = 1; //number of LPs
+    MPI_Comm_size(MPI_COMM_WORLD, &N_LPs);
+    cout << "Number of LPs = " << N_LPs << endl;
+    if(N_LPs != 1 && N_LPs !=2 && (unsigned)N_LPs != mc_node_idx_vec.size() + proc_node_idx_vec.size() + 1) {
+        cerr << "Number of LPs must be 1, 2, or " << mc_node_idx_vec.size() + proc_node_idx_vec.size() + 1 << "!" << endl;
+	exit(1);
+    }
+
+
+    const int NETWORK_CREDITS = temp_network_credits;
+
+    const int MC_LATENCY = temp_mc_latency;
+
+
+    //==========================================================================
+    // create all the components.
+    //==========================================================================
+    Clock myClock(FREQ);
+
+    // need storage for component IDs for connecting components
+
+    Node_cid node_cids[MAX_NODES];
+
+    //Terminal address to network address mapping
+    //Using Simple_terminal_to_net_mapping means node ids must be 0 to NUM_NODES-1.
+    Simple_terminal_to_net_mapping* mapping = new Simple_terminal_to_net_mapping();
+
+    GenNI_flow_control_setting fc_setting;
+    fc_setting.credits = NETWORK_CREDITS;
+
+    InterfaceCreator* ifcreator = new GenInterfaceCreator<GenNetworkInterface<mem_req> >(fc_setting);
+    MeshNetwork* myNetwork = new MeshNetwork(X_DIMENSION, Y_DIMENSION, NETWORK_CREDITS, 0, myClock, ifcreator, mapping); //network creates all the network interfaces.
+    delete ifcreator;
+
+
+
+#define REDIRECT_COUT
+
+#ifdef REDIRECT_COUT
+    // create a file into which to write debug/stats info.
+    int Mytid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &Mytid);
+    char buf[10];
+    sprintf(buf, "DBG_LOG%d", Mytid);
+    ofstream DBG_LOG(buf);
+
+    //redirect cout to file.
+    std::streambuf* cout_sbuf = std::cout.rdbuf(); // save original sbuf
+    std::cout.rdbuf(DBG_LOG.rdbuf()); // redirect cout
+#endif
+
+    SimpleMcMap* mc_map = new SimpleMcMap(mc_node_idx_vec, cache_settings.block_size);
+
+    if(N_LPs <= 2) {
+        //Network is always on LP 0. If total 2 LPs, the rest would be on LP 1.
+	LpId_t node_lp = (N_LPs == 1) ? 0 : 1;
+
+	//Node ID is the same as its node index: between 0 and NUM_NODES-1
+	int cpuid = 0;
+	for(int i=0; i<MAX_NODES; i++) {
+	    if(mc_node_idx_set.find(i) != mc_node_idx_set.end()) {
+		node_cids[i].type = MC_NODE;
+		node_cids[i].mc_cid = Component :: Create<SimpleMC>(node_lp, i, MC_LATENCY, true);
+	    }
+	    else if(proc_node_idx_set.find(i) != proc_node_idx_set.end()) {
+		node_cids[i].type = CORE_NODE;
+		const char* server = argv[2];
+		int port = atoi(argv[3]);
+		QsimClient_Settings proc_settings(server, port);
+
+		node_cids[i].proc_cid = Component :: Create<qsimclient_core_t>(node_lp, i, (char*)"6.cfg", cpuid, proc_settings);
+		node_cids[i].cache_cid = Component :: Create<simple_cache>(node_lp, i, cache_settings, mc_map);
+		cpuid++;
+	    }
+	    else {
+		node_cids[i].type = EMPTY_NODE;
+	    }
+	}
+    }
+    else {
+        //More than 2 LPs: Network on LP 0; each node is on a different LP.
+	int lp_idx = 1; //the network is LP 0
+	int cpuid = 0;
+	for(int i=0; i<MAX_NODES; i++) {
+	    if(mc_node_idx_set.find(i) != mc_node_idx_set.end()) {
+		node_cids[i].type = MC_NODE;
+		node_cids[i].mc_cid = Component :: Create<SimpleMC>(lp_idx, i, MC_LATENCY, true);
+		lp_idx++;
+	    }
+	    else if(proc_node_idx_set.find(i) != proc_node_idx_set.end()) {
+		node_cids[i].type = CORE_NODE;
+		const char* server = argv[2];
+		int port = atoi(argv[3]);
+		QsimClient_Settings proc_settings(server, port);
+
+		node_cids[i].proc_cid = Component :: Create<qsimclient_core_t>(lp_idx, i, (char*)"6.cfg", cpuid, proc_settings);
+		node_cids[i].cache_cid = Component :: Create<simple_cache>(lp_idx, i, cache_settings, mc_map);
+		cpuid++;
+		lp_idx++;
+	    }
+	    else {
+		node_cids[i].type = EMPTY_NODE;
+	    }
+	}
+    }
+
+    for(int i=0; i<MAX_NODES; i++) {
+    if(node_cids[i].type == CORE_NODE)
+    cout << i << "  core node" << endl;
+    else if(node_cids[i].type == MC_NODE)
+    cout << i << "  mc node" << endl;
+    else
+    cout << i << "  empty node" << endl;
+    }
+
+    std::vector<CompId_t>& ni_cids = myNetwork->get_interfaceCids();
+
+
+
+    //==========================================================================
+    //Now connect the components
+    //==========================================================================
+    std::vector<NetworkInterfaceBase*>& nis = myNetwork->get_interfaces();
+
+    for(int i=0; i<MAX_NODES; i++) {
+        if(node_cids[i].type == CORE_NODE) {
+	    //some sanity check
+	    qsimclient_core_t* proc = Component :: GetComponent<qsimclient_core_t>(node_cids[i].proc_cid);
+	    if(proc != 0) {
+		simple_cache* cache = Component :: GetComponent<simple_cache>(node_cids[i].cache_cid);
+		assert(proc->id == cache->get_node_id());
+
+		if(nis[i] != 0) { //only true when there is only 1 LP
+		    assert(cache->get_node_id() == nis[i]->get_id());
+		}
+	    }
+	
+
+	    //proc to cache
+	    Manifold :: Connect(node_cids[i].proc_cid, qsimclient_core_t::Output0,
+				node_cids[i].cache_cid, simple_cache::IN_FROM_UPPER,
+				&simple_cache::handle_request, 1);
+	    //cache to proc
+	    Manifold :: Connect(node_cids[i].cache_cid, simple_cache::OUT_TO_UPPER,
+				node_cids[i].proc_cid, qsimclient_core_t::Input0,
+				&qsimclient_core_t::cache_response_handler, 1);
+	    //cache to interface
+	    Manifold :: Connect(node_cids[i].cache_cid, simple_cache::OUT_TO_LOWER,
+				ni_cids[i], GenNetworkInterface<mem_req>::IN_FROM_TERMINAL,
+				&GenNetworkInterface<mem_req>::handle_terminal, 1);
+	    //interface to cache
+	    Manifold :: Connect(ni_cids[i], GenNetworkInterface<mem_req>::OUT_TO_TERMINAL,
+				node_cids[i].cache_cid, simple_cache::IN_FROM_LOWER,
+				&simple_cache::handle_response, 1);
+
+	    //Inside the network, routing is based on the interface IDs. The adapters have
+	    //their own IDs. When one adapter (or its client to be more specific) sends
+	    //data to another adapter (client), it uses adapter IDs. But it needs to know
+	    //the destination's network interface ID so the network can deliver the packet.
+	    //Therefore, the adapter layer should maintain a mapping between adapter IDs
+	    //and network interface IDs.
+	    //This is similar to the mapping between IP addresses and MAC addresses, except
+	    //here the mapping is static and nothing like ARP is involved.
+
+	    //In this simple network, we simplify things further such that the network interface
+	    //IDs are the same as the adapter IDs, therefore the mapping becomes M(X)=X. So
+	    //we don't need to keep any mapping. Sending to adapter X would be sending to
+	    //network interface X.
+	}
+	else if(node_cids[i].type == MC_NODE) {
+	    SimpleMC* mc = Component :: GetComponent<SimpleMC>(node_cids[i].mc_cid);
+	    if(mc != 0 ) {
+		if(nis[i] != 0) { //only true when both are in the same LP
+		    assert(mc->get_nid() == nis[i]->get_id());
+		}
+	    }
+	    //mc to interface
+	    Manifold :: Connect(node_cids[i].mc_cid, SimpleMC::OUT,
+				ni_cids[i], GenNetworkInterface<mem_req>::IN_FROM_TERMINAL,
+				&GenNetworkInterface<mem_req>::handle_terminal, 1);
+	    //interface to mc
+	    Manifold :: Connect(ni_cids[i], GenNetworkInterface<mem_req>::OUT_TO_TERMINAL,
+				node_cids[i].mc_cid, SimpleMC::IN,
+				&SimpleMC::handle_incoming, 1);
+	}
+	else { //Empty node
+	    //do nothing
+	}
+    }
+
+
+    //==========================================================================
+    // Register processors with the clock
+    //==========================================================================
+
+    for(int i=0; i<MAX_NODES; i++) {
+        if(node_cids[i].type == CORE_NODE) {
+	    qsimclient_core_t* proc = Component :: GetComponent<qsimclient_core_t>(node_cids[i].proc_cid);
+	    if(proc) {
+		Clock::Register((core_t*)proc, &qsimclient_core_t :: tick, (void(core_t::*)(void))0);
+	    }
+	}
+    }
+
+    for(int i=0; i<MAX_NODES; i++) {
+        if(node_cids[i].type == CORE_NODE) {
+	}
+	else if(node_cids[i].type == MC_NODE) {
+	    SimpleMC* mc = Component :: GetComponent<SimpleMC>(node_cids[i].mc_cid);
+	    if(mc)
+		mc->print_config(cout);
+	}
+    }
+
+
+    Manifold::StopAt(STOP);
+    Manifold::Run();
+
+
+    for(int i=0; i<MAX_NODES; i++) {
+        if(node_cids[i].type == CORE_NODE) {
+	    //qsimclient_core_t* proc = Component :: GetComponent<qsimclient_core_t>(node_cids[i].proc_cid);
+	    //if(proc)
+		//proc->print_stats(cout);
+	}
+	else if(node_cids[i].type == MC_NODE) {
+	    SimpleMC* mc = Component :: GetComponent<SimpleMC>(node_cids[i].mc_cid);
+	    if(mc)
+		mc->print_stats(cout);
+	}
+    }
+
+    myNetwork->print_stats(cout);
+    Manifold :: print_stats(cout);
+
+
+#ifdef REDIRECT_COUT
+    std::cout.rdbuf(cout_sbuf);
+#endif
+
+    Manifold :: Finalize();
+
+}

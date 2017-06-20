@@ -1,0 +1,61 @@
+simulation_stop = 10000000;
+clock_frequency = 1;
+
+network:
+{
+    topology = "TORUS";
+    x_dimension = 9;
+    y_dimension = 8;
+    num_vcs = 4;
+    credits = 6;
+    link_width = 128;
+
+    ni_up_credits = 20; //credits for network interface sending to terminal
+    ni_up_buffer = 5; //network interface's output buffer (to terminal) size
+
+    coh_msg_type = 123; //message types
+    mem_msg_type = 456;
+    credit_msg_type = 789;
+};
+
+processor:
+{
+    node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71];
+};
+
+llp_cache:
+{
+    name = "L1";
+    type = "DATA";
+    size = 0x4000; //16K
+    assoc = 4;
+    block_size = 32;
+    hit_time = 2;
+    lookup_time = 5;
+    replacement_policy = "LRU";
+    mshr_size = 8;
+
+    downstream_credits = 20; //credits for sending to network
+};
+
+lls_cache:
+{
+    name = "L2";
+    type = "DATA";
+    size = 0x10000; //64K
+    assoc = 8;
+    block_size = 32;
+    hit_time = 2;
+    lookup_time = 5;
+    replacement_policy = "LRU";
+    mshr_size = 16;
+
+    downstream_credits = 20; //credits for sending to network
+};
+
+mc: //memory controller
+{
+    node_idx = [32, 33, 34, 35, 36, 37, 38, 39];
+
+    downstream_credits = 10; //credits for sending to network
+};

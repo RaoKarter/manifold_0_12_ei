@@ -1,0 +1,120 @@
+#CXX = g++
+CXX = mpic++
+CPPFLAGS = #-I. -I../../kernel/include/kernel -I../../kernel/src -I../../uarch -I../../models -I../../models/cache/CaffCache -I../../models/network/CaffNet -I../../models/processor/CaffProc -I../../models/network/iris -I../../models/memory/CaffMC -I../../models/processor/zesto
+DBG = -g
+LINKER = $(CXX) -ldl -L./qsim/ 
+
+# our macs use g++ 4.2.1, pasta uses g++ 4.1.2
+# compilation will die because of a deprecated conversion from string
+# constant to char* error
+#CXXFLAGS = -O0 $(DBG) -Wall -Werror -Wno-unknown-pragmas -fno-strict-aliasing
+CXXFLAGS = $(DBG) -Wall -fno-strict-aliasing -m64 -lpthread -lqsim -I../../qsim/distorm/ -I/usr/local/include
+
+SOURCES:= \
+	../../uarch/module.cpp \
+	../../uarch/mreq.cpp \
+	../../uarch/node.cpp \
+	../../uarch/settings.cpp \
+	../../uarch/signals.cpp \
+	../../uarch/sim.cpp \
+	../../uarch/sim_stat_manager.cpp \
+	../../uarch/stat_engine.cpp \
+	../../uarch/ticker.cpp
+
+HEADERS:=$(patsubst %.cpp, %.h, $(SOURCES))
+OBJECTS:=$(patsubst %.cpp, %.o, $(SOURCES))
+DEPS:=$(patsubst %.cpp, %.d, $(SOURCES))
+
+MANIFOLD_OBJECTS:= \
+	../../kernel/src/clock.o \
+	../../kernel/src/component.o \
+	../../kernel/src/link.o \
+	../../kernel/src/manifold.o \
+	../../kernel/src/messenger.o
+
+CAFFCACHE_OBJECTS:= \
+	../../models/cache/CaffCache/hash_table.o \
+	../../models/cache/CaffCache/MOESI_client.o \
+	../../models/cache/CaffCache/MOESI_directory.o \
+	../../models/cache/CaffCache/NULL_client.o \
+	../../models/cache/CaffCache/NULL_directory.o \
+	../../models/cache/CaffCache/protocol.o \
+	../../models/cache/CaffCache/sharers.o
+
+CAFFMC_OBJECTS:= \
+	../../models/memory/CaffMC/memory.o \
+	../../models/memory/CaffMC/memory_client.o
+
+CAFFNET_OBJECTS:= \
+	../../models/network/CaffNet/fakenet.o \
+	../../models/network/CaffNet/fakenet_interface.o 
+
+CAFFPROC_OBJECTS:= \
+	../../models/processor/CaffProc/emulator_interface.o \
+	../../models/processor/CaffProc/insn.o \
+	../../models/processor/CaffProc/preq.o \
+	../../models/processor/CaffProc/processor.o \
+	../../models/processor/CaffProc/processor_context.o \
+	../../models/processor/CaffProc/processor_simple.o \
+	../../models/processor/CaffProc/thread.o
+
+IRIS_OBJECTS:= 
+
+ZESTO_OBJECTS:= \
+	../../models/processor/zesto/endian.o \
+	../../models/processor/zesto/eval.o \
+	../../models/processor/zesto/machine.o \
+	../../models/processor/zesto/memory.o \
+	../../models/processor/zesto/misc.o \
+	../../models/processor/zesto/options.o \
+	../../models/processor/zesto/range.o \
+	../../models/processor/zesto/regs.o \
+	../../models/processor/zesto/stats.o \
+	../../models/processor/zesto/symbol.o \
+	../../models/processor/zesto/zesto-alloc.o \
+	../../models/processor/zesto/zesto-bpred.o \
+	../../models/processor/zesto/zesto-commit.o \
+	../../models/processor/zesto/zesto-core.o \
+	../../models/processor/zesto/zesto-decode.o \
+	../../models/processor/zesto/zesto-exec.o \
+	../../models/processor/zesto/zesto-fetch.o \
+	../../models/processor/zesto/zesto-memdep.o \
+	../../models/processor/zesto/zesto-opts.o \
+	../../models/processor/zesto/zesto-oracle.o \
+	../../models/processor/zesto/zesto-qsim.o
+
+EI_OBJECTS:= \
+	../../models/energy_introspector/parameters.o \
+	../../models/energy_introspector/parser.o \
+	../../models/energy_introspector/energy_introspector.o \
+	../../models/energy_introspector/ENERGYLIB_IntSim.o \
+	../../models/energy_introspector/ENERGYLIB_McPAT.o \
+	../../models/energy_introspector/THERMALLIB_HotSpot.o
+
+all: settings $(DEPS) sim_manifold
+deps: $(DEPS)
+
+%.d: %.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MM $< > $@ 
+
+include $(wildcard *.d)
+
+settings: ../../uarch/settings.l ../../uarch/settings.y
+	flex -o../../uarch/lex.yy.c ../../uarch/settings.l 
+	bison -o../../uarch/settings.tab.c -d ../../uarch/settings.y
+	$(CXX) $(CPPFLAGS) -o../../uarch/settings.tab.o -c ../../uarch/settings.tab.c
+	$(CXX) $(CPPFLAGS) -o../../uarch/lex.yy.o -c ../../uarch/lex.yy.c
+
+%.o: %.cpp 
+	$(CXX) $(CXXFLAGS) -c $< -o ${OUTOPT} $@
+
+sim_manifold: $(OBJECTS) $(MANIFOLD_OBJECTS) $(CAFFCACHE_OBJECTS) $(CAFFMC_OBJECTS) $(CAFFNET_OBJECTS) $(CAFFPROC_OBJECTS) $(IRIS_OBJECTS) $(ZESTO_OBJECTS) $(EI_OBJECTS) sim_manifold.o sim_manifold.h ../../uarch/settings.l ../../uarch/settings.y 
+	${LINKER} $(CXXFLAGS) $(OBJECTS) $(MANIFOLD_OBJECTS) $(CAFFCACHE_OBJECTS) $(CAFFMC_OBJECTS) $(CAFFNET_OBJECTS) $(CAFFPROC_OBJECTS) $(IRIS_OBJECTS) $(ZESTO_OBJECTS) $(EI_OBJECTS) sim_manifold.o ../../uarch/settings.tab.o ../../uarch/lex.yy.o -o sim_manifold -lfl -ly -L../../kernel/src -lmanifold -L../../kernel/src -lmanifold -L../../models/cache/CaffCache -lCaffCache -L../../models/memory/CaffMC -lCaffMC -L../../models/network/iris -liris -L../../models/network/CaffNet -lCaffNet -L../../models/processor/zesto -lZesto
+
+
+## cleaning
+clean:
+	-rm -rf *~ sim_manifold sim_manifold.o ../../uarch/*.o ../../uarch/*~
+
+fresh:
+	-rm -rf *~ *.out *_*_*_*

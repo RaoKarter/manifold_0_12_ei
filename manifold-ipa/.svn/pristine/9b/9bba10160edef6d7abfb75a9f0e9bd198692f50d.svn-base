@@ -1,0 +1,222 @@
+#include <TestFixture.h>
+#include <TestAssert.h>
+#include <TestSuite.h>
+#include <Test.h>
+#include <TestCaller.h>
+#include <cppunit/ui/text/TestRunner.h>
+
+#include <iostream>
+#include <vector>
+#include "simple-cache/cache_messages.h"
+#include "simple-cache/hash_table.h"
+
+#include "kernel/manifold-decl.h"
+#include "kernel/manifold.h"
+#include "kernel/component.h"
+
+#include "qsim.h"
+
+#include "simple-proc.h"
+
+using namespace manifold::kernel;
+using namespace manifold::simple_cache;
+using namespace manifold::simple_proc;
+using namespace std;
+
+
+//####################################################################
+// helper classes
+//####################################################################
+
+//! This simple_cache simulator is a simplified and componentized version of
+//! the one from simple_cache.
+class simple_cacheSimulator : public Component
+{
+public:
+    enum {INVALID_TAG = 0}; //Tag value 0 is not to be used
+    enum {IN=0};
+    enum {OUT=0};
+    static const int MEM_TIME = 37;
+
+    //! Constructor accepts the same parameter as simple_cache
+    simple_cacheSimulator(simple_cache_settings settings)
+    {
+	// | tag || index || offset |
+	m_offset_num_bits=0;
+	int temp = settings.block_size-1;
+	while(temp > 0) {
+	    temp >>= 1;
+	    m_offset_num_bits++;
+	}
+
+	m_index_offset_num_bits=0; //number of index and offset bits
+	temp = settings.size/settings.assoc -1;
+	while(temp > 0) {
+	    temp >>= 1;
+	    m_index_offset_num_bits++;
+	}
+
+        //number of sets
+        int n_sets = settings.size/settings.block_size/settings.assoc;
+
+	for(int i=0; i<n_sets; i++) {
+	    list<manifold::simple_proc::paddr_t> cache_set;
+	    for(int j=0; j<settings.assoc; j++)
+	        cache_set.push_back(INVALID_TAG);
+	    m_cache.push_back(cache_set);
+	}
+
+	m_tag_mask = ~0x0;
+	m_tag_mask <<= m_index_offset_num_bits;
+
+	m_index_mask = ~0x0;
+	m_index_mask <<= m_offset_num_bits; //clear offset portition
+	m_index_mask &= ~m_tag_mask;  //clear tag portition
+
+	m_hit_time = settings.hit_time;
+	m_lookup_time = settings.lookup_time;
+    }
+
+
+    //! Handle a request. If it's a hit, the tag is moved to the front in its
+    //! set to implement LRU. For miss nothing is done.
+    void handle_request(int, cache_req* creq)
+    {
+        assert(creq->msg == INITIAL);
+
+	manifold::simple_proc::paddr_t addr = creq->addr;
+	int set_idx = (addr & m_index_mask) >> m_offset_num_bits;
+	assert(set_idx < m_cache.size());
+
+	list<manifold::simple_proc::paddr_t>& the_set = m_cache[set_idx];
+
+	manifold::simple_proc::paddr_t tag = addr & m_tag_mask;
+	list<manifold::simple_proc::paddr_t> :: iterator it = find(the_set.begin(), the_set.end(), tag);
+	if(it != the_set.end()) { //hit
+	    the_set.erase(it);
+	    the_set.push_front(tag);
+
+	    if(creq->op_type == OpMemLd) { //load hit
+		creq->msg = CACHE_HIT;
+		SendTick(OUT, creq, m_hit_time);
+	    }
+	    else { //store
+		// obselete - creq->msg = ST_COMPLETE;
+		// obselete -  SendTick(OUT, creq, MEM_TIME);
+		// for store do nothing
+	    }
+	}
+	else { //miss
+	    if(creq->op_type == OpMemLd) { //load miss; do replacement
+		manifold::simple_proc::paddr_t addr = creq->addr;
+		int set_idx = (addr & m_index_mask) >> m_offset_num_bits;
+		assert(set_idx < m_cache.size());
+
+		list<manifold::simple_proc::paddr_t>& the_set = m_cache[set_idx];
+
+		manifold::simple_proc::paddr_t tag = addr & m_tag_mask;
+		the_set.pop_back();
+		the_set.push_front(tag);
+
+		creq->msg = LD_RESPONSE;
+		SendTick(OUT, creq, m_hit_time + m_lookup_time + MEM_TIME);
+	    }
+	    else { //store
+		// obsolete - creq->msg = ST_COMPLETE;
+		// obsolete - SendTick(OUT, creq, MEM_TIME);
+		// for store do nothing
+	    }
+	}
+    }
+
+
+    vector<list<manifold::simple_proc::paddr_t> >& get_cache() { return m_cache; }
+    manifold::simple_proc::paddr_t get_tag_shifted(manifold::simple_proc::paddr_t ad) { return (ad & m_tag_mask) >> m_index_offset_num_bits; }
+
+private:
+    //the cache is a vector of sets; each set is a list of tags
+    vector<list<manifold::simple_proc::paddr_t> > m_cache;
+    int m_offset_num_bits;
+    int m_index_offset_num_bits;
+    manifold::simple_proc::paddr_t m_index_mask;
+    manifold::simple_proc::paddr_t m_tag_mask;
+    int m_hit_time;
+    int m_lookup_time;
+};
+
+
+
+
+
+
+int main()
+{
+    Clock clock(1000);
+
+    //start QSim
+    const int NPROC = 4;
+
+    Qsim::OSDomain* qsim_cd = new Qsim::OSDomain(NPROC, "linux/bzImage");
+
+    {
+	// Fast forward 
+	bool all_booted;
+	do {
+	    for (unsigned i = 0; i < 100; i++) {
+		for (unsigned j = 0; j < NPROC; j++) {
+		    qsim_cd->run(j, 10000);
+		}
+	    }
+
+	    qsim_cd->timer_interrupt();
+      
+	    all_booted = true;
+	    for (unsigned k = 0; k < NPROC; k++) 
+		if (!qsim_cd->booted(k)) all_booted = false;
+	} while (!all_booted);
+    }
+
+cout << "qsim started" << endl;
+
+    simple_cache_settings cache_settings;
+
+    cache_settings.name = "testCache";
+    cache_settings.type = CACHE_DATA;
+    cache_settings.size = 0x1 << 14;
+    cache_settings.assoc = 4;
+    cache_settings.block_size = 32;
+    cache_settings.hit_time = 2;
+    cache_settings.lookup_time = 13;
+    cache_settings.replacement_policy = RP_LRU;
+
+    //create a SimpleProcessor, a simple_cacheSimulator
+    SimpleProc_Settings proc_settings(cache_settings.block_size);
+
+    CompId_t proc_cid = Component :: Create<SimpleProcessor>(0, qsim_cd, 3, 123, proc_settings);
+    CompId_t cache_cid = Component :: Create<simple_cacheSimulator>(0, cache_settings);
+
+
+    //connect the components
+    //proc to cache
+    Manifold::Connect(proc_cid, SimpleProcessor::OUT_TO_CACHE, cache_cid, simple_cacheSimulator::IN,
+		      &simple_cacheSimulator::handle_request, 1);
+    //cache to proc
+    Manifold::Connect(cache_cid, simple_cacheSimulator::OUT, proc_cid, SimpleProcessor::IN_FROM_CACHE,
+		      &SimpleProcessor::handle_cache_response, 1);
+
+
+
+    SimpleProcessor* proc = Component :: GetComponent<SimpleProcessor>(proc_cid);
+    if(proc) {
+	Clock :: Register(proc, &SimpleProcessor::tick, (void(SimpleProcessor::*)(void))0);
+    }
+
+cout << "start..." << endl;
+    Manifold::StopAt(100);
+    Manifold::Run();
+
+    proc->print_stats(cout);
+
+}
+
+

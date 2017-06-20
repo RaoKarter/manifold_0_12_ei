@@ -1,0 +1,124 @@
+#include <TestFixture.h>
+#include <TestAssert.h>
+#include <TestSuite.h>
+#include <Test.h>
+#include <TestCaller.h>
+#include <cppunit/ui/text/TestRunner.h>
+
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <list>
+#include "trace-proc.h"
+
+#include "kernel/manifold.h"
+#include "kernel/component.h"
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::simple_proc;
+
+
+//####################################################################
+// helper classes
+//####################################################################
+
+
+//####################################################################
+//####################################################################
+class TraceProcTest : public CppUnit::TestFixture {
+private:
+
+
+public:
+
+    //! Initialization function. Inherited from the CPPUnit framework.
+    void setUp()
+    {
+    }
+
+
+
+
+
+    //======================================================================
+    //======================================================================
+    //! @brief Test fetch()
+    //!
+    void test_fetch_0()
+    {
+        SimpleProc_Settings settings(32);
+	string fname("trace0.txt");
+	TraceProcessor* tp = new TraceProcessor(12, fname, settings);
+
+	std::list<Instruction*> ins_list;
+
+	const int N = 100;
+	for(int i=0; i<N; i++) {
+	    Instruction* ins = tp->fetch();
+	    ins_list.push_back(ins);
+	}
+
+	delete tp;
+
+	//verify
+	string line;
+	ifstream tracef(fname.c_str());
+
+	list<Instruction*>::iterator it = ins_list.begin();
+
+	while(getline(tracef, line) && it != ins_list.end()) {
+	    istringstream strin(line);
+
+	    uint64_t c;
+	    strin >>hex>> c >>dec;
+	    if(c == 0x0) {
+	        CPPUNIT_ASSERT_EQUAL(Instruction::OpMemLd, (*it)->opcode);
+		uint64_t addr;
+		strin >>hex>> addr >>dec;
+	        CPPUNIT_ASSERT_EQUAL(addr, (*it)->addr);
+	    }
+	    else if(c == 0x1) {
+	        CPPUNIT_ASSERT_EQUAL(Instruction::OpMemSt, (*it)->opcode);
+		uint64_t addr;
+		strin >>hex>> addr >>dec;
+	        CPPUNIT_ASSERT_EQUAL(addr, (*it)->addr);
+	    }
+	    else {
+	        CPPUNIT_ASSERT_EQUAL(Instruction::OpNop, (*it)->opcode);
+	    }
+	    ++it;
+	}
+
+    }
+
+
+
+
+
+
+    //! Build a test suite.
+    static CppUnit::Test* suite()
+    {
+	CppUnit::TestSuite* mySuite = new CppUnit::TestSuite("TraceProcTest");
+	mySuite->addTest(new CppUnit::TestCaller<TraceProcTest>("test_fetch_0", &TraceProcTest::test_fetch_0));
+
+	return mySuite;
+    }
+};
+
+
+
+int main()
+{
+    Manifold :: Init();
+    CppUnit::TextUi::TestRunner runner;
+    runner.addTest( TraceProcTest::suite() );
+    if(runner.run("", false))
+	return 0; //all is well
+    else
+	return 1;
+
+}
+
+

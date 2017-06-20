@@ -1,0 +1,122 @@
+// This program tests the QsimProc class as a component. This component uses
+// QSim server for instruction input. To run the program, first run QSim server
+// on the same machine with port set to 12345.
+// Because it requires running QSim server first, it's not easy to run this test
+// case automatically. But it can be run manually.
+//
+#include <TestFixture.h>
+#include <TestAssert.h>
+#include <TestSuite.h>
+#include <Test.h>
+#include <TestCaller.h>
+#include <cppunit/ui/text/TestRunner.h>
+
+#include <stdlib.h>
+#include <iostream>
+#include <vector>
+
+#include "kernel/manifold.h"
+#include "kernel/component.h"
+
+#include "qsim-proc.h"
+
+using namespace manifold::kernel;
+using namespace manifold::simple_proc;
+using namespace std;
+
+
+//####################################################################
+// helper classes
+//####################################################################
+
+class MockCache : public Component
+{
+public:
+    enum {PORT=0};
+
+    template<typename T>
+    void handle_request_no_reply(int, T* req)
+    {
+        m_req_addrs.push_back(req->get_addr());
+    }
+
+    list<uint64_t>& get_req_addrs() { return m_req_addrs;}
+
+
+    template<typename T>
+    void send_reply(int, T* reply)
+    {
+        Send(PORT, reply);
+    }
+
+
+private:
+    list<uint64_t> m_req_addrs;
+};
+
+
+
+//####################################################################
+//####################################################################
+class QsimProcTest :  public CppUnit::TestFixture {
+public:
+    static Clock MasterClock;  //clock has to be global or static.
+    enum { MASTER_CLOCK_HZ = 1 };
+
+    void test_0()
+    {
+	//create N addresses for the same cache line
+	const int BLOCK_SZ = 32;
+
+        QsimProc_Settings settings("localhost", 12345, BLOCK_SZ);
+
+	CompId_t proc_id = Component :: Create<QsimProcessor>(0, 0, 0, settings);
+	CompId_t cache_id = Component :: Create<MockCache>(0);
+
+	QsimProcessor* proc = Component::GetComponent<QsimProcessor>(proc_id);
+	MockCache* cache = Component::GetComponent<MockCache>(cache_id);
+
+	Manifold::Connect(proc_id, QsimProcessor::PORT_CACHE, &QsimProcessor::handle_cache_response,
+	                  cache_id, MockCache::PORT, &MockCache::send_reply<CacheReq>,
+			  Clock::Master(), Clock::Master(), 1, 1);
+
+        Clock::Register((SimpleProcessor*)proc, &QsimProcessor::tick, (void(SimpleProcessor::*)(void))0);
+        Manifold::StopAt(100000);
+	Manifold::Run();
+
+	proc->print_stats(cout);
+    }
+
+
+
+    //! Build a test suite.
+    static CppUnit::Test* suite()
+    {
+	CppUnit::TestSuite* mySuite = new CppUnit::TestSuite("QsimProcTest");
+	mySuite->addTest(new CppUnit::TestCaller<QsimProcTest>("test_0", &QsimProcTest::test_0));
+
+	return mySuite;
+    }
+};
+
+Clock QsimProcTest :: MasterClock(QsimProcTest :: MASTER_CLOCK_HZ);
+
+
+int main()
+{
+    Manifold :: Init();
+    CppUnit::TextUi::TestRunner runner;
+    runner.addTest( QsimProcTest::suite() );
+    if(runner.run("", false))
+	return 0; //all is well
+    else
+	return 1;
+
+}
+
+
+
+
+
+
+

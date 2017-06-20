@@ -1,0 +1,65 @@
+#ifdef USE_QSIM
+
+#ifndef __SPX_CORE_H__
+#define __SPX_CORE_H__
+
+#include "qsim.h"
+#include "kernel/component.h"
+#include "kernel/clock.h"
+#include "pipeline.h"
+
+#ifdef LIBEI
+#include "ei_handler.h"
+#endif
+
+namespace manifold {
+namespace spx {
+
+enum QSIM_OSD_STATE {
+    QSIM_OSD_TERMINATED = 0,
+    QSIM_OSD_IDLE,
+    QSIM_OSD_ACTIVE
+};
+
+class spx_core_t : public manifold::kernel::Component
+{
+public:
+  spx_core_t(const int nodeID, Qsim::OSDomain *osd, const char *configFileName, const int coreID);
+  ~spx_core_t();
+
+  enum { IN_FROM_CACHE = 0 };
+  enum { OUT_TO_CACHE = 0 };
+
+  // manifold component functions
+  void tick();
+  void handle_cache_response(int temp, cache_request_t *cache_request);
+    
+#ifdef LIBEI
+    void set_sampling_interval(const double SamplingInterval, const double StartTime, FILE *LogFile = stdout);
+    void connect_EI(libEI::energy_introspector_t *EI);
+    void connect_EI(MPI_Comm *InterComm, const int EIRank);
+#endif
+
+    int node_id; // manifold node ID
+    int core_id; // processor ID
+    int qsim_osd_id; // Qsim OSD ID (if multi-Qsim_OSD)
+    
+    uint64_t clock_cycle;
+
+private:
+	pipeline_t *pipeline; // base class of pipeline models
+    
+#ifdef LIBEI
+    friend class EI_handler_t;
+    EI_handler_t *EI_handler; // EI handler
+    EIController::ei_controller_t *EI_controller; // EI controller
+#endif
+};
+
+} // namespace spx
+} // namespace manifold
+
+#endif
+
+
+#endif // USE_QSIM

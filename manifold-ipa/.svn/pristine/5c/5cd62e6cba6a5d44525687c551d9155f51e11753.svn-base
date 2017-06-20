@@ -1,0 +1,58 @@
+#ifdef USE_QSIM
+
+#ifndef __SPX_EI_HANDLER_H__
+#define __SPX_EI_HANDLER_H__
+
+#ifdef LIBEI
+#include <mpi.h>
+#include "ei-defs.h"
+#include "ei-client.h"
+#include "energy_introspector.h"
+
+namespace manifold {
+namespace spx {
+
+enum SPX_EI_HANDLER_STATUS_TYPE {
+    SPX_EI_HANDLER_WAIT = 0,
+    SPX_EI_HANDLER_POWER_IS_CALCULATED,
+    SPX_EI_HANDLER_POWER_IS_SYNCHRONIZED,
+    SPX_EI_HANDLER_TEMPERATURE_IS_CALCULATED,
+    SPX_EI_HANDLER_CONTROLLED,
+    NUM_SPX_EI_HANDLER_STATUS_TYPES,
+};
+
+class spx_core_t;
+
+class EI_handler_t {    
+public:
+    EI_handler_t(spx_core_t *c);
+    ~EI_handler_t();
+
+    void set_sampling_interval(const double SamplingInterval, const double StarTime, FILE *LogFile = stdout);
+    void connect_EI(libEI::energy_introspector_t *EI);
+    void connect_EI(MPI_Comm *InterComm, const int EIRank);
+    void calculate_power();
+    
+    libEI::client_t *EI_client;
+    libEI::energy_introspector_t *energy_introspector;
+    MPI_Comm *INTERCOMM;
+
+private:
+    spx_core_t *core;
+
+    double time; // current time in seconds
+    double clock_period; // unit clock period w.r.t clock frequency
+    double sampling_interval; // sampling interval
+    double next_sampling_time; // next sampling time to calculate power
+    double start_time;
+    
+    int status;
+    FILE *log_file;
+};
+
+} // namespace spx
+} // namesapce manifold
+
+#endif
+
+#endif

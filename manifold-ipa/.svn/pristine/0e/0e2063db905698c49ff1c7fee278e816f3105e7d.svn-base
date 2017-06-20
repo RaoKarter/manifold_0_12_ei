@@ -1,0 +1,30 @@
+CXX = mpic++ # -DIRIS_STATS_T2T_DELAY
+MODELS_DIR = ../../../models
+CPPFLAGS += -Wall -g -DSTATS -I ../../.. -I$(MODELS_DIR)/processor -I$(MODELS_DIR)/cache -I$(MODELS_DIR)/network -I$(MODELS_DIR)/memory -I$(MODELS_DIR)/cross
+LDFLAGS = -lmcp-iris -L$(MODELS_DIR)/cross/mcp_cache-iris  -liris -L$(MODELS_DIR)/network/iris -lmcp-cache -L$(MODELS_DIR)/cache/mcp-cache -lZesto -L$(MODELS_DIR)/processor/zesto -lcaffdram  -L$(MODELS_DIR)/memory/CaffDRAM  -L../../../kernel -lmanifold 
+
+VPATH = ../common
+
+EXECS = smp_l1l2 smp_llp
+
+
+ALL: $(EXECS)
+
+
+smp_l1l2: smp_l1l2.o sysBuilder_l1l2.o
+	$(CXX) $^ -o$@  $(LDFLAGS) -lconfig++
+
+smp_llp: smp_llp.o sysBuilder_llp.o
+	$(CXX) $^ -o$@  $(LDFLAGS) -lconfig++
+
+
+%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+-include $(wildcard dep/*.d)
+
+.PHONY: clean
+clean:
+	rm -f $(EXECS) *.d *.o DBG* core*.out
+	rm -rf dep

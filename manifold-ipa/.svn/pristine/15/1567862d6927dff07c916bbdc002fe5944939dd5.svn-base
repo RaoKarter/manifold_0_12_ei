@@ -1,0 +1,32 @@
+#ifdef USE_QSIM
+
+#include "interrupt_handler.h"
+
+using namespace std;
+using namespace manifold;
+using namespace manifold::kernel;
+using namespace manifold::spx;
+
+interrupt_handler_t::interrupt_handler_t(Qsim::OSDomain *osd) :
+    Qsim_osd(osd),
+    clock_cycle(0),
+    interval(1)
+{
+}
+
+interrupt_handler_t::~interrupt_handler_t()
+{
+}
+
+void interrupt_handler_t::set_interval(uint64_t Interval)
+{
+    interval = Interval;   
+}
+
+void interrupt_handler_t::tick()
+{
+    clock_cycle = m_clk->NowTicks();
+    if(clock_cycle % interval == 0) { Qsim_osd->timer_interrupt(); }
+}
+
+#endif

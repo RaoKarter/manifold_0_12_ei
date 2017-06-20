@@ -1,0 +1,141 @@
+#include <stdlib.h>
+#include "mockProc.h"
+#include "kernel/component.h"
+#include <iomanip>
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::simple_cache;
+
+MockProc :: MockProc(int nid) : m_nid(nid)
+{
+    m_stats_loads = 0;
+    m_stats_load_misses = 0;
+    m_stats_stores = 0;
+
+    //m_count = 0;
+    srandom(m_nid*13);
+}
+
+
+#define INTERVAL 100
+
+void MockProc :: send_creq()
+{
+    static int Count = 0;
+    Count++;
+
+    if((Count-1) % INTERVAL != 0) //send request every INTERVAL cycles
+        return;
+
+
+    paddr_t addr;
+
+    if(m_hit_pool.size() != 0 && random()/(RAND_MAX+1.0) < 0.8) {
+	//Not guaranteed to be a hit since there's a small chance the one selected
+	//from the pool has been replaced. Only guaranteed when POOL_MAX==1.
+	addr = m_hit_pool[random() % m_hit_pool.size()];
+    }
+    else { //miss
+	pair<set<paddr_t>::iterator,bool> ret; //return value; 2nd of the pair is false if the
+					       //value is already in the set
+	//generate an addr that has never been used to guarantee miss
+	do {
+	    addr = random();
+	    ret = m_addrs_set.insert(addr);
+	} while(ret.second == false);
+    }
+
+    cache_req* creq;
+    if(random() / (RAND_MAX+1.0) < 0.7) {  // 70% LOAD; 30% STORE
+	creq = new cache_req(0, m_nid, addr, OpMemLd, INITIAL); //req_id not used, so just use 0
+	m_stats_loads++;
+	m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
+	                                          Req_info(OpMemLd, addr, "load request")));
+
+#ifdef MOCKPROC_DBG
+	cout << "@@ "<< Manifold::NowTicks() << " proc " << m_nid << " LOAD " << hex << "0x" << addr << dec << endl;
+#endif
+    }
+    else {//STORE doesn't add or remove cache entry, so doesn't affect hit_pool
+	creq = new cache_req(0, m_nid, addr, OpMemSt, INITIAL); //req_id not used, so just use 0
+	m_stats_stores++;
+	m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
+	                                          Req_info(OpMemSt, addr, "store request")));
+#ifdef MOCKPROC_DBG
+	cout << "==> proc " << m_nid << " STORE " << hex << "0x" << addr << dec << endl;
+#endif
+    }
+    //Send<cache_req*>(OUT, creq);
+    Send(OUT, creq);
+}
+
+
+//! Event handle for cache_req received from the cache
+void MockProc :: handle_incoming(int, cache_req* cresp)
+{
+#ifdef MOCKPROC_DBG
+    cout << "## " << Manifold::NowTicks() << " ";
+    switch(cresp->msg) {
+        case CACHE_HIT:
+	    std::cout << "proc " << m_nid << " hit" << std::endl;
+	    break;
+        case LD_RESPONSE:
+	    std::cout << "proc " << m_nid << " load miss" << std::endl;
+	    break;
+	default:
+	    std::cerr << "Proce received invalid cache_req!" << std::endl;
+	    exit(1);
+    }//switch
+    std::cout << std::endl;
+#endif
+
+    //stats
+    switch(cresp->msg) {
+        case CACHE_HIT:
+	    m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
+						      Req_info(OpMemLd, cresp->addr, "hit")));
+	    break;
+        case LD_RESPONSE:
+	    m_stats_load_misses++;
+	    m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
+						      Req_info(OpMemLd, cresp->addr, "miss")));
+	    break;
+    }
+
+    const unsigned POOL_MAX = 10;
+
+    //Update the hit pool upon a load miss. The hit pool contains up to POOL_MAX
+    //the most recently used LOAd addresses.
+    if(cresp->msg == LD_RESPONSE) {
+	//put this new address in hit_pool
+	if(m_hit_pool.size() < POOL_MAX)
+	    m_hit_pool.push_back(cresp->addr);
+	else {
+	    //shift one position to the lower end
+	    for(int i=0; i<(int)m_hit_pool.size() - 1; i++)
+		m_hit_pool[i] = m_hit_pool[i+1];
+	    m_hit_pool[POOL_MAX-1] = cresp->addr;
+	}
+    }
+
+}
+
+
+
+void MockProc :: print_stats(ostream& out)
+{
+    out << "********** MockProc " << m_nid << " stats **********" << endl;
+    out << "Loads: " << m_stats_loads << endl;
+    out << "Load misses: " << m_stats_load_misses << endl;
+    out << "Stores: " << m_stats_stores << endl;
+    for(map<paddr_t, Req_info>::iterator it = m_req_info.begin(); it != m_req_info.end(); ++it) {
+	Req_info& req = (*it).second;
+        out << "Processor: " << setw(7) << (*it).first << " " << ((req.type == OpMemLd) ? "LD" : "ST")
+	    << " " << hex << "0x" << setw(8) << setfill('0') << req.addr <<setfill(' ') << dec;
+        if(req.status != (char*) 0)
+	    out << " " << req.status;
+	out << endl;
+
+    }
+}

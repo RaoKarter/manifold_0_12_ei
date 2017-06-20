@@ -1,0 +1,27 @@
+#include <iostream>
+#include "simple_cache.h"
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::simple_cache;
+
+
+simple_cache::simple_cache(int id)
+{ 
+  myID = id;
+}
+
+
+void simple_cache::LinkArrival (int src, cache_req* req)
+{
+  cout << " ** current thread's id is " << req->source_id << endl;
+  cout << " ** current thread's request id is " << req->req_id << endl;
+  cout << " received by cache " << endl;
+  Send<cache_req*>(0, req);
+  cout << " sent by cache " << endl; 
+}
+
+
+
+
+

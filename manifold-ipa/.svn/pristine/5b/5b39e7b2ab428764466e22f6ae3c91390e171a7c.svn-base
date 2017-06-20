@@ -1,0 +1,25 @@
+CXX = mpic++
+MODELS_DIR = ../../../models
+CPPFLAGS += -Wall -g -DUSE_QSIM -DSTATS -I ../../.. -I$(MODELS_DIR)/processor -I$(MODELS_DIR)/cache -I$(MODELS_DIR)/memory
+LDFLAGS = -lsimple-cache -L$(MODELS_DIR)/cache/simple-cache -lZesto -L$(MODELS_DIR)/processor/zesto -lcaffdram  -L$(MODELS_DIR)/memory/CaffDRAM  -L../../../kernel -lmanifold -lqsim-client
+
+EXECS = singleCore
+
+
+ALL: $(EXECS)
+
+
+singleCore: singleCore.o
+	$(CXX) $^ -o$@  $(LDFLAGS)
+
+
+%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+-include $(wildcard dep/*.d)
+
+.PHONY: clean
+clean:
+	rm -f $(EXECS) *.d *.o LOG core*.out
+	rm -rf dep

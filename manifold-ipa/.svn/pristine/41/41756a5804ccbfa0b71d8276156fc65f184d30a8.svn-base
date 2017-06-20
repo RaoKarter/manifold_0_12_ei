@@ -1,0 +1,368 @@
+//! @file prog1_nonet.cc
+//! @brief This program builds a simple simulator of multicore systems. Its purpose is to
+//! demonstrate how to build such a simulator using the Manifold framework. We removed the
+//! network in this program. It was created in a debug task, but might be useful for other
+//! purposes.
+//! The multicore system is illustrated as follows:
+//!
+//! @verbatim
+//!      -----------       -----------     ----------------     -----------
+//!     | processor |     | processor |   | mem controller |   | processor |
+//!      -----------       -----------     ----------------     -----------
+//!           |                 |                                    |
+//!        -------           -------                              -------
+//!       | cache |         | cache |                            | cache |    
+//!        -------           -------                              -------
+//!           |                 |                                    |
+//!       ---------         ---------                            ---------
+//!      |    MC   |       |    MC   |                          |    MC   |
+//!       ---------         ---------                            ---------
+//!           |                 |                                    |
+//!  ---------------------------------------------------------------------------
+//! @endverbatim
+//!
+//! The memory controller node actually doesn't connect to anything. Each cache is
+//! connected to a mem controller.
+//!
+//! The components used in this program are very simple ones:
+//! - SimpleProcessor: a simple processor model that sends memory requests to the cache.
+//!                    It is built with the QSim library and uses QSim to get instructions.
+//! - MockMC: a simple memory controller model. Upon receiving a request, it sends
+//!           back a response after certain delay. In this program, there is only
+//!           one MC in the multicore system.
+//! - simple-cache: a simple write-through cache with no write-alloc.
+//!
+//! In this program the configuration for the components is provided by a configuration
+//! file which is parsed with libconfig++. An example can be found in conf1.cfg.
+//! 
+//! To run this program, type:
+//! @code
+//! mpirun -np <NP> prog1 <conf_file>
+//! @endcode
+//! where <NP> is the number of MPI tasks, which must be 1, 2, or X*Y+1,
+//! where X and Y are the dimensions of the mesh network. <conf_file> is the name of
+//! the configuratio file.
+//!
+//! Partitioning of the components is also hard-coded based on the number of LPs:
+//!     - 1 LP: everything is on LP 0.
+//!     - 2 LPs: the network is on LP 0 and everything else is on LP 1.
+//!     - X*Y+1 LPs: the network is on LP, and each node (processor, cache and adapter or
+//!                mem controller and adapter) is on a separate LP.
+//!
+#include "kernel/clock.h"
+#include "kernel/component.h"
+#include "kernel/manifold.h"
+//#include "simple-net/simpleNetAdapter.h"
+//#include "simple-net/network.h"
+//#include "simple-net/networkInterface.h"
+#include "simple-cache/simple_cache.h"
+#include "simple-proc/simple-proc.h"
+#include "mockMC.h"
+#include "qsim.h"
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <libconfig.h++>
+
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::simple_proc;
+using namespace libconfig;
+
+
+// use a data structure to represent either a core node or a MC node
+enum {CORE_NODE=0, MC_NODE};
+struct Node_cid {
+    int type; //either a CORE_NODE or a MC_NODE
+    CompId_t proc_cid;
+    CompId_t cache_cid;
+    CompId_t mc_cid;
+};
+
+
+int main(int argc, char** argv)
+{
+    if(argc != 2) {
+        cerr << "Usage: mpirun -np <NP> " << argv[0] << " <config_file>" << endl;
+	cerr << "  NP the number of MPI tasks." << endl;
+	exit(1);
+    }
+
+    Config config;
+    try {
+	config.readFile(argv[1]);
+    }
+    catch (FileIOException e) {
+        cerr << "Cannot read configuration file " << argv[1] << endl;
+	exit(1);
+    }
+    catch (ParseException e) {
+        cerr << "Cannot parse configuration file " << argv[1] << endl;
+	exit(1);
+    }
+
+    int temp_x_dimension;
+    int temp_y_dimension;
+
+    try {
+	temp_x_dimension = config.lookup("network.x_dimension");
+	temp_y_dimension = config.lookup("network.y_dimension");
+    }
+    catch (SettingNotFoundException e) {
+	cout << e.getPath() << " not set." << endl;
+	exit(1);
+    }
+    catch (SettingTypeException e) {
+	cout << e.getPath() << " has incorrect type." << endl;
+	exit(1);
+    }
+
+    const int X_DIMENSION = temp_x_dimension;
+    const int Y_DIMENSION = temp_y_dimension;
+
+    assert(X_DIMENSION > 0 && Y_DIMENSION > 0);
+    assert(X_DIMENSION * Y_DIMENSION > 1);
+
+    const int NUM_NODES = X_DIMENSION * Y_DIMENSION;
+
+    Manifold::Init(argc, argv);
+
+    int N_LPs = 1; //number of LPs
+    MPI_Comm_size(MPI_COMM_WORLD, &N_LPs);
+    cout << "Number of LPs = " << N_LPs << endl;
+    if(N_LPs != 1 && N_LPs !=2 && N_LPs != NUM_NODES + 1) {
+        cerr << "Number of LPs must be 1, 2, or " << NUM_NODES + 1 << "!" << endl;
+	exit(1);
+    }
+
+    //==========================================================================
+    // Configuration parameters
+    //==========================================================================
+    int FREQ;
+    Ticks_t STOP;
+    simple_cache_settings cache_settings;
+
+    int temp_mc_node_idx;
+    int temp_mc_latency;
+
+    try {
+	FREQ = config.lookup("clock_frequency");
+	assert(FREQ > 0);
+	STOP = config.lookup("simulation_stop");
+
+	// No configuration for Processor
+
+	//cache parameters
+	cache_settings.name = config.lookup("cache.name");
+	string cache_type = config.lookup("cache.type");
+	if(cache_type == "DATA")
+	    cache_settings.type = CACHE_DATA;
+	else {
+	    assert(0);
+	}
+	cache_settings.size = config.lookup("cache.size");
+	cache_settings.assoc = config.lookup("cache.assoc");
+	cache_settings.block_size = config.lookup("cache.block_size");
+	cache_settings.hit_time = config.lookup("cache.hit_time");
+	cache_settings.lookup_time = config.lookup("cache.lookup_time");
+	cache_settings.replacement_policy = RP_LRU;
+
+	//network parameters
+	// x and y dimensions already specified
+
+	//memory controller configuration
+	//the node index of MC; could be any value between 0 and NUM_NODES-1
+	temp_mc_node_idx = config.lookup("mc.node_idx");
+	assert(temp_mc_node_idx >=0 && temp_mc_node_idx < NUM_NODES);
+	temp_mc_latency = config.lookup("mc.latency");
+	assert(temp_mc_latency >=0);
+    }
+    catch (SettingNotFoundException e) {
+	cout << e.getPath() << " not set." << endl;
+	exit(1);
+    }
+    catch (SettingTypeException e) {
+	cout << e.getPath() << " has incorrect type." << endl;
+	exit(1);
+    }
+
+    const int MC_NODE_IDX = temp_mc_node_idx;
+    const int MC_LATENCY = temp_mc_latency;
+
+    //==========================================================================
+    // create all the components.
+    //==========================================================================
+    Clock myClock(FREQ);
+
+    // need storage for component IDs for connecting components
+
+    Node_cid node_cids[NUM_NODES];
+
+
+
+
+#define REDIRECT_COUT
+
+#ifdef REDIRECT_COUT
+    // create a file into which to write debug/stats info.
+    int Mytid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &Mytid);
+    char buf[10];
+    sprintf(buf, "DBG_LOG%d", Mytid);
+    ofstream DBG_LOG(buf);
+
+    //redirect cout to file.
+    std::streambuf* cout_sbuf = std::cout.rdbuf(); // save original sbuf
+    std::cout.rdbuf(DBG_LOG.rdbuf()); // redirect cout
+#endif
+
+
+    const int NPROC = NUM_NODES - 1;
+
+    Qsim::OSDomain* qsim_cd = new Qsim::OSDomain(NPROC, "linux/bzImage");
+
+
+    {
+	// Fast forward 
+	bool all_booted;
+	do {
+	    for (unsigned i = 0; i < 100; i++) {
+		for (unsigned j = 0; j < NPROC; j++) {
+		    qsim_cd->run(j, 10000);
+		}
+	    }
+
+	    qsim_cd->timer_interrupt();
+      
+	    all_booted = true;
+	    for (unsigned k = 0; k < NPROC; k++) 
+		if (!qsim_cd->booted(k)) all_booted = false;
+	} while (!all_booted);
+    }
+
+
+
+
+    if(N_LPs <= 2) {
+        //Network is always on LP 0. If total 2 LPs, the rest would be on LP 1.
+	LpId_t node_lp = (N_LPs == 1) ? 0 : 1;
+
+	//Node ID is the same as its node index: between 0 and NUM_NODES-1
+	int cpuid=0;
+	for(int i=0; i<NUM_NODES; i++) {
+	    if(i == MC_NODE_IDX) {
+		node_cids[i].type = MC_NODE;
+		node_cids[i].mc_cid = Component :: Create<MockMC>(node_lp, MC_NODE_IDX, MC_LATENCY);
+	    }
+	    else {
+		node_cids[i].type = CORE_NODE;
+		node_cids[i].proc_cid = Component :: Create<SimpleProcessor>(node_lp, qsim_cd, cpuid++, i);
+		node_cids[i].cache_cid = Component :: Create<simple_cache>(node_lp, i, MC_NODE_IDX, cache_settings);
+		node_cids[i].mc_cid = Component :: Create<MockMC>(node_lp, i, MC_LATENCY);
+	    }
+	}
+    }
+    else {
+        //More than 2 LPs: Network on LP 0; each node is on a different LP.
+	int cpuid=0;
+	for(int i=0; i<NUM_NODES; i++) {
+	    if(i == MC_NODE_IDX) {
+		node_cids[i].type = MC_NODE;
+		node_cids[i].mc_cid = Component :: Create<MockMC>(i+1, MC_NODE_IDX, MC_LATENCY);
+	    }
+	    else {
+		node_cids[i].type = CORE_NODE;
+		node_cids[i].proc_cid = Component :: Create<SimpleProcessor>(i+1, qsim_cd, cpuid++, i);
+		node_cids[i].cache_cid = Component :: Create<simple_cache>(i+1, i, MC_NODE_IDX, cache_settings);
+		node_cids[i].mc_cid = Component :: Create<MockMC>(i+1, i, MC_LATENCY);
+	    }
+	}
+    }
+
+    for(int i=0; i<NUM_NODES; i++) {
+    if(node_cids[i].type == CORE_NODE)
+    cout << i << "  core node" << endl;
+    else
+    cout << i << "  mc node" << endl;
+    }
+
+
+    //==========================================================================
+    //Now connect the components
+    //==========================================================================
+
+    for(int i=0; i<NUM_NODES; i++) {
+        if(node_cids[i].type == CORE_NODE) {
+	    //some sanity check
+	    SimpleProcessor* proc = Component :: GetComponent<SimpleProcessor>(node_cids[i].proc_cid);
+	    if(proc != 0) {
+		simple_cache* cache = Component :: GetComponent<simple_cache>(node_cids[i].cache_cid);
+		MockMC* mc = Component :: GetComponent<MockMC>(node_cids[i].mc_cid);
+		assert(cache != 0 && mc != 0);
+		assert(proc->get_nid() == cache->get_nid());
+	    }
+	
+	    //proc to cache
+	    Manifold :: Connect(node_cids[i].proc_cid, SimpleProcessor::OUT_TO_CACHE,
+				node_cids[i].cache_cid, simple_cache::IN_FROM_UPPER,
+				&simple_cache::handle_request, 1);
+	    //cache to proc
+	    Manifold :: Connect(node_cids[i].cache_cid, simple_cache::OUT_TO_UPPER,
+				node_cids[i].proc_cid, SimpleProcessor::IN_FROM_CACHE,
+				&SimpleProcessor::handle_cache_response, 1);
+	    //cache to mc
+	    Manifold :: Connect(node_cids[i].cache_cid, simple_cache::OUT_TO_LOWER,
+				node_cids[i].mc_cid, MockMC::IN,
+				&MockMC::handle_incoming, 1);
+	    //mc to cache
+	    Manifold :: Connect(node_cids[i].mc_cid, MockMC::OUT,
+				node_cids[i].cache_cid, simple_cache::IN_FROM_LOWER,
+				&simple_cache::handle_response, 1);
+	}
+	else {//MC node
+	}
+    }
+
+
+    //==========================================================================
+    // Register processors with clock to get things started
+    //==========================================================================
+
+    for(int i=0; i<NUM_NODES; i++) {
+        if(node_cids[i].type == CORE_NODE) {
+	    SimpleProcessor* proc = Component :: GetComponent<SimpleProcessor>(node_cids[i].proc_cid);
+	    if(proc) {
+		Clock :: Register(proc, &SimpleProcessor::tick, (void(SimpleProcessor::*)(void))0);
+	    }
+	}
+    }
+
+
+    Manifold::StopAt(STOP);
+    Manifold::Run();
+
+    for(int i=0; i<NUM_NODES; i++) {
+        if(node_cids[i].type == CORE_NODE) {
+	/*
+	    MockProc* proc = Component :: GetComponent<MockProc>(node_cids[i].proc_cid);
+	    if(proc)
+		proc->print_stats(cout);
+		*/
+	}
+	else {
+	/*
+	    MockMC* mc = Component :: GetComponent<MockMC>(node_cids[i].mc_cid);
+	    if(mc)
+		mc->print_stats(cout);
+		*/
+	}
+    }
+
+#ifdef REDIRECT_COUT
+    std::cout.rdbuf(cout_sbuf);
+#endif
+
+    Manifold :: Finalize();
+
+}

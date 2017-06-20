@@ -1,0 +1,72 @@
+CXX = mpic++
+MODELS_DIR = -I../../../../../models
+CPPFLAGS += -g -Wall -DKERNEL_UTEST -DNO_MPI -I/usr/include/cppunit  -I../../../../../ -I../../../../cache -I/usr/local/include 
+#LDFLAGS += -lZesto -L ../..
+#LDFLAGS += -lqsim
+#QSIM_PREFIX = /usr/local
+EXECS = trace_core_cache_connectionTest
+
+VPATH = ../.. ../../../../../kernel ../../../../cache/simple-cache
+
+# If the kernel directory already has an object, say clock.o, then the object is
+# not built. This may be wrong. So we use different names for kernel objects. This
+# way the objects in the kernel directory are not picked up.
+KERNEL_OBJS = kernel-clock.o kernel-component.o kernel-manifold.o kernel-messenger.o kernel-scheduler.o
+
+ZESTO_OBJS = 	Zesto-zesto-core.o\
+							Zesto-trace-core.o\
+						 	Zesto-zesto-oracle.o\
+							Zesto-endian.o \
+							Zesto-eval.o \
+							Zesto-machine.o \
+							Zesto-memory.o \
+							Zesto-misc.o \
+							Zesto-options.o \
+							Zesto-range.o \
+							Zesto-regs.o \
+							Zesto-stats.o \
+							Zesto-symbol.o \
+							Zesto-zesto-alloc.o \
+							Zesto-zesto-bpred.o \
+							Zesto-zesto-commit.o \
+							Zesto-zesto-decode.o \
+							Zesto-zesto-exec.o \
+							Zesto-zesto-fetch.o \
+							Zesto-zesto-memdep.o \
+							Zesto-zesto-opts.o 
+
+ALL: $(EXECS)
+
+trace_core_cache_connectionTest: trace_core_cache_connectionTest.o cache_messages.o simple_cache.o $(KERNEL_OBJS) $(ZESTO_OBJS)
+	$(CXX) -o$@ $^ $(LDFLAGS)
+
+kernel-%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o kernel-$*.o
+
+Zesto-%.o: %.cpp
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o Zesto-$*.o
+
+Zesto-%.o: %.c
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o Zesto-$*.o
+
+Zesto-%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o Zesto-$*.o
+
+%.o: %.cc
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+%.o: %.cpp
+	@[ -d dep ] || mkdir dep
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MF dep/$*.d -c $< -o $*.o
+
+-include $(wildcard dep/*.d)
+
+.PHONY: clean
+clean:
+	rm -f $(EXECS) *.o DBG* core*.out
+	rm -rf dep

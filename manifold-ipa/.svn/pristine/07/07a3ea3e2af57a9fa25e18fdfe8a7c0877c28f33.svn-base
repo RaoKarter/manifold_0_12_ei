@@ -1,0 +1,4 @@
+Simulators in this directory use trace files for instructions. Trace files are
+generated with QSim server. For instructions on how to generate your own trace
+files, refer to the README file under ROOT/util/traceGen, where ROOT is the root
+the source code tree.

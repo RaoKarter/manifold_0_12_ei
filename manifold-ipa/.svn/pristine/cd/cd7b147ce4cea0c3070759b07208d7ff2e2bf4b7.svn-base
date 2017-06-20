@@ -1,0 +1,23 @@
+prog1.cc, prog2.cc
+==================
+
+A node is:
+- MockProc, 1 level cache (simple_cache), or
+- MockMC
+
+The network is simple-net.
+
+  ------------------------
+       MockProc
+          |                       Or SimpleMC
+     simple_cache
+  ------------------------
+          |
+          |
+      NetworkInterface (simple-net)
+
+prog1.cc uses hard-coded configuration parameters,  while prog2.cc uses libconfig
+to parse a configuration file.
+
+
+

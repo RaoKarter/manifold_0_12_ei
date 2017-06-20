@@ -1,0 +1,148 @@
+#ifdef USE_QSIM
+
+#include <string.h>
+#include <libconfig.h++>
+#include <sys/time.h>
+#include <sstream>
+
+#include "core.h"
+#include "pipeline.h"
+#include "outorder.h"
+#include "inorder.h"
+#include "kernel/clock.h"
+
+#ifdef LIBEI
+#include "ei_handler.h"
+using namespace libEI;
+#endif
+
+using namespace std;
+using namespace libconfig;
+using namespace manifold;
+using namespace manifold::kernel;
+using namespace manifold::spx;
+
+spx_core_t::spx_core_t(const int nodeID, Qsim::OSDomain *osd, const char *configFileName, int coreID) :
+	node_id(nodeID),
+	core_id(coreID),
+	clock_cycle(0)
+{
+    Config parser;
+    try {
+        parser.readFile(configFileName);
+        parser.setAutoConvert(true);
+    }
+    catch(FileIOException e) {
+        fprintf(stdout,"cannot read configuration file %s\n",configFileName);
+        exit(EXIT_FAILURE);
+    }
+    catch(ParseException e) {
+        fprintf(stdout,"cannot parse configuration file %s\n",configFileName);
+        exit(EXIT_FAILURE);
+    }
+  
+	try {
+        // Pipeline model
+        const char *pipeline_model = parser.lookup("pipeline");
+        if(!strcasecmp(pipeline_model,"outorder"))
+	        pipeline = new outorder_t(this,&parser);
+        else if(!strcasecmp(pipeline_model,"inorder"))
+    	    pipeline = new inorder_t(this,&parser);
+        else {
+            fprintf(stdout,"unknown core type %s\n",pipeline_model);
+            exit(EXIT_FAILURE);
+        }
+        
+#ifdef LIBEI
+        EI_handler = new EI_handler_t(this);
+#endif
+
+        if(osd) { // If Qsim_osd given, use Qsim library.
+            pipeline->config.qsim = SPX_QSIM_LIB;
+            if(!osd) {
+                fprintf(stdout,"Qsim_lib without Qsim_osd\n");
+                exit(EXIT_FAILURE);
+            }
+            
+            pipeline->Qsim_osd = osd;
+            pipeline->Qsim_osd->set_inst_cb(pipeline,&pipeline_t::Qsim_inst_cb);
+            pipeline->Qsim_osd->set_mem_cb(pipeline,&pipeline_t::Qsim_mem_cb);
+            pipeline->Qsim_osd->set_reg_cb(pipeline,&pipeline_t::Qsim_reg_cb);
+        }
+        else { // Otherwise, assume Qsim client.
+            pipeline->config.qsim = SPX_QSIM_CLIENT;
+            
+            const char *server = parser.lookup("qsim_server");
+            const char *port = parser.lookup("qsim_port");
+            
+            pipeline->Qsim_client = new Qsim::Client(client_socket(server,port));
+            pipeline->Qsim_client->set_inst_cb(pipeline,&pipeline_t::Qsim_inst_cb);
+            pipeline->Qsim_client->set_mem_cb(pipeline,&pipeline_t::Qsim_mem_cb);
+            pipeline->Qsim_client->set_reg_cb(pipeline,&pipeline_t::Qsim_reg_cb);
+        }
+    }
+    catch(SettingNotFoundException e) {
+        fprintf(stdout,"%s not defined\n",e.getPath());
+        exit(EXIT_FAILURE);
+    }
+    catch(SettingTypeException e) {
+        fprintf(stdout,"%s has incorrect type\n",e.getPath());
+        exit(EXIT_FAILURE);
+    }
+}
+
+spx_core_t::~spx_core_t()
+{
+  	delete pipeline;
+#ifdef LIBEI
+    delete EI_handler;
+#endif
+}
+
+#ifdef LIBEI
+void spx_core_t::set_sampling_interval(const double SamplingInterval, const double StartTime, FILE *LogFile)
+{
+    EI_handler->set_sampling_interval(SamplingInterval,StartTime,LogFile);
+}
+
+void spx_core_t::connect_EI(energy_introspector_t *EI)
+{
+    EI_handler->connect_EI(EI);
+}
+
+void spx_core_t::connect_EI(MPI_Comm *InterComm, const int EIRank)
+{
+    EI_handler->connect_EI(InterComm,EIRank);
+}
+#endif
+
+
+void spx_core_t::tick()
+{
+  	clock_cycle = m_clk->NowTicks();
+    pipeline->stats.interval.clock_cycle++;
+
+    pipeline->commit();
+    pipeline->memory();
+    pipeline->execute();
+    pipeline->allocate();
+    pipeline->frontend();
+
+#ifdef LIBEI
+    pipeline->counter.frontend_undiff.switching++;
+    pipeline->counter.scheduler_undiff.switching++;
+    pipeline->counter.ex_int_undiff.switching++;
+    pipeline->counter.ex_fp_undiff.switching++;
+    pipeline->counter.lsu_undiff.switching++;
+    pipeline->counter.undiff.switching++;
+    EI_handler->calculate_power();
+#endif
+}
+
+void spx_core_t::handle_cache_response(int temp, cache_request_t *cache_request)
+{
+  	pipeline->handle_cache_response(temp,cache_request);
+}
+
+
+#endif // USE_QSIM

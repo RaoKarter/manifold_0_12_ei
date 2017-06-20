@@ -1,0 +1,251 @@
+//! @file zesto_llp.cc
+//! @brief This program builds a simple simulator of multicore systems. Its purpose is to
+//! demonstrate how to build such a simulator using the Manifold framework.
+//! The multicore system is illustrated as follows:
+//!
+//! @verbatim
+//!                                              ------------      ------------
+//!      -----------       -----------          |   memory   |    |   memory   |
+//!     | processor |     | processor |         | controller |    | controller |
+//!      -----------       -----------           ------------      ------------
+//!           |                 |                     |                  |
+//!        ----------           ----------            |                  |
+//!       | L1 cache |         | L1 cache |           |                  |
+//!        ----------           ----------            |                  |
+//!         |     |              |     |              |                  |
+//!  ----------   |       ----------   |              |                  |
+//! | L2 cache |  |      | L2 cache |  |              |                  |
+//!  ----------   |       ----------   |              |                  |
+//!       |       |            |       |              |                  |
+//!        ----   |             ----   |              |                  |
+//!            |  |                 |  |              |                  |
+//!           -----                -----              |                  |
+//!          | mux |              | mux |             |                  |
+//!             |                    |                |                  |
+//!  ---------------------------------------------------------------------------
+//!       ------------         ------------       ------------      ------------ 
+//!      | NetIntface |       | NetIntface |     | NetIntface |    | NetIntface |  
+//!       ------------         ------------       ------------      ------------ 
+//!  ---------------------------------------------------------------------------
+//! @endverbatim
+//!
+//!
+//! The components used in this program are:
+//! - trace_core_t: a processor model from Zesto that uses PIN traces.
+//! - CaffDRAM: a memory controller model.
+//! - mcp-cache: a coherence cache model.
+//! - Iris: a cycle level interconnection network model.
+//!
+//! In this program the configuration for the components is provided by a configuration
+//! file which is parsed with libconfig++. An example can be found in conf1.cfg.
+//! 
+//! To run this program, type:
+//! @code
+//! mpirun -np <NP> zesto_llp <conf_file> <zesto_conf_file> <trace_file_basename>
+//! @endcode
+//! where <NP> is the number of MPI tasks, which must be 1, 2, or X*Y+1,
+//! where X and Y are the dimensions of the mesh network.
+//!
+//! <conf_file>: the name of the configuration file.
+//! <zesto_conf_file>: the name of the Zesto configuration file.
+//! <trace_file_basename>: the basename of the trace files. For example, if the trace files
+//!                        are named myTrace0, myTrace1, then the base name is myTrace.
+//!
+//!
+//! Partitioning of the components is also hard-coded based on the number of LPs:
+//!     - 1 LP: everything is on LP 0.
+//!     - 2 LPs: the network is on LP 0 and everything else is on LP 1.
+//!     - X*Y+1 LPs: the network is on LP, and each node (processor, cache and adapter or
+//!                mem controller and adapter) is on a separate LP.
+//!
+//!
+#include "../common/sysBuilder_llp.h"
+#include "mcp_cache-iris/mcp-iris.h"
+#include "kernel/clock.h"
+#include "kernel/component.h"
+#include "kernel/manifold.h"
+#include "zesto/trace-core.h"
+#include "mcp-cache/lp_lls_unit.h"
+#include "CaffDRAM/Controller.h"
+#include "CaffDRAM/McMap.h"
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <libconfig.h++>
+#include "mpi.h"
+
+
+using namespace std;
+using namespace manifold::kernel;
+using namespace manifold::uarch;
+using namespace manifold::zesto;
+using namespace manifold::mcp_cache_namespace;
+using namespace manifold::iris;
+using namespace manifold::caffdram;
+using namespace libconfig;
+
+
+
+
+int main(int argc, char** argv)
+{
+    if(argc != 4) {
+        cerr << "Usage: mpirun -np <NP> " << argv[0] << " <config_file>  <zesto_config_file>  <trace_file_basename>" << endl;
+	cerr << "  NP the number of MPI tasks." << endl;
+	exit(1);
+    }
+
+    Config config;
+    try {
+	config.readFile(argv[1]);
+    }
+    catch (FileIOException e) {
+        cerr << "Cannot read configuration file " << argv[1] << endl;
+	exit(1);
+    }
+    catch (ParseException e) {
+        cerr << "Cannot parse configuration file " << argv[1] << endl;
+	exit(1);
+    }
+
+    Manifold::Init(argc, argv, Manifold::TICKED, SyncAlg::SA_CMB_OPT_TICK);
+
+    SysBuilder_llp sysBuilder;
+    sysBuilder.config_network_topology(config);
+
+    sysBuilder.config_components(config);
+
+
+    int N_LPs = 1; //number of LPs
+    MPI_Comm_size(MPI_COMM_WORLD, &N_LPs);
+    cout << "Number of LPs = " << N_LPs << endl;
+    unsigned expected_lps = sysBuilder.proc_node_idx_vec.size() + 1;
+    if(N_LPs != 1 && N_LPs !=2 && (unsigned)N_LPs != expected_lps) {
+        cerr << "Number of LPs must be 1, 2, or " << expected_lps << "!" << endl;
+	exit(1);
+    }
+
+
+
+    //==========================================================================
+    // create all the components.
+    //==========================================================================
+    Clock myClock(sysBuilder.FREQ);
+
+    // need storage for component IDs for connecting components
+
+    Node_cid_llp node_cids[sysBuilder.MAX_NODES];
+
+    //Terminal address to network address mapping
+    //Using Simple_terminal_to_net_mapping means node ids must be 0 to MAX_NODES-1.
+    Simple_terminal_to_net_mapping* mapping = new Simple_terminal_to_net_mapping();
+    MCPSimLen* simLen = new MCPSimLen(sysBuilder.l1_cache_parameters.block_size, sysBuilder.COH_MSG_TYPE, sysBuilder.MEM_MSG_TYPE, sysBuilder.CREDIT_MSG_TYPE);
+    MCPVnet* vnet = new MCPVnet(sysBuilder.COH_MSG_TYPE, sysBuilder.MEM_MSG_TYPE, sysBuilder.CREDIT_MSG_TYPE);
+
+    sysBuilder.create_network(myClock, mapping, simLen, vnet);
+
+
+#define REDIRECT_COUT
+
+#ifdef REDIRECT_COUT
+    // create a file into which to write debug/stats info.
+    int Mytid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &Mytid);
+    char buf[10];
+    sprintf(buf, "DBG_LOG%d", Mytid);
+    ofstream DBG_LOG(buf);
+
+    //redirect cout to file.
+    std::streambuf* cout_sbuf = std::cout.rdbuf(); // save original sbuf
+    std::cout.rdbuf(DBG_LOG.rdbuf()); // redirect cout
+#endif
+
+
+    CaffDramMcMap* mc_map = new CaffDramMcMap(sysBuilder.mc_node_idx_vec, sysBuilder.dram_settings);
+    PageBasedMap* l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 12); //page size = 2^12
+
+    sysBuilder.config_cache_settings(l2_map, mc_map);
+
+
+    list<LP_LLS_unit*> lp_lls_units;
+
+    //More than 2 LPs: Network on LP 0; each node is on a different LP.
+    int lp_idx = 1; //the network is LP 0
+    int proc_idx = 0;
+    for(int i=0; i<sysBuilder.MAX_NODES; i++) {
+	if(N_LPs == 1)
+	    lp_idx = 0;
+	else if(N_LPs == 2)
+	    lp_idx = 1; //network is no LP 0
+
+	if(sysBuilder.mc_node_idx_set.find(i) != sysBuilder.mc_node_idx_set.end()) { //MC node
+	    node_cids[i].type = MC_NODE;
+	    node_cids[i].mc_cid = Component :: Create<Controller>(0, i, sysBuilder.dram_settings, sysBuilder.MC_DOWNSTREAM_CREDITS);
+	    node_cids[i].lp = 0;
+	}
+	else if(sysBuilder.proc_node_idx_set.find(i) != sysBuilder.proc_node_idx_set.end()) {
+	    node_cids[i].type = CORE_NODE;
+	    char buf[100];
+	    sprintf(buf, "%s%d", argv[3], proc_idx);
+	    node_cids[i].proc_cid = Component :: Create<trace_core_t>(lp_idx, i, argv[2], buf);
+	    LP_LLS_unit* unit = new LP_LLS_unit(lp_idx, i, sysBuilder.l1_cache_parameters, sysBuilder.l2_cache_parameters, sysBuilder.l1_settings, sysBuilder.l2_settings, Clock::Master(), sysBuilder.CREDIT_MSG_TYPE); 
+	    node_cids[i].l1_cache_cid = unit->get_llp_cid();
+	    node_cids[i].l2_cache_cid = unit->get_lls_cid();
+	    node_cids[i].mux_cid = unit->get_mux_cid();
+	    lp_lls_units.push_back(unit);
+	    node_cids[i].lp = lp_idx;
+
+#if 0
+MuxDemux* muxp = unit->get_mux();
+if(muxp) {
+Clock::Master().register_output_predictor(muxp, &MuxDemux::do_output_to_net_prediction);
+}
+#endif
+	    proc_idx++;
+	    lp_idx++;
+	}
+	else {
+	    node_cids[i].type = EMPTY_NODE;
+	}
+    }
+
+    for(int i=0; i<sysBuilder.MAX_NODES; i++) {
+	if(node_cids[i].type == CORE_NODE)
+	    cout << i << "  core node lp= " << node_cids[i].lp << endl;
+	else if(node_cids[i].type == MC_NODE)
+	    cout << i << "  mc node lp= " << node_cids[i].lp << endl;
+	else
+	    cout << i << "  empty node" << endl;
+    }
+
+
+
+    //==========================================================================
+    //Now connect the components
+    //==========================================================================
+
+    sysBuilder.connect_components(node_cids);
+
+
+    //==========================================================================
+    // Register processors with the clock
+    //==========================================================================
+
+    sysBuilder.register_components_with_clock<trace_core_t>(node_cids);
+
+
+
+    Manifold::StopAt(sysBuilder.STOP);
+    Manifold::Run();
+
+
+    sysBuilder.print_stats(node_cids);
+
+
+#ifdef REDIRECT_COUT
+    std::cout.rdbuf(cout_sbuf);
+#endif
+
+    Manifold :: Finalize();
+
+}

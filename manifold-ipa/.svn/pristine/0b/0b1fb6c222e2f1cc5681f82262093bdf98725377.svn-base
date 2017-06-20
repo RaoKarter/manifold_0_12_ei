@@ -1,0 +1,183 @@
+#include <TestFixture.h>
+#include <TestAssert.h>
+#include <TestSuite.h>
+#include <Test.h>
+#include <TestCaller.h>
+#include <cppunit/ui/text/TestRunner.h>
+
+#include <stdlib.h>
+#include <iostream>
+#include <vector>
+
+#include "kernel/manifold.h"
+#include "kernel/component.h"
+
+#include "trace-proc.h"
+
+using namespace manifold::kernel;
+using namespace manifold::simple_proc;
+using namespace std;
+
+
+//####################################################################
+// helper classes
+//####################################################################
+
+class MockCache : public Component
+{
+public:
+    enum {PORT=0};
+
+    template<typename T>
+    void handle_request_no_reply(int, T* req)
+    {
+        m_req_addrs.push_back(req->get_addr());
+    }
+
+    list<uint64_t>& get_req_addrs() { return m_req_addrs;}
+
+
+    void send_reply(CacheReq* reply)
+    {
+        Send(PORT, reply);
+    }
+
+
+private:
+    list<uint64_t> m_req_addrs;
+};
+
+
+
+//####################################################################
+//####################################################################
+class TraceProcTest :  public CppUnit::TestFixture {
+public:
+    static Clock MasterClock;  //clock has to be global or static.
+    enum { MASTER_CLOCK_HZ = 10 };
+
+    //! @brief Cache requests to same line; cache replies to load
+    //!
+    //! Create a trace file with N memory accesses to the same line; After the processor
+    //! processes the trace file, verify all write requests get to the cache, and only 1
+    //! read request gets to the cache.
+    //! Cache sends a reply for load; verify all MSHR entries are removed.
+    void test_same_line_reply_to_load_0()
+    {
+	//create N addresses for the same cache line
+	const int BLOCK_SZ = 32;
+	//const int MSHR_SZ = 16;
+	const int N = random() % (BLOCK_SZ-1) + 2;  //2 to BLOCK_SZ
+	uint64_t addrs[N];
+	addrs[0] = random();
+
+	int offset_bits = 0;
+	while ((0x1 << offset_bits) < BLOCK_SZ)
+	    offset_bits++;
+
+        assert(0x1 << offset_bits == BLOCK_SZ);
+	uint64_t TAG_MASK = BLOCK_SZ - 1;
+	TAG_MASK = ~TAG_MASK;
+
+	//cout <<hex<< "ad0= " << addrs[0] <<dec<< endl;
+	for(int i=1; i<N; i++) {
+	    uint64_t ad = addrs[0] & TAG_MASK;
+	    //or in a random offset
+	    ad |= (random() & ~TAG_MASK);
+	    //cout <<hex<< "ad= " << ad <<dec<< endl;
+	    addrs[i] = ad;
+	}
+
+
+
+        //write to file
+	const char* fname = "temp_trace_x1y2zp6c.txt"; //a random name
+	ofstream trace_file(fname);
+	int n_st = 0; //num of stores
+	int n_ld = 0; //num of loads
+	uint64_t first_ld_addr;
+	for(int i=1; i<N; i++) {
+	    if(random() % 2 == 0) {
+	        trace_file << "0x0 " <<hex<< addrs[i] <<dec<< endl;
+		if(n_ld==0)
+		    first_ld_addr = addrs[i];
+		n_ld++;
+	    }
+	    else {
+	        trace_file << "0x1 " <<hex<< addrs[i] <<dec<< endl;
+		n_st++;
+	    }
+	}
+	trace_file.close();
+
+
+
+        SimpleProc_Settings settings(BLOCK_SZ);
+
+	CompId_t proc_id = Component :: Create<TraceProcessor>(0, 1, fname, settings);
+	CompId_t cache_id = Component :: Create<MockCache>(0);
+
+	TraceProcessor* proc = Component::GetComponent<TraceProcessor>(proc_id);
+	MockCache* cache = Component::GetComponent<MockCache>(cache_id);
+
+	Manifold::Connect(proc_id, TraceProcessor::PORT_CACHE, cache_id, MockCache::PORT,
+	                  &MockCache::handle_request_no_reply<CacheReq>, 1);
+	Manifold::Connect(cache_id, MockCache::PORT, proc_id, TraceProcessor::PORT_CACHE,
+	                  &TraceProcessor::handle_cache_response, 1);
+
+        Clock::Register((SimpleProcessor*)proc, &TraceProcessor::tick, (void(SimpleProcessor::*)(void))0);
+
+	//schedule a reply
+	CacheReq* reply = new CacheReq(first_ld_addr, true);
+
+	Manifold::Schedule(N+10, &MockCache::send_reply, cache, reply);
+
+        Manifold::StopAt(N+20);
+	Manifold::Run();
+
+	int n_reqs = n_st + ((n_ld > 1) ? 1 : n_ld);
+	CPPUNIT_ASSERT_EQUAL(n_reqs, (int)cache->get_req_addrs().size());
+
+	CPPUNIT_ASSERT_EQUAL(0, (int)proc->outstanding_requests.size());
+	CPPUNIT_ASSERT_EQUAL(0, (int)proc->num_outstanding_requests);
+
+	//delete file
+	if(remove(fname) != 0) {
+	    cerr << "Error deleting file " << fname << endl;
+	    exit(1);
+	}
+    }
+
+
+
+    //! Build a test suite.
+    static CppUnit::Test* suite()
+    {
+	CppUnit::TestSuite* mySuite = new CppUnit::TestSuite("TraceProcTest");
+	mySuite->addTest(new CppUnit::TestCaller<TraceProcTest>("test_same_line_reply_to_load_0", &TraceProcTest::test_same_line_reply_to_load_0));
+
+	return mySuite;
+    }
+};
+
+Clock TraceProcTest :: MasterClock(TraceProcTest :: MASTER_CLOCK_HZ);
+
+
+int main()
+{
+    Manifold :: Init();
+    CppUnit::TextUi::TestRunner runner;
+    runner.addTest( TraceProcTest::suite() );
+    if(runner.run("", false))
+	return 0; //all is well
+    else
+	return 1;
+
+}
+
+
+
+
+
+
+

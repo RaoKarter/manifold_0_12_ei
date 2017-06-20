@@ -1,0 +1,2 @@
+./smp_llp <config_file>       <spx_config_file> <qsim_type>                       <state_file> <EI_config_file>    <benchmark_tar_file>
+./smp_llp conf_llp.cfg.bst.ss outorder.config.ss qsim_lib ../../../../../qsim-0.1.5.1/state.16 16core_ooo.config.ss blackscholes.tar
