@@ -263,7 +263,7 @@ int main(int argc, char** argv)
 
 
     CaffDramMcMap* mc_map = new CaffDramMcMap(sysBuilder.mc_node_idx_vec, sysBuilder.dram_settings);
-    PageBasedMap* l2_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 12); //page size = 2^12
+    PageBasedMap* l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 8); //page size = 2^12
     sysBuilder.config_cache_settings(l2_map, mc_map);
 
 //#define REDIRECT_COUT_
@@ -281,7 +281,10 @@ int main(int argc, char** argv)
     std::cout.rdbuf(DBG_LOG.rdbuf()); // redirect cout
 #endif
 
-
+    //FIXME: To be removed when controller is used.
+    //Core Voltage
+    double core_voltage((double)config.lookup("core_voltage"));
+    cerr << "Core: Voltage = " << core_voltage << endl << flush;
 
     //==========================================================================
     // Create manifold components.
@@ -347,12 +350,17 @@ int main(int argc, char** argv)
 	    manifold::spx::spx_core_t* proc_global = (spx_core_t*) Component :: GetComponent<spx_core_t>(node_cids[i].proc_cid);
 	    manifold::mcp_cache_namespace::MESI_LLP_cache* l1_global = (MESI_LLP_cache*) Component :: GetComponent<MESI_LLP_cache>(node_cids[i].l1_cache_cid);
 	    manifold::mcp_cache_namespace::MESI_LLS_cache* l2_global = (MESI_LLS_cache*) Component :: GetComponent<MESI_LLS_cache>(node_cids[i].l2_cache_cid);
-	    if(proc_global && l1_global && l2_global) {
-                ei_device[i] = new ei_wrapper_t(node_clock[i], energy_introspector, proc_global->pipeline->counters, proc_global->ipa, l1_global->cache_counter, l2_global->cache_counter, sampling_period, sysBuilder.MAX_NODES, i); 
-            } else {
-                cerr << "parsing sim hierachy fails" << endl;
-                exit(1);
-            }
+//	    manifold::mcp_cache_namespace::MuxDemux* mux_global = (MuxDemux*) Component :: GetComponent<MuxDemux>(node_cids[i].mux_cid);
+	    if(proc_global && l1_global && l2_global)
+	    {
+			ei_device[i] = new ei_wrapper_t(node_clock[i], core_voltage, energy_introspector, proc_global->pipeline->counters, proc_global->ipa, l1_global->cache_counter,
+					l2_global->cache_counter, l2_global, sampling_period, sysBuilder.MAX_NODES, i);
+		}
+	    else
+	    {
+			cerr << "parsing sim hierachy fails" << endl;
+			exit(1);
+		}
 
 
 	}

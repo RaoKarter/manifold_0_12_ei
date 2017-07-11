@@ -1,5 +1,5 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 1000000L; //
+simulation_stop = 50000000L; //
 
 network_clock_frequency = 3000000000L; // 3GHz
 

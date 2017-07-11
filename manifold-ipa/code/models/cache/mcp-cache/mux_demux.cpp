@@ -26,20 +26,23 @@ void MuxDemux :: tick()
 
 //cerr << "Mux " << m_llp->get_node_id() << " tick(), @ " << m_clk.NowTicks() << endl;
     NetworkPacket* lls_pkt = m_lls->pop_from_output_buffer();
-    if(lls_pkt) {
-	Send(PORT_NET, lls_pkt);
+    if(lls_pkt)
+    {
+    	Send(PORT_NET, lls_pkt);
 	//cerr << "OOOOOOOOOOOOOOOOOOOOOOOOOO, @ " << std::dec << m_clk.NowTicks() << " in " << m_clk.freq << "Hz mux send lls" << std::endl;
 	//cerr << " lls_pkt: src " << lls_pkt->src << " src_port " << lls_pkt->src_port << " dst " << lls_pkt->dst << " dst_port " << lls_pkt->dst_port << " addr 0x" << std::hex << (*(Coh_msg*)lls_pkt->data).addr  << "\n";
-cerr.flush();
+    	cerr.flush();
     }
-    else {
-	NetworkPacket* llp_pkt = m_llp->pop_from_output_buffer();
-	if(llp_pkt) {
-	    Send(PORT_NET, llp_pkt);
+    else
+    {
+    	NetworkPacket* llp_pkt = m_llp->pop_from_output_buffer();
+    	if(llp_pkt)
+    	{
+    		Send(PORT_NET, llp_pkt);
 	    //cerr << "OOOOOOOOOOOOOOOOOOOOOOOOOO, @ " << std:: dec << m_clk.NowTicks() << " in " << m_clk.freq  << "Hz  mux send llp" << std::endl;
 	    //cerr << " llp_pkt: src " << llp_pkt->src << " src_port " << llp_pkt->src_port << " dst " << llp_pkt->dst << " dst_port " << llp_pkt->dst_port << " addr 0x" << std::hex << (*(Coh_msg*)llp_pkt->data).addr  << "\n";
-cerr.flush();
-	}
+    		cerr.flush();
+    	}
     }
 }
 

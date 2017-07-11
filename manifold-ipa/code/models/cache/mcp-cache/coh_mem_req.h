@@ -20,6 +20,7 @@ struct Mem_msg {
     int src_port;
     int dst_id;
     int dst_port;
+    int core_id;
     uint64_t get_addr() { return addr; }
     bool is_read() { return op_type == OpMemLd; }
     int get_src() { return src_id; }
@@ -28,6 +29,8 @@ struct Mem_msg {
     void set_dst(int d) { dst_id = d; }
     void set_dst_port(int d) { dst_port = d; }
     void set_mem_response() { type = MEM_RPLY; }
+    void set_core_id(int c) { core_id = c; }
+    int get_core_id() { return core_id; }
     //cache_msg_t msg;
     //int resolve_time;
 };
@@ -45,6 +48,7 @@ struct Coh_msg {
     int src_port;
     int dst_id;
     int dst_port;
+    int core_id;
 };
 
 

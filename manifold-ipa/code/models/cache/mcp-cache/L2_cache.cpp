@@ -55,6 +55,12 @@ L2_cache :: L2_cache (int nid, const cache_settings& parameters, const L2_cache_
     stats_mshr_occupancy = 0;
     stats_mshr_empty_cycles = 0;
 
+    for(int i = 0; i < L2_CORE_COUNT; i++)
+    {
+    	mem_reads[i] = 0;
+    	mem_writes[i] = 0;
+    }
+
 #ifdef MCP_CACHE_COUNTERS
       cache_counter = new L2_counter_t();
 #endif
@@ -321,23 +327,26 @@ void L2_cache::L2_algorithm (hash_entry* mshr_entry, Coh_msg* request)
 
     if(mshr_entry->get_have_data())
     {
-        if(manager->process_lower_client_request(request, true)) {
-	    if(my_table->get_entry(request->addr)) {
-		//my_table->update_lru(request->u.coh.addr);
-	    }
-	    delete request;
-	    update_hash_entry(mshr_map[mshr_entry->get_idx()], mshr_entry); //write hash_entry back.
-	    release_mshr_entry(mshr_entry);
-	}
-	else {
-	    mcp_stalled_req[manager->getManagerID()] = request;
-	}
+        if(manager->process_lower_client_request(request, true))
+        {
+        	if(my_table->get_entry(request->addr))
+        	{
+        		//my_table->update_lru(request->u.coh.addr);
+        	}
+        	delete request;
+        	update_hash_entry(mshr_map[mshr_entry->get_idx()], mshr_entry); //write hash_entry back.
+        	release_mshr_entry(mshr_entry);
+        }
+        else
+        {
+        	mcp_stalled_req[manager->getManagerID()] = request;
+        }
     }
     else
     {
         stats_miss++;
         get_from_memory(request);
-	mcp_stalled_req[manager->getManagerID()] = request; //necessary for wakeup when response comes back.
+        mcp_stalled_req[manager->getManagerID()] = request; //necessary for wakeup when response comes back.
     }
 }
 
@@ -493,11 +502,15 @@ void L2_cache::get_from_memory (Coh_msg *request)
     req.op_type = OpMemLd;
     req.src_id = node_id;
     req.dst_id = mc_map->lookup(request->addr);
+//    cerr << "L2_cache"<<node_id<<" get_from_mem addr "<<hex<<request->addr<<dec<<"from L1_cache"<<request->core_id<<endl<<flush;
+    req.core_id = request->core_id;
+    mem_reads[req.core_id]++;
 
     NetworkPacket* pkt = new NetworkPacket;
     pkt->type = MEM_MSG;
     pkt->src = node_id;
     pkt->dst = req.dst_id;
+    pkt->core_id = req.core_id;
     *((Mem_msg*)(pkt->data)) = req;
     pkt->data_size = sizeof(Mem_msg);
 
@@ -524,11 +537,15 @@ void L2_cache::dirty_to_memory (paddr_t addr)
     req.op_type = OpMemSt;
     req.src_id = node_id;
     req.dst_id = mc_map->lookup(addr);
+//    cerr << "L2_cache"<<node_id<<" dirty_to_mem addr "<<hex<<addr<<dec<<endl<<flush;
+    req.core_id = node_id;
+    mem_writes[req.core_id]++;
 
     NetworkPacket* pkt = new NetworkPacket;
     pkt->type = MEM_MSG;
     pkt->src = node_id;
     pkt->dst = req.dst_id;
+    pkt->core_id = node_id;
     *((Mem_msg*)(pkt->data)) = req;
     pkt->data_size = sizeof(Mem_msg);
 

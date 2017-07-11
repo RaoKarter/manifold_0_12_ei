@@ -12,6 +12,7 @@
 #include "uarch/DestMap.h"
 
 #include "cache-counters.h"
+#define L2_CORE_COUNT 16
 
 using namespace std;
 
@@ -63,6 +64,18 @@ public:
 	MEM_MSG = mem;
 	CREDIT_MSG = credit;
     }
+
+    uint64_t mem_reads[L2_CORE_COUNT];
+    uint64_t mem_writes[L2_CORE_COUNT];
+
+    void clear_mem_counters()
+    {
+    	for(int i = 0; i < L2_CORE_COUNT; i++)
+    	{
+    		mem_reads[i] = 0; mem_writes[i] = 0;
+    	}
+    }
+
 private:
     void process_client_request (Coh_msg* request, bool first);
     void process_client_reply (Coh_msg* reply);

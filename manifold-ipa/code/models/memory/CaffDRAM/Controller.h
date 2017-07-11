@@ -169,7 +169,8 @@ cerr << "@" << dec << manifold::kernel::Manifold::NowTicks() << "mc received LD,
 cerr << "@" << dec << manifold::kernel::Manifold::NowTicks() << "mc received ST, src= " << pkt->get_src() << " port= " << pkt->get_src_port() << " addr= " <<hex<< req->get_addr() <<dec<<endl;
 #endif
 	//stats
-	m_stores[req->get_src()]++;
+	//m_stores[req->get_src()]++;
+	m_stores[req->get_core_id()]++;
 	/*
 	m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
 	                                          Req_info(OpMemSt, req->u.mem.originator_id, req->u.mem.source_id, req->u.mem.addr)));
