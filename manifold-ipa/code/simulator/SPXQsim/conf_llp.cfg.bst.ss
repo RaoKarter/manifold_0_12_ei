@@ -1,5 +1,5 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 1000000L; //
+simulation_stop = 1000000000L; //
 
 network_clock_frequency = 3000000000L; // 3GHz
 
@@ -62,8 +62,22 @@ lls_cache:
     downstream_credits = 128; //credits for sending to network
 };
 
+//mc: //memory controller
+//{
+//    type = "CAFFDRAM";
+//    downstream_credits = 128; //credits for sending to network
+//    node_idx = [0, 3, 12, 15];
+//};
+
 mc: //memory controller
-{
+{ 
+    node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     downstream_credits = 128; //credits for sending to network
-    node_idx = [0, 3, 12, 15];
+    type = "DRAMSIM";
+    dramsim2:
+    {
+        dev_file = "3d_die.ini";
+        sys_file = "3d_die.ini.example";
+        size = 256;
+   };
 };

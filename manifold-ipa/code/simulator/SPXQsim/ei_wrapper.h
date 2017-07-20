@@ -1,8 +1,10 @@
 #ifndef __EI_WRAPPER_H__
 #define __EI_WRAPPER_H__
 
+#include <vector>
 #include "kernel/component.h"
 #include "kernel/clock.h"
+//#include "dvfs.h"
 
 #include "../../models/cache/mcp-cache/hash_table.h"
 
@@ -45,6 +47,9 @@ private:
   manifold::mcp_cache_namespace::L2_counter_t *l2_cnt;
   manifold::mcp_cache_namespace::LLS_cache *p_l2cache;
 
+  std::vector<double> TArray;
+  std::vector<double> P1;
+  std::vector<double> P2;
 //  void TL_feedback(int core_id);
 
   int id;

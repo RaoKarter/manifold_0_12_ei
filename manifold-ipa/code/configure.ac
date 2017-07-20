@@ -13,6 +13,7 @@ AC_CONFIG_SUBDIRS([kernel
                    models/cache/mcp-cache 
                    models/cache/simple-cache 
                    models/memory/CaffDRAM
+                   models/memory/DRAMSim2
                    models/network/iris 
                    models/processor/spx
                    models/cross/mcp_cache-iris

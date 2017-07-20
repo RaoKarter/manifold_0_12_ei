@@ -68,6 +68,7 @@
 #include "mcp-cache/lp_lls_unit.h"
 #include "CaffDRAM/Controller.h"
 #include "CaffDRAM/McMap.h"
+#include "DRAMSim2/dram_sim.h"
 #include "qsim.h"
 #include "qsim-load.h"
 #include <stdlib.h>
@@ -78,7 +79,7 @@
 #include <assert.h>
 #include "mpi.h"
 
-#define USE_EI
+//#define USE_EI
 
 
 using namespace std;
@@ -88,6 +89,7 @@ using namespace manifold::spx;
 using namespace manifold::mcp_cache_namespace;
 using namespace manifold::iris;
 using namespace manifold::caffdram;
+using namespace manifold::dramsim;
 using namespace manifold::ei_wrapper;
 using namespace libconfig;
 using namespace EI;
@@ -261,12 +263,35 @@ int main(int argc, char** argv)
 
     sysBuilder.create_network(network_clock, mapping, simLen, vnet);
 
+	const char* mem_chars = config.lookup("mc.type");
+	string mem_str = mem_chars;
+	manifold::dramsim::Dram_sim_settings dramsim_settings(sysBuilder.m_DEV_FILE.c_str(), sysBuilder.m_SYS_FILE.c_str(),
+		      sysBuilder.m_MEM_SIZE, false, sysBuilder.MC_DOWNSTREAM_CREDITS);
+	PageBasedMap* dramsim_mc_map = NULL;
+	CaffDramMcMap* mc_map = NULL;
+	PageBasedMap* l2_map = NULL;
+	if(mem_str == "CAFFDRAM")
+	{
+		mc_map = new CaffDramMcMap(sysBuilder.mc_node_idx_vec, sysBuilder.dram_settings);
+		l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 8); //page size = 2^12
+		sysBuilder.config_cache_settings(l2_map, mc_map);
+	}
+	else if(mem_str == "DRAMSIM")
+	{
 
-    CaffDramMcMap* mc_map = new CaffDramMcMap(sysBuilder.mc_node_idx_vec, sysBuilder.dram_settings);
-    PageBasedMap* l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 8); //page size = 2^12
-    sysBuilder.config_cache_settings(l2_map, mc_map);
+		manifold::dramsim::Dram_sim :: Set_msg_types(sysBuilder.MEM_MSG_TYPE, sysBuilder.CREDIT_MSG_TYPE);
 
-//#define REDIRECT_COUT_
+//		dramsim_settings(sysBuilder.m_DEV_FILE.c_str(), sysBuilder.m_SYS_FILE.c_str(),
+//												      sysBuilder.m_MEM_SIZE, false, sysBuilder.MC_DOWNSTREAM_CREDITS);
+		dramsim_mc_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 10); // assuming page size= 2^12
+		l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 10); //page size = 2^12
+		sysBuilder.config_cache_settings(l2_map, dramsim_mc_map);
+		cerr << "DRAMSim2 mc_map address: " << hex << dramsim_mc_map << dec << endl << flush;
+	}
+
+
+
+//#define REDIRECT_COUT
 
 #ifdef REDIRECT_COUT
     // create a file into which to write debug/stats info.
@@ -284,7 +309,7 @@ int main(int argc, char** argv)
     //FIXME: To be removed when controller is used.
     //Core Voltage
     double core_voltage((double)config.lookup("core_voltage"));
-    cerr << "Core: Voltage = " << core_voltage << endl << flush;
+    cout << "Core: Voltage = " << core_voltage << endl << flush;
 
     //==========================================================================
     // Create manifold components.
@@ -309,7 +334,19 @@ int main(int argc, char** argv)
         node_cids[i].l2_cache_cid = unit->get_lls_cid();
         node_cids[i].mux_cid = unit->get_mux_cid();
         lp_lls_units.push_back(unit);
-        node_cids[i].mc_cid = Component :: Create<Controller>(node_lp, &dram_clock, i, sysBuilder.dram_settings, sysBuilder.MC_DOWNSTREAM_CREDITS);
+        if(mem_str == "CAFFDRAM")
+        {
+        	cerr << "Creating CaffDRAM @ node: " << i << endl;
+        	node_cids[i].mc_cid = Component :: Create<Controller>(node_lp, &dram_clock, i, sysBuilder.dram_settings, sysBuilder.MC_DOWNSTREAM_CREDITS);
+        }
+        else if(mem_str == "DRAMSIM")
+        {
+        	cerr << "Creating DRAMSim2 @ node: " << i << endl;
+        	node_cids[i].mc_cid = Component :: Create<Dram_sim>(node_lp, i, dramsim_settings, &dram_clock);
+        	Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
+        	if (mc)
+        		mc->set_mc_map(dramsim_mc_map);
+        }
         
       } else if(sysBuilder.proc_node_idx_set.find(i) != sysBuilder.proc_node_idx_set.end()) { //proc node
 

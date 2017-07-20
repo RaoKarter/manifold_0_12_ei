@@ -35,7 +35,7 @@ THERMALLIB_3DICE::THERMALLIB_3DICE(string component_name, parameters_t *paramete
   init_analysis(&analysis);
   
   string grid_map_mode;
-  set_variable(grid_map_mode,parameters_package,"grid_map_mode","average");
+  set_variable(grid_map_mode,parameters_package,"max","average");
   if(!stricmp(grid_map_mode,"avg")||!stricmp(grid_map_mode,"average"))
     thermal_grid_mapping = AVG_TEMP;
   else if(!stricmp(grid_map_mode,"min")||!stricmp(grid_map_mode,"minimum"))

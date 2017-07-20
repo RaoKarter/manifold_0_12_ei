@@ -115,34 +115,111 @@ void ei_wrapper_t::tick()
 
 	sam_cycle += 1;
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+
 #if 0
 	if(sam_cycle == (SAMPLING_CYCLE + 2))
 	{
 		sam_cycle = 1;
-		total_mips = 0.0;
+		dvfs_count = 0;
 
-		double vdd = 0.8 + 0.1*(p_ipa->new_freq - 3e9)/1e9;
-		cerr << "id: " << id << " tick: " << manifold::kernel::Clock::Master().NowTicks() << " new_freq: " << p_ipa->new_freq
-				<< " old_freq: " << clock->freq << " new_vdd: " << vdd << " old_vdd: " << last_vdd << endl;
-		clock->set_frequency(p_ipa->new_freq);
-		next_frq = p_ipa->new_freq;
+		// Calculate the mean temperature and mean power
 
-		char ModuleID[64];
+		T_1 = average(TArray);                 //Average of temperature
+		P_1 = average(P1);                      //Average of static power
+		P_2 = average(P2);                     //Average of dynamic power
 
-		sprintf(ModuleID,"CORE_DIE:FRT%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+		//				dT_dPT_New[i] = (1 + deltat1*a) * dT_dPT_Old[i] + (deltat1 * b);
+		dT_dPT_New = g;
+		//				fprintf(stdout,"\n dT_dPT_New[%d] %lf",i,dT_dPT_New[i]);
 
-		sprintf(ModuleID,"CORE_DIE:SCH%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+		dPd_dphi =  P_2 * ( (1 / phi_Old) + (2*m) / V_Old ) ;
+		//				fprintf(stdout,"\t dPd_dphi[%d] %lf",i,dPd_dphi[i]);
 
-		sprintf(ModuleID,"CORE_DIE:INT%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+		dPs_dT = P_1 * log(10) * ( -Gamma1 / pow(T_1,2) ) ;
+		//				fprintf(stdout,"\t dPs_dT[%d] %lf",i,dPs_dT[i]);
 
-		sprintf(ModuleID,"CORE_DIE:FPU%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+		dPs_dphi = m * (P_1 / V_Old);
+		//				fprintf(stdout,"\t dPs_dphi[%d] %lf",i,dPs_dphi[i]);
 
-		sprintf(ModuleID,"CORE_DIE:MEM%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+		dT_dphi = ( ( dT_dPT_New ) * ( dPs_dphi + dPd_dphi ) ) / ( 1 - (dT_dPT_New) * dPs_dT );
+		//				fprintf(stdout,"\t dT_dphi[%d] %lf",i,dT_dphi[i]);
+
+		Gain_K = (1 / dT_dphi);
+		//				fprintf(stdout,"\t Gain_K[%d] %lf",i,Gain_K[i]);
+
+//		Gain_K[i] = 100;  // Fixed Gain
+		//Gain_K = 60;
+
+		// Apply the control law
+		phi_diff = (StepSize * Gain_K * (thermal_threshold - T_1) );
+		phi_new = phi_Old + phi_diff;
+
+		fprintf(stdout,"Stepsize[%d] \t %lf \t Gain_K[%d] \t %lf \t Error[%d] \t %f \t phi_diff[%d] \t %lf \t phi_new[%d] \t %lf"\
+				,i,StepSize[i],i, Gain_K[i],i, thermal_threshold[i] - T_1[i],i, phi_diff[i],i, phi_new[i]);
+
+		if(phi_new <= 0.5e3)
+		{
+//			dvfs_level[i] = 0; // 1GHz
+			//fprintf(stdout," %1.3lf",dfs[dvfs_level]*1e-6);
+			phi_Old = 0.5e9;
+			V_Old = m*phi_Old + V0;
+			//if(core[i]->get_frequency() > dfs[dvfs_level]*1e-6) {
+			core->set_frequency(phi_Old);
+			fprintf(stdout,"\t %lf",phi_Old);
+			assert(energy_introspector->push_and_synchronize_data(core_id[i],time-start_time,UNSPECIFIED_TIME,libEI::EI_DATA_CLOCK_FREQUENCY,&dfs[dvfs_level[i]]) == libEI::EI_QUEUE_ERROR_NONE);
+			assert(energy_introspector->push_and_synchronize_data(core_id[i],time-start_time,UNSPECIFIED_TIME,libEI::EI_DATA_VOLTAGE,&dvs[dvfs_level[i]]) == libEI::EI_QUEUE_ERROR_NONE);
+		}
+		else if(phi_new >= 3.0e3)
+		{
+//			dvfs_level[i] = 10; // 4.7GHz
+			//fprintf(stdout," %1.3lf",dfs[dvfs_level]*1e-6);
+			phi_Old = 3.0e9;
+			V_Old = m*phi_Old + V0;
+			//if(core[i]->get_frequency() > dfs[dvfs_level]*1e-6) {
+			core->set_frequency(phi_Old);
+			fprintf(stdout,"\t %lf",phi_Old);
+			assert(energy_introspector->push_and_synchronize_data(core_id[i],time-start_time,UNSPECIFIED_TIME,libEI::EI_DATA_CLOCK_FREQUENCY,&dfs[dvfs_level[i]]) == libEI::EI_QUEUE_ERROR_NONE);
+			assert(energy_introspector->push_and_synchronize_data(core_id[i],time-start_time,UNSPECIFIED_TIME,libEI::EI_DATA_VOLTAGE,&dvs[dvfs_level[i]]) == libEI::EI_QUEUE_ERROR_NONE);
+		}
+		else
+		{
+			phi_Old = phi_new;
+			phi1 = phi_new * 1e6;
+			V_Old = m * phi_Old + V0;
+			core->set_frequency(phi_new);
+			fprintf(stdout,"\t %lf",phi_Old);
+			assert(energy_introspector->push_and_synchronize_data(core_id[i],time-start_time,UNSPECIFIED_TIME,libEI::EI_DATA_CLOCK_FREQUENCY,&phi_Old) == libEI::EI_QUEUE_ERROR_NONE);
+			assert(energy_introspector->push_and_synchronize_data(core_id[i],time-start_time,UNSPECIFIED_TIME,libEI::EI_DATA_VOLTAGE,&V_Old) == libEI::EI_QUEUE_ERROR_NONE);
+		}
+
+//		sam_cycle = 1;
+//		total_mips = 0.0;
+//
+//		double vdd = 0.8 + 0.1*(p_ipa->new_freq - 3e9)/1e9;
+//		cerr << "id: " << id << " tick: " << manifold::kernel::Clock::Master().NowTicks() << " new_freq: " << p_ipa->new_freq
+//				<< " old_freq: " << clock->freq << " new_vdd: " << vdd << " old_vdd: " << last_vdd << endl;
+//		clock->set_frequency(p_ipa->new_freq);
+//		next_frq = p_ipa->new_freq;
+//
+//		char ModuleID[64];
+//
+//		sprintf(ModuleID,"CORE_DIE:FRT%d",id);
+//		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+//
+//		sprintf(ModuleID,"CORE_DIE:SCH%d",id);
+//		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+//
+//		sprintf(ModuleID,"CORE_DIE:INT%d",id);
+//		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+//
+//		sprintf(ModuleID,"CORE_DIE:FPU%d",id);
+//		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+//
+//		sprintf(ModuleID,"CORE_DIE:MEM%d",id);
+//		ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
 
 	}
 #endif
@@ -276,7 +353,7 @@ void ei_wrapper_t::tick()
 				s += b;
 				t += bl;
 
-				sprintf(ModuleID,"CORE_DIE:SCH%d",i);
+				sprintf(ModuleID,"CORE_DIE:INT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				cl = update_p.leakage * factor2;
 				c = cl + cd[i];
@@ -321,6 +398,16 @@ void ei_wrapper_t::tick()
 				cerr<<i<<"(power)  \t"<<a<<","<<b<<","<<c<<","<<d<<","<<e<<", "<<f<<"\t"<<s<<"+"<<f<<"="<<s+f<<": "<<T<<endl<<flush;
 				cerr<<i<<"(leakage)\t"<<al<<","<<bl<<","<<cl<<","<<dl<<","<<el<<", "<<fl<<"\t"<<t<<"+"<<fl<<"="<<t+fl<<endl<<flush;
 				 //cerr<<i<<"(dynamic)\t"<<ad[i]<<","<<bd[i]<<","<<cd[i]<<","<<dd[i]<<","<<ed[i]<<", "<<fd[i]<<endl<<flush;
+				/*
+				if(dvfs_count >= M)
+				{
+					//Exclude the transient
+					// Store it in an array
+					P1[dvfs_count - M] = t+fl;
+					P2[dvfs_count - M] = s+f;
+					TArray[dvfs_count - M] = T;
+				}
+				*/
 			}
 
 			#if 0
