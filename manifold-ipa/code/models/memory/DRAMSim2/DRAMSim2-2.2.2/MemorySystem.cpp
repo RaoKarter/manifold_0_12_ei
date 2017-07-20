@@ -236,6 +236,11 @@ void MemorySystem::update()
 	//PRINT("\n"); // two new lines
 }
 
+avgPowerBW MemorySystem::getIntervalPowerBWStatsMS()
+{
+	return memoryController->getIntervalPowerBWStats();
+}
+
 void MemorySystem::RegisterCallbacks( Callback_t* readCB, Callback_t* writeCB,
                                       void (*reportPower)(double bgpower, double burstpower,
                                                           double refreshpower, double actprepower))

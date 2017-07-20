@@ -474,7 +474,13 @@ bool MultiChannelMemorySystem::willAcceptTransaction()
 	return true; 
 }
 
-
+avgPowerBW MultiChannelMemorySystem::getIntervalPowerBWStatsMCMS()
+{
+	for (size_t i=0; i<NUM_CHANS; i++)
+	{
+		return channels[i]->getIntervalPowerBWStatsMS();
+	}
+}
 
 void MultiChannelMemorySystem::printStats(bool finalStats) {
 

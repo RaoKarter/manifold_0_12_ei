@@ -800,6 +800,82 @@ void MemoryController::resetStats()
 		totalWritesPerRank[i] = 0;
 	}
 }
+
+//get power and BW statistics from DRAMSim2 wrapper
+avgPowerBW MemoryController::getIntervalPowerBWStats()
+{
+	//if we are not at the end of the epoch, make sure to adjust for the actual number of cycles elapsed
+
+	uint64_t cyclesElapsed = (currentClockCycle % EPOCH_LENGTH == 0) ? EPOCH_LENGTH : currentClockCycle % EPOCH_LENGTH;
+	unsigned bytesPerTransaction = (JEDEC_DATA_BUS_BITS*BL)/8;
+	uint64_t totalBytesTransferred = totalTransactions * bytesPerTransaction;
+	double secondsThisEpoch = (double)cyclesElapsed * tCK * 1E-9;
+
+	// only per rank
+	vector<double> backgroundPower = vector<double>(NUM_RANKS,0.0);
+	vector<double> burstPower = vector<double>(NUM_RANKS,0.0);
+	vector<double> refreshPower = vector<double>(NUM_RANKS,0.0);
+	vector<double> actprePower = vector<double>(NUM_RANKS,0.0);
+	vector<double> averagePower = vector<double>(NUM_RANKS,0.0);
+
+	// per bank variables
+	vector<double> averageLatency = vector<double>(NUM_RANKS*NUM_BANKS,0.0);
+	vector<double> bandwidth = vector<double>(NUM_RANKS*NUM_BANKS,0.0);
+
+	double totalBandwidth=0.0;
+	for (size_t i=0;i<NUM_RANKS;i++)
+	{
+		for (size_t j=0; j<NUM_BANKS; j++)
+		{
+			bandwidth[SEQUENTIAL(i,j)] = (((double)(totalReadsPerBank[SEQUENTIAL(i,j)]+totalWritesPerBank[SEQUENTIAL(i,j)]) * (double)bytesPerTransaction)/(1024.0*1024.0*1024.0)) / secondsThisEpoch;
+			averageLatency[SEQUENTIAL(i,j)] = ((float)totalEpochLatency[SEQUENTIAL(i,j)] / (float)(totalReadsPerBank[SEQUENTIAL(i,j)])) * tCK;
+			totalBandwidth+=bandwidth[SEQUENTIAL(i,j)];
+			totalReadsPerRank[i] += totalReadsPerBank[SEQUENTIAL(i,j)];
+			totalWritesPerRank[i] += totalWritesPerBank[SEQUENTIAL(i,j)];
+		}
+	}
+/*
+	std::cerr << " =======================================================" << std::endl;
+	std::cerr << " ============== Printing Statistics [id:"<<parentMemorySystem->systemID<<"]==============" << std::endl;
+	std::cerr << "   Total Return Transactions : " << totalTransactions << std::endl;
+	std::cerr << " (" << totalBytesTransferred << " bytes) aggregate average bandwidth " << totalBandwidth << "GB/s" << std::endl;
+*/
+	for (size_t r=0;r<NUM_RANKS;r++)
+	{
+/*
+		std::cerr << "      -Rank   "<<r<<" : "<< std::endl;
+		std::cerr << "        -Reads  : " << totalReadsPerRank[r]<< std::endl;
+		std::cerr << " ("<<totalReadsPerRank[r] * bytesPerTransaction<<" bytes)"<< std::endl;
+		std::cerr << "        -Writes : " << totalWritesPerRank[r]<< std::endl;
+		std::cerr << " ("<<totalWritesPerRank[r] * bytesPerTransaction<<" bytes)"<< std::endl;
+		for (size_t j=0;j<NUM_BANKS;j++)
+		{
+			std::cerr << "        -Bandwidth / Latency  (Bank " <<j<<"): " <<bandwidth[SEQUENTIAL(r,j)] << " GB/s\t\t" <<averageLatency[SEQUENTIAL(r,j)] << " ns"<< std::endl;
+		}
+*/
+		// factor of 1000 at the end is to account for the fact that totalEnergy is accumulated in mJ since IDD values are given in mA
+		backgroundPower[r] = ((double)backgroundEnergy[r] / (double)(cyclesElapsed)) * Vdd / 1000.0;
+		burstPower[r] = ((double)burstEnergy[r] / (double)(cyclesElapsed)) * Vdd / 1000.0;
+		refreshPower[r] = ((double) refreshEnergy[r] / (double)(cyclesElapsed)) * Vdd / 1000.0;
+		actprePower[r] = ((double)actpreEnergy[r] / (double)(cyclesElapsed)) * Vdd / 1000.0;
+		averagePower[r] = ((backgroundEnergy[r] + burstEnergy[r] + refreshEnergy[r] + actpreEnergy[r]) / (double)cyclesElapsed) * Vdd / 1000.0;
+
+/*
+		std::cerr << " == Power Data for Rank        " << r << std::endl;
+		std::cerr << "   Average Power (watts)     : " << averagePower[r] << std::endl;
+		std::cerr << "     -Background (watts)     : " << backgroundPower[r] << std::endl;
+		std::cerr << "     -Act/Pre    (watts)     : " << actprePower[r] << std::endl;
+		std::cerr << "     -Burst      (watts)     : " << burstPower[r] << std::endl;
+		std::cerr << "     -Refresh    (watts)     : " << refreshPower[r] << std::endl;
+*/
+	}
+	avgPowerBW p_bw;
+	p_bw.AveragePower = averagePower;
+	p_bw.totalBytes = totalBytesTransferred;
+	p_bw.BandWidth = totalBandwidth;
+	resetStats();
+	return p_bw;
+}
 //prints statistics at the end of an epoch or  simulation
 void MemoryController::printStats(bool finalStats)
 {

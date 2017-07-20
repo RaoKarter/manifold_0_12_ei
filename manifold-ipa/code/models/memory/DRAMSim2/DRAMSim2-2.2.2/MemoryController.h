@@ -67,7 +67,8 @@ public:
 	void attachRanks(vector<Rank *> *ranks);
 	void update();
 	void printStats(bool finalStats = false);
-	void resetStats(); 
+	void resetStats();
+	avgPowerBW getIntervalPowerBWStats();
 
 
 	//fields

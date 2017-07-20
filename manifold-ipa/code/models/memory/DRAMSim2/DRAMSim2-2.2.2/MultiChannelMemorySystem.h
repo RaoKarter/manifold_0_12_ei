@@ -53,6 +53,7 @@ class MultiChannelMemorySystem : public SimulatorObject
 			void update();
 			void printStats(bool finalStats=false);
 			ostream &getLogFile();
+			avgPowerBW getIntervalPowerBWStatsMCMS();
 			void RegisterCallbacks( 
 				TransactionCompleteCB *readDone,
 				TransactionCompleteCB *writeDone,

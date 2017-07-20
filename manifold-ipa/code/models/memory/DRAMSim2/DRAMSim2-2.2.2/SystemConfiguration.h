@@ -171,6 +171,11 @@ enum SchedulingPolicy
 	BankThenRankRoundRobin
 };
 
+struct avgPowerBW {
+	std::vector<double> AveragePower;
+	uint64_t totalBytes;
+	double BandWidth;
+};
 
 // set by IniReader.cpp
 

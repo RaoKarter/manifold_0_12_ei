@@ -106,6 +106,7 @@ private:
     Callback_t *read_cb;
     Callback_t *write_cb;
 //    Callback_t *power_cb;
+    avgPowerBW power_bw_data;
 
     /* callbacks for read and write */
     void read_complete(unsigned id, uint64_t address, uint64_t done_cycle);
