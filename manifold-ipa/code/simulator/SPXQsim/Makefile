@@ -15,7 +15,7 @@ ALL: $(EXECS)
 #$(CXX) $(LDFLAGS)  -o$@ $^   NOT working
 # it seems LDFLAGS must be the last parameter
 
-smp_llp: smp_llp.o sysBuilder_llp.o ei_wrapper.o common.o 
+smp_llp: smp_llp.o sysBuilder_llp.o ei_wrapper.o common.o
 	$(CXX) $^ -o$@   $(LDFLAGS)
 
 

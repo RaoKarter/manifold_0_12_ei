@@ -79,7 +79,9 @@
 #include <assert.h>
 #include "mpi.h"
 
-//#define USE_EI
+//#include "dram_print_power.h"
+
+#define USE_EI
 
 
 using namespace std;
@@ -95,11 +97,10 @@ using namespace libconfig;
 using namespace EI;
 
 EI::energy_introspector_t *energy_introspector;
-double sampling_period = 1e-5;
 
 int main(int argc, char** argv)
 {
-    if(argc != 7) {
+    if(argc < 7) {
         cerr << "Usage: mpirun -np <NP> " << argv[0] << " <config_file>  <spx_config_file> <qsim_type> <state_file> <EI_config_file> <benchmark_tar_file>" << endl;
         exit(1);
     }
@@ -149,6 +150,94 @@ int main(int argc, char** argv)
     //==========================================================================
     Manifold::Init(argc, argv);
 
+#if 0
+    //==========================================================================
+	// Check simulation args
+	//==========================================================================
+	int N_Qsim_OSDs, Qsim_OSD_size, N_Cores;
+
+	// Number of cores
+	N_Cores = config.lookup("processor.node_idx").getLength();
+
+	// Qsim state file size that determines Qsim_OSD_size
+	string state_file_str = string(argv[4]);
+	size_t s = state_file_str.find(string("state."));
+	state_file_str.erase(0,s+6);
+	Qsim_OSD_size = atoi(state_file_str.c_str());
+	assert(Qsim_OSD_size > 0);
+
+	// Number of Qsim OSDs
+	N_Qsim_OSDs = N_Cores/Qsim_OSD_size;
+	assert(Qsim_OSD_size*N_Qsim_OSDs == N_Cores);
+	cerr << "NUM_QSIM_OSDs: " << N_Qsim_OSDs << endl;
+
+	if(argc < 6 + N_Qsim_OSDs) {
+		cout << "Usage: mpirun -np <NP> " << argv[0] << " <config_file>  <spx_config_file> <qsim_type> <state_file> <EI_config_file> <benchmark_tar_file>" << endl;
+		for(int i = 0; i < N_Qsim_OSDs; i++) {
+			cout << " <benchmark_tar_file>";
+		}
+		cout << endl;
+		exit(1);
+	}
+
+    //==========================================================================
+    // Qsim Init
+    //==========================================================================
+    vector<Qsim::OSDomain*> qsim_osd;
+    qsim_osd.assign(N_Qsim_OSDs,NULL);
+	fprintf(stdout,"===== QSIM =====\n");
+	qsim_osd.reserve(N_Qsim_OSDs);
+
+	for(int i = 0; i < N_Qsim_OSDs; i++)
+	{
+		if(N_Qsim_OSDs > 1)
+			fprintf(stdout,"Qsim_OSD[%d]:\n",i);
+		fprintf(stdout,"\tLoading state %s ... \n",argv[4]);
+		qsim_osd[i] = new Qsim::OSDomain(argv[4]);
+		fprintf(stdout,"\tLoading benchmark %s ... \n",argv[6+i]);
+		Qsim::load_file(*qsim_osd[i],argv[6+i]);
+//		qsim_osd[i]->connect_console(std::cout);
+        cerr << "Finished loading app" << endl;
+
+		int fastfwd_cores = 0;
+		uint64_t fastfwd_count = 0;
+		uint64_t interrupt_count = 0;
+		float utilization = 0.99;
+		float utilization_progress = 0.0;
+		int fastfwd_step = 100;
+
+		while(utilization_progress < utilization)
+		{
+			fastfwd_count++; interrupt_count++;
+			fastfwd_cores = 0;
+			for(int j = 0; j < N_Cores; j++)
+			{
+				qsim_osd[i]->run(j%Qsim_OSD_size,fastfwd_step);
+				if(!qsim_osd[i]->idle(j%Qsim_OSD_size)) { fastfwd_cores++; }
+				if((j == 0)&&(interrupt_count*fastfwd_step == 100000))
+				{
+					qsim_osd[i]->timer_interrupt();
+					interrupt_count = 0;
+				}
+//				cerr << interrupt_count << " " << endl;
+			}
+			if((float)fastfwd_cores/N_Cores > utilization_progress)
+			{
+				utilization_progress = (float)fastfwd_cores/N_Cores;
+				fprintf(stdout,"\t\t%3.1lf%% cores are utilized ...\n",utilization_progress*100.0);
+			}
+			if((fastfwd_count*fastfwd_step) % 1000000 == 0)
+			{
+				fprintf(stdout,"\t\t%3.0lfM instructions are fastforwarded (%3.1lf%%) ...\n",(double)(fastfwd_count*fastfwd_step)/1000000.0,utilization_progress*100.0);
+			}
+		}
+		if(fastfwd_count)
+			fprintf(stdout,"\t\t%3.1lf%% utilization fast forwarding is done after running %lu instructions\n",utilization*100.0,(fastfwd_count-1)*fastfwd_step);
+
+	}
+	fprintf(stdout,"\n");
+#endif
+#if 1
     //==========================================================================
     // Initialize Qsim library.
     //==========================================================================
@@ -213,7 +302,7 @@ int main(int argc, char** argv)
       fprintf(stderr,"\n");      
     }   
 #endif
-
+#endif
     //==========================================================================
     // Configure distributed clock network.
     //==========================================================================
@@ -245,6 +334,21 @@ int main(int argc, char** argv)
       exit(1);
     }
 
+    //==========================================================================
+	// Qsim Interrupt Handler
+	//==========================================================================
+#if 0
+	fprintf(stdout,"\n===== QSIM INTERRUPT HANDLER =====\n");
+	vector<interrupt_handler_t*> qsim_interrupt_handler; qsim_interrupt_handler.reserve(N_Qsim_OSDs);
+	Clock *interrupt_handler_clock = new Clock(1000.0); // 0.01 (0.1ms) 0.005 (0.2ms) 0.002(0.5ms) 0.001(1ms)
+	for(unsigned i = 0; i < (unsigned)N_Qsim_OSDs; i++)
+	{
+//		qsim_osd_t = qsim_osd[i];
+		qsim_interrupt_handler[i] = Component :: GetComponent<interrupt_handler_t>(Component :: Create<interrupt_handler_t>(0, interrupt_handler_clock, qsim_osd[i]));
+//		Qsim_interrupt_clock->Register<interrupt_handler_t>(*Qsim_interrupt_clock,qsim_interrupt_handler[i],&interrupt_handler_t::tick,(void(interrupt_handler_t::*)(void))0);
+//		fprintf(stdout,"\tQsim OSD %d: interrupt handler clk=%3.3lf\n",i,Qsim_interrupt_clock->GetClockFrequency());
+	}
+#endif
     Clock *interrupt_handler_clock = new Clock(1000.0);
     interrupt_handler_t *interrupt_handler = Component :: GetComponent<interrupt_handler_t>(Component::Create<interrupt_handler_t>(0, interrupt_handler_clock, qsim_osd));
     //interrupt_handler_clock->Register<interrupt_handler_t>(*interrupt_handler_clock,interrupt_handler,&interrupt_handler_t::tick,(void(interrupt_handler_t::*)(void))0);
@@ -280,9 +384,6 @@ int main(int argc, char** argv)
 	{
 
 		manifold::dramsim::Dram_sim :: Set_msg_types(sysBuilder.MEM_MSG_TYPE, sysBuilder.CREDIT_MSG_TYPE);
-
-//		dramsim_settings(sysBuilder.m_DEV_FILE.c_str(), sysBuilder.m_SYS_FILE.c_str(),
-//												      sysBuilder.m_MEM_SIZE, false, sysBuilder.MC_DOWNSTREAM_CREDITS);
 		dramsim_mc_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 10); // assuming page size= 2^12
 		l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 10); //page size = 2^12
 		sysBuilder.config_cache_settings(l2_map, dramsim_mc_map);
@@ -306,10 +407,31 @@ int main(int argc, char** argv)
     std::cout.rdbuf(DBG_LOG.rdbuf()); // redirect cout
 #endif
 
-    //FIXME: To be removed when controller is used.
-    //Core Voltage
     double core_voltage((double)config.lookup("core_voltage"));
-    cout << "Core: Voltage = " << core_voltage << endl << flush;
+    cout << "Initial Core: Voltage = " << core_voltage << endl << flush;
+
+    // For Temperature Regulation
+    vector<double> therm_thresh;
+    therm_thresh.resize(sysBuilder.MAX_NODES);
+    try {
+
+	  Setting &therm_thresh_setting = config.lookup("core_thermal_threshold");
+	  assert(therm_thresh_setting.getLength() == sysBuilder.MAX_NODES);
+
+	  for(int c = 0; c < therm_thresh_setting.getLength(); c++)
+	  {
+		  therm_thresh[c] = (double)therm_thresh_setting[c];
+		  cerr << "Node " << c << ": Therm_Threshold = " << therm_thresh[c] << endl;
+	  }
+	}
+	catch (SettingNotFoundException e) {
+	  cout << e.getPath() << " not set." << endl;
+	  exit(1);
+	}
+	catch (SettingTypeException e) {
+	  cout << e.getPath() << " has incorrect type." << endl;
+	  exit(1);
+	}
 
     //==========================================================================
     // Create manifold components.
@@ -319,6 +441,8 @@ int main(int argc, char** argv)
 
     Clock dram_clock(3000000000);	        
     
+    cerr << "Manifold Master Clock = " << manifold::kernel::Clock::Master().freq << "Hz" << endl << flush;
+
     LpId_t node_lp = 0;
 
     int cpuid=0;
@@ -387,11 +511,11 @@ int main(int argc, char** argv)
 	    manifold::spx::spx_core_t* proc_global = (spx_core_t*) Component :: GetComponent<spx_core_t>(node_cids[i].proc_cid);
 	    manifold::mcp_cache_namespace::MESI_LLP_cache* l1_global = (MESI_LLP_cache*) Component :: GetComponent<MESI_LLP_cache>(node_cids[i].l1_cache_cid);
 	    manifold::mcp_cache_namespace::MESI_LLS_cache* l2_global = (MESI_LLS_cache*) Component :: GetComponent<MESI_LLS_cache>(node_cids[i].l2_cache_cid);
-//	    manifold::mcp_cache_namespace::MuxDemux* mux_global = (MuxDemux*) Component :: GetComponent<MuxDemux>(node_cids[i].mux_cid);
-	    if(proc_global && l1_global && l2_global)
+	    Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
+	    if(proc_global && l1_global && l2_global && mc)
 	    {
 			ei_device[i] = new ei_wrapper_t(node_clock[i], core_voltage, energy_introspector, proc_global->pipeline->counters, proc_global->ipa, l1_global->cache_counter,
-					l2_global->cache_counter, l2_global, sampling_period, sysBuilder.MAX_NODES, i);
+					l2_global->cache_counter, l2_global, mc, therm_thresh[i], sysBuilder.sampling_period,  sysBuilder.MAX_NODES, i);
 		}
 	    else
 	    {

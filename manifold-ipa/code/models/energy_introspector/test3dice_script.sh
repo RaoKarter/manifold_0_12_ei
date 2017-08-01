@@ -1,13 +1,20 @@
 #!/bin/bash
 
-
-for SPOTPOWER in 1 1.5 2 2.5 3 3.5 4 4.5
+for DRAMPOWER in 5 10 20 30 40 50 60 70 80 90 100
 do
-	for COREPOWER in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
-	do
-		echo "SPOTPOWER= " ${SPOTPOWER} " COREPOWER= " ${COREPOWER}
-		./test-3dice ${SPOTPOWER} ${COREPOWER} > ../../../../../Data/P_T_3dice/Core${COREPOWER}_Cache${SPOTPOWER}.txt
- 	done
-	echo 
+	echo "DRAM POWER = " ${DRAMPOWER} "/10 W"
+	./test-3dice CONFIG/3DICE/power_${DRAMPOWER}_5_5.txt 200 0.002 > ../../../../../Data/P_T_3dice/FullStack_${DRAMPOWER}_5_5.txt
+done
+
+for SPOTPOWER in 1 2 3 4 10 15 20 25 30 35 40
+do
+	echo "PER BANK L2CACHE = " ${SPOTPOWER} "/10 W"
+	./test-3dice CONFIG/3DICE/power_5_${SPOTPOWER}_5.txt 200 0.002 > ../../../../../Data/P_T_3dice/FullStack_5_${SPOTPOWER}_5.txt
+done
+
+for COREPOWER in 10 15 20 25 30 35 40
+do
+	echo "PER COREPOWER= " ${COREPOWER} "/10 W"
+	./test-3dice CONFIG/3DICE/power_5_5_${COREPOWER}.txt 200 0.002 > ../../../../../Data/P_T_3dice/FullStack_5_5_${COREPOWER}.txt
 done
 

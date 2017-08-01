@@ -108,6 +108,9 @@ public:
 
     vector<int> mc_node_idx_vec;
     set<int> mc_node_idx_set; //set is used to ensure each index is unique
+
+    // For EI Controller
+    double sampling_period;
 };
 
 #if 0

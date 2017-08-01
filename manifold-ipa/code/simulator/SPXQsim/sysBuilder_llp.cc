@@ -214,6 +214,9 @@ void SysBuilder_llp :: config_components(Config& config)
 #endif
 	MC_DOWNSTREAM_CREDITS = config.lookup("mc.downstream_credits");
 
+	// EI Controller
+	sampling_period = config.lookup("sampling_period");
+
     }
     catch (SettingNotFoundException e) {
 	cout << e.getPath() << " not set." << endl;

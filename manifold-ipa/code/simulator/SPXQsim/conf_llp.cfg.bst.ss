@@ -3,10 +3,10 @@ simulation_stop = 1000000000L; //
 
 network_clock_frequency = 3000000000L; // 3GHz
 
-distributed_clock_frequency = [3e9, 3e9, 3e9, 3e9,
-                               3e9, 3e9, 3e9, 3e9,
-                               3e9, 3e9, 3e9, 3e9,
-                               3e9, 3e9, 3e9, 3e9];
+distributed_clock_frequency = [2e9, 2e9, 2e9, 2e9,
+                               2e9, 2e9, 2e9, 2e9,
+                               2e9, 2e9, 2e9, 2e9,
+                               2e9, 2e9, 2e9, 2e9];
 
 core_voltage = 0.9783; // V = (1.93e-4 * f) + 0.4008
 

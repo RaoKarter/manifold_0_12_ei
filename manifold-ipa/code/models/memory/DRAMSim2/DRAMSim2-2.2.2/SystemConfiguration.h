@@ -173,6 +173,10 @@ enum SchedulingPolicy
 
 struct avgPowerBW {
 	std::vector<double> AveragePower;
+	std::vector<double> BackgroundPower;
+	std::vector<double> RefreshPower;
+	std::vector<double> BurstPower;
+	std::vector<double> ActPrePower;
 	uint64_t totalBytes;
 	double BandWidth;
 };

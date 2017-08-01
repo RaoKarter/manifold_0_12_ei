@@ -171,21 +171,31 @@ void Dram_sim::tick()
         send_credit();
     }
 
-    if(dram_clk->NowTicks() % 100000 == 0)
-    {
-    	power_bw_data = mem->getIntervalPowerBWStatsMCMS();
-    	cerr << "@\t" << dram_clk->NowTicks();
-    	for(int i = 0; i < NUM_RANKS; i++)
-    	{
-    		cerr << "\tRank" << i << "\tAvg Pwr\t" << power_bw_data.AveragePower[i] << "W"
-    		     << "\tTotalBytesTxed\t" << power_bw_data.totalBytes << "\tAggregateBW\t" << power_bw_data.BandWidth << "GB/s" << endl;
-    	}
-    }
+//    if(dram_clk->NowTicks() % 100000 == 0)
+//    {
+//    	power_bw_data = mem->getIntervalPowerBWStatsMCMS();
+//    	cerr << "@\t" << dram_clk->NowTicks();
+//    	for(int i = 0; i < NUM_RANKS; i++)
+//    	{
+//    		cerr << "\tRank" << i << "\tAvg Pwr\t" << power_bw_data.AveragePower[i] << "W"
+//    		     << "\tTotalBytesTxed\t" << power_bw_data.totalBytes << "\tAggregateBW\t" << power_bw_data.BandWidth << "GB/s" << endl;
+//    	}
+//    }
     mem->update();
     try_send_reply();
 
 }
 
+avgPowerBW* Dram_sim::getDRAMPowerBWStats()
+{
+	power_bw_data = mem->getIntervalPowerBWStatsMCMS();
+//	for(int i = 0; i < NUM_RANKS; i++)
+//	{
+//		cerr << "\tRank" << i << "\tAvg Pwr\t" << power_bw_data.AveragePower[i] << "W"
+//			 << "\tTotalBytesTxed\t" << power_bw_data.totalBytes << "\tAggregateBW\t" << power_bw_data.BandWidth << "GB/s" << endl << flush;
+//	}
+	return &power_bw_data;
+}
 void Dram_sim :: set_mc_map(manifold::mcp_cache_namespace::PageBasedMap *m)
 {
     this->mc_map = m;

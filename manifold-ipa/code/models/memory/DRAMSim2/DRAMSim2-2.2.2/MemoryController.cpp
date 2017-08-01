@@ -871,6 +871,10 @@ avgPowerBW MemoryController::getIntervalPowerBWStats()
 	}
 	avgPowerBW p_bw;
 	p_bw.AveragePower = averagePower;
+	p_bw.BackgroundPower = backgroundPower;
+	p_bw.RefreshPower = refreshPower;
+	p_bw.ActPrePower = actprePower;
+	p_bw.BurstPower = burstPower;
 	p_bw.totalBytes = totalBytesTransferred;
 	p_bw.BandWidth = totalBandwidth;
 	resetStats();
