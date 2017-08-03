@@ -441,7 +441,8 @@ int main(int argc, char** argv)
 
     Clock dram_clock(3000000000);	        
     
-    cerr << "Manifold Master Clock = " << manifold::kernel::Clock::Master().freq << "Hz" << endl << flush;
+    cerr << "Manifold Master Clock = " << manifold::kernel::Clock::Master().freq << "Hz" << endl;
+    cerr << "Sampling period = " << sysBuilder.sampling_period << endl;
 
     LpId_t node_lp = 0;
 

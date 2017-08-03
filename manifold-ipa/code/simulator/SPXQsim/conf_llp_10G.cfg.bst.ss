@@ -8,13 +8,13 @@ distributed_clock_frequency = [1e9, 1e9, 1e9, 1e9,
                                1e9, 1e9, 1e9, 1e9,
                                1e9, 1e9, 1e9, 1e9];
 
-core_thermal_threshold = [360, 330, 330, 360,
-                          330, 360, 360, 330,
-                          330, 360, 360, 330,
-                          360, 330, 330, 360];
+core_thermal_threshold = [340, 340, 340, 340,
+                          340, 340, 340, 340,
+                          340, 340, 340, 340,
+                          340, 340, 340, 340];
 
 core_voltage = 0.5933; // V = (1.93e-4 * f) + 0.4008
-sampling_period = 1e-3;
+sampling_period = 1e-5;
 
 network:
 {

@@ -514,6 +514,7 @@ if (inst->core->core_id == 1) {
 
   if(is_nop(inst)) {
     stats.nop_count++;
+    counters->nop_inst.read++;
     //stats.Mop_count--;
     //stats.uop_count--;
     stats.interval.Mop_count--;
