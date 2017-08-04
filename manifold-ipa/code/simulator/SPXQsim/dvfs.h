@@ -41,6 +41,14 @@ Parameters for the LTI model */
 
 //#define c1 303.5091
 #define FIXEDGAIN 0
+
+#ifdef USE_CONTROLLER
+#define C_ENABLED 1
+#define C_DISABLED 0
+#else
+#define C_ENABLED 0
+#define C_DISABLED 1
+#endif
 //f(MHz) Vdd(V)
 //500	0.49705
 //600	0.5163

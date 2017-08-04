@@ -155,7 +155,7 @@ void ei_wrapper_t::tick()
 //-----------------------------------------------------------------------------
 
 
-#if 1
+#if C_ENABLED
 	if(sam_cycle == (SAMPLING_CYCLE + 2))
 	{
 //		cerr << "Going to compute Next CPU" << this->id << " FREQ" << endl << flush;
@@ -239,8 +239,10 @@ void ei_wrapper_t::tick()
 #ifdef EI_COMPUTE
 	if(sam_cycle == (SAMPLING_CYCLE + 1))
 	{
-//		sam_cycle = 1;
-//		total_mips = 0.0;
+#if C_DISABLED
+		sam_cycle = 1;
+		total_mips = 0.0;
+#endif
 		EI::power_t DRAM_P; // Temporary variable to push_data<power_t>
 		char ModuleID[64];
 		clock->SetNowTime(p_cnt->time_tick);
@@ -781,7 +783,8 @@ void ei_wrapper_t::tick()
 //				<< " mem_trans(reads): " << p_l2cache->memreads<< " mem_trans(writes): "<< p_l2cache->memwrites << endl << flush;
 		cerr << "CORE" << id << "\tcycle\t" << clock->NowTicks() << "\tIPC_inst\t" << ((float)p_cnt->retire_inst.read)/SAMPLING_CYCLE
 				             << "\tMIPS\t" << p_cnt->retire_inst.read/p_cnt->period/1e6 << "\ttotal_MIPS\t" << total_mips
-						     << "\tmem_reads\t" << p_l2cache->memreads<< "\tmem_writes\t"<< p_l2cache->memwrites << endl << flush;
+						     << "\tmem_reads\t" << p_l2cache->memreads<< "\tmem_writes\t"<< p_l2cache->memwrites
+							 << "\tfetched_inst\t" << p_cnt->fetch_inst.read << "\tnop_inst\t" << p_cnt->nop_inst.read << endl << flush;
 		for(int i = 0; i < NUM_CORES; i++)
 		{
 			reads[i] += p_l2cache->mem_reads[i];
