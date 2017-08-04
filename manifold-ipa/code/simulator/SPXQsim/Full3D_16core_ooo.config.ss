@@ -317,7 +317,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -338,7 +338,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -359,7 +359,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -380,7 +380,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -401,7 +401,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -422,7 +422,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -443,7 +443,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -464,7 +464,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -485,7 +485,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -506,7 +506,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -527,7 +527,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -548,7 +548,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -569,7 +569,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -590,7 +590,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -611,7 +611,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -632,7 +632,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -655,7 +655,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -676,7 +676,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -697,7 +697,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -718,7 +718,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -739,7 +739,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -760,7 +760,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -781,7 +781,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -802,7 +802,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -823,7 +823,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -844,7 +844,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -865,7 +865,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -886,7 +886,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -907,7 +907,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -928,7 +928,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -949,7 +949,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -970,7 +970,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -993,7 +993,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1014,7 +1014,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1035,7 +1035,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1056,7 +1056,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1077,7 +1077,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1098,7 +1098,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1119,7 +1119,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1140,7 +1140,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1161,7 +1161,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1182,7 +1182,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1203,7 +1203,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1224,7 +1224,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1245,7 +1245,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1266,7 +1266,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1287,7 +1287,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1308,7 +1308,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1331,7 +1331,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1352,7 +1352,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1373,7 +1373,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1394,7 +1394,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1415,7 +1415,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1436,7 +1436,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1457,7 +1457,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1478,7 +1478,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1499,7 +1499,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1520,7 +1520,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1541,7 +1541,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1562,7 +1562,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1583,7 +1583,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1604,7 +1604,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1625,7 +1625,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1646,7 +1646,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1670,7 +1670,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1691,7 +1691,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1712,7 +1712,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1733,7 +1733,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1754,7 +1754,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1775,7 +1775,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1796,7 +1796,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1817,7 +1817,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1838,7 +1838,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1859,7 +1859,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1880,7 +1880,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1901,7 +1901,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1922,7 +1922,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1943,7 +1943,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1964,7 +1964,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -1985,7 +1985,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2009,7 +2009,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2030,7 +2030,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2051,7 +2051,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2072,7 +2072,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2093,7 +2093,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2117,7 +2117,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2138,7 +2138,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2159,7 +2159,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2180,7 +2180,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2201,7 +2201,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2225,7 +2225,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2246,7 +2246,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2267,7 +2267,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2288,7 +2288,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2309,7 +2309,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2333,7 +2333,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2354,7 +2354,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2375,7 +2375,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2396,7 +2396,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2417,7 +2417,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2441,7 +2441,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2462,7 +2462,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2483,7 +2483,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2504,7 +2504,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2525,7 +2525,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2549,7 +2549,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2570,7 +2570,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2591,7 +2591,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2612,7 +2612,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2633,7 +2633,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2657,7 +2657,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2678,7 +2678,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2699,7 +2699,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2720,7 +2720,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2741,7 +2741,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2765,7 +2765,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2786,7 +2786,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2807,7 +2807,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2828,7 +2828,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2849,7 +2849,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2873,7 +2873,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2894,7 +2894,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2915,7 +2915,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2936,7 +2936,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2957,7 +2957,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -2981,7 +2981,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3002,7 +3002,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3023,7 +3023,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3044,7 +3044,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3065,7 +3065,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3089,7 +3089,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3110,7 +3110,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3131,7 +3131,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3152,7 +3152,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3173,7 +3173,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3197,7 +3197,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3218,7 +3218,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3239,7 +3239,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3260,7 +3260,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3281,7 +3281,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3305,7 +3305,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3326,7 +3326,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3347,7 +3347,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3368,7 +3368,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3389,7 +3389,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3413,7 +3413,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3434,7 +3434,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3455,7 +3455,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3476,7 +3476,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3497,7 +3497,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3521,7 +3521,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3542,7 +3542,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3563,7 +3563,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3584,7 +3584,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3605,7 +3605,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3629,7 +3629,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3650,7 +3650,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3671,7 +3671,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3692,7 +3692,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global
@@ -3713,7 +3713,7 @@
 -partition.feature_size		16e-9 # technology node in meters
 -partition.temperature			300 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
--partition.clock_frequency		3.000000e+09 # clock frequency in Hz
+-partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
 -partition.core_type			OOO
 -partition.wire_type			global

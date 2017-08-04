@@ -202,7 +202,7 @@ void ei_wrapper_t::tick()
 		}
 		else if(phi_new >= 1.8e3)
 		{
-			phi_new = 1.8e9;
+			phi_new = 1.8e3;
 		}
 
 //		double vdd = 0.8 + 0.1*(p_ipa->new_freq - 3e9)/1e9;
