@@ -30,7 +30,7 @@ Parameters for the LTI model */
 #define V_off 0                          // Transistor switch off voltage parameter
 #define q1 1.6e-19                        // Charge on an electron
 #define N 100                            // Number of iterations until control kicks in a.k.a. Control cycle
-#define M 30                             // Number of iterations  until transient dies out
+#define TRANSIENT_TIME 50                             // Number of iterations  until transient dies out
 #define CoreNum 16                        // Number of cores
 //#define NumIter 10000000   // Total number of time steps
 #define fmax 1.8e9                       // Max frequency of core
@@ -41,7 +41,7 @@ Parameters for the LTI model */
 
 //#define c1 303.5091
 #define FIXEDGAIN 0
-
+#define USE_CONTROLLER 1
 #ifdef USE_CONTROLLER
 #define C_ENABLED 1
 #define C_DISABLED 0

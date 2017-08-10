@@ -40,6 +40,7 @@ public:
   double last_vdd;
   double next_frq;
   double init_vdd;
+  int num_samples;
 
 private:
   manifold::kernel::Clock *clock;
@@ -54,11 +55,6 @@ private:
 
   //DRAM Power arrays
   avgPowerBW* vault;
-
-  //For Temperature and Power Regulation
-  std::vector<double> TArray;
-  std::vector<double> P1;
-  std::vector<double> P2;
 
   // Temperature regulation only
   double Beta1;

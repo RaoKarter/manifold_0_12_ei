@@ -82,7 +82,6 @@
 //#include "dram_print_power.h"
 
 #define USE_EI
-double sampling_period = 1e-5;
 
 using namespace std;
 using namespace manifold::kernel;
@@ -516,7 +515,7 @@ int main(int argc, char** argv)
 	    if(proc_global && l1_global && l2_global && mc)
 	    {
 			ei_device[i] = new ei_wrapper_t(node_clock[i], core_voltage, energy_introspector, proc_global->pipeline->counters, proc_global->ipa, l1_global->cache_counter,
-					l2_global->cache_counter, l2_global, mc, therm_thresh[i], sampling_period,  sysBuilder.MAX_NODES, i);
+					l2_global->cache_counter, l2_global, mc, therm_thresh[i], sysBuilder.sampling_period,  sysBuilder.MAX_NODES, i);
 		}
 	    else
 	    {

@@ -26,10 +26,14 @@ vector<double> dram3_d;
 vector<double> Core_Power_l;
 vector<double> Core_Power_d;
 vector<double> Core_Temperature;
+vector< vector<double> > TArray;
+vector< vector<double> > Pd;
+vector< vector<double> > Pl;
 
 int synced = 0;
 int NUM_CORES;
 tick_t SAMPLING_CYCLE;
+uint64_t reg_sam_iter;
 
 ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, EI::energy_introspector_t *energy_introspector,
 		manifold::spx::pipeline_counter_t* proc_cnt,manifold::spx::ipa_t* proc_ipa,
@@ -85,12 +89,11 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 	p_cnt->time_tick = 0;
 	p_l2cache->clear_mem_counters();
 
-	cerr << "ei_wrapper" << id << " pointing to mem_ctrl: " << hex << mem_ctrl << dec << endl << flush;
-
 	last_vdd = 0.8;
 	slack_cycle = 0;
 
 	sam_cycle = 0;
+
 
 	// Temperature regulation parameter init
 	N1 = 0.1875e9; 		// For a total of 3billion transistors for all 16 cores
@@ -101,11 +104,16 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 	g = 33;
 	StepSize = 1;
 	V_Old = init_vdd;
+	num_samples = int(2e-1/sampling_period);
+
+	cerr << "ei_wrapper" << id << " pointing to mem_ctrl: " << hex << mem_ctrl << dec
+		 << " num samples " << num_samples << endl << flush;
 
 	if (id == num_nodes - 1)
 	{
 		NUM_CORES = num_nodes;
 		synced = 0;
+		reg_sam_iter = 0;
 
 		ad.resize(num_nodes);
 		bd.resize(num_nodes);
@@ -120,6 +128,9 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 		dram1_d.resize(num_nodes);
 		dram2_d.resize(num_nodes);
 		dram3_d.resize(num_nodes);
+		TArray.resize(num_nodes, vector<double>(num_samples));
+		Pd.resize(num_nodes, vector<double>(num_samples));
+		Pl.resize(num_nodes, vector<double>(num_samples));
 	}
 }
 
@@ -156,82 +167,117 @@ void ei_wrapper_t::tick()
 
 
 #if C_ENABLED
-	if(sam_cycle == (SAMPLING_CYCLE + 2))
+	if(sam_cycle == (SAMPLING_CYCLE + 2) )
 	{
-//		cerr << "Going to compute Next CPU" << this->id << " FREQ" << endl << flush;
-		double dPd_dphi, dPs_dT, dPs_dphi, dT_dphi, Gain_K, phi_new, V_new;
-
+//		cerr << "sam_cycle" << this->id << "= 2" << endl << flush;
 		sam_cycle = 2;
 		total_mips = 0.0;
-		phi_Old = double (clock->freq / 1e6 ); // Freq in MHz
-		V_Old = VFSlope * phi_Old + V0;
 
-		//				dT_dPT_New[i] = (1 + deltat1*a) * dT_dPT_Old[i] + (deltat1 * b);
-		dT_dPT_New = g;
-		//				fprintf(stdout,"\n dT_dPT_New[%d] %lf",i,dT_dPT_New[i]);
-
-		dPd_dphi =  Core_Power_d[id] * ( (1 / phi_Old) + (2 * VFSlope) / V_Old ) ;
-		//				fprintf(stdout,"\t dPd_dphi[%d] %lf",i,dPd_dphi[i]);
-
-		dPs_dT = Core_Power_l[id] * log(10) * ( -Gamma1 / pow(Core_Temperature[id],2) ) ;
-		//				fprintf(stdout,"\t dPs_dT[%d] %lf",i,dPs_dT[i]);
-
-		dPs_dphi = VFSlope * (Core_Power_l[id] / V_Old);
-		//				fprintf(stdout,"\t dPs_dphi[%d] %lf",i,dPs_dphi[i]);
-
-		dT_dphi = ( ( dT_dPT_New ) * ( dPs_dphi + dPd_dphi ) ) / ( 1 - (dT_dPT_New) * dPs_dT );
-		//				fprintf(stdout,"\t dT_dphi[%d] %lf",i,dT_dphi[i]);
-
-		Gain_K = (1 / dT_dphi);
-		//				fprintf(stdout,"\t Gain_K[%d] %lf",i,Gain_K[i]);
-
-//		Gain_K[i] = 100;  // Fixed Gain
-		//Gain_K = 60;
-
-		// Apply the control law
-		phi_diff = (StepSize * Gain_K * (thermal_threshold - Core_Temperature[id]) );
-		phi_new = phi_Old + phi_diff;
-
-		cerr << "TimeStamp\t" << clock->NowTime() <<"\tCONTROLLER\tGain_K\t"
-			 << Gain_K << "\tError\t" << thermal_threshold - Core_Temperature[id] << "\tphi_diff\t"
-			 << phi_diff << "\tphi_new1\t" << phi_new << flush;
-
-		if(phi_new <= 0.5e3)
+		if (reg_sam_iter == num_samples)
 		{
-			phi_new = 0.5e3;
+
+//			cerr << "Inside Controller" << endl << flush;
+			double dPd_dphi, dPs_dT, dPs_dphi, dT_dphi, Gain_K, phi_new, V_new;
+
+			double Tavg, Pdavg, Plavg;
+
+//			for(int i = 0; i < NUM_CORES; i++)
+//			{
+//				for(int j = 0; j < num_samples; j++)
+//				{
+//					cerr << "T\t" << TArray[i][j] << "\tPd\t" << Pd[i][j] << "\tPl\t" << Pl[i][j];
+//				}
+//				cerr << endl;
+//			}
+			Tavg = std::accumulate(TArray.at(id).begin() + TRANSIENT_TIME, TArray.at(id).end(), 0.0) / (TArray.at(id).size() - TRANSIENT_TIME);
+			Pdavg = std::accumulate(Pd.at(id).begin() + TRANSIENT_TIME, Pd.at(id).end(), 0.0) / (Pd.at(id).size() - TRANSIENT_TIME);
+			Plavg = std::accumulate(Pl.at(id).begin() + TRANSIENT_TIME, Pl.at(id).end(), 0.0) / (Pl.at(id).size() - TRANSIENT_TIME);
+
+
+			phi_Old = double (clock->freq / 1e6 ); // Freq in MHz
+			V_Old = VFSlope * phi_Old + V0;
+
+			//				dT_dPT_New[i] = (1 + deltat1*a) * dT_dPT_Old[i] + (deltat1 * b);
+			dT_dPT_New = g;
+			//				fprintf(stdout,"\n dT_dPT_New[%d] %lf",i,dT_dPT_New[i]);
+
+			dPd_dphi =  Pdavg * ( (1 / phi_Old) + (2 * VFSlope) / V_Old ) ;
+			//				fprintf(stdout,"\t dPd_dphi[%d] %lf",i,dPd_dphi[i]);
+
+			dPs_dT = Plavg * log(10) * ( -Gamma1 / pow(Tavg,2) ) ;
+			//				fprintf(stdout,"\t dPs_dT[%d] %lf",i,dPs_dT[i]);
+
+			dPs_dphi = VFSlope * (Plavg / V_Old);
+			//				fprintf(stdout,"\t dPs_dphi[%d] %lf",i,dPs_dphi[i]);
+
+			dT_dphi = ( ( dT_dPT_New ) * ( dPs_dphi + dPd_dphi ) ) / ( 1 - (dT_dPT_New) * dPs_dT );
+			//				fprintf(stdout,"\t dT_dphi[%d] %lf",i,dT_dphi[i]);
+
+			Gain_K = (1 / dT_dphi);
+			//				fprintf(stdout,"\t Gain_K[%d] %lf",i,Gain_K[i]);
+
+	//		Gain_K[i] = 100;  // Fixed Gain
+			//Gain_K = 60;
+
+			// Apply the control law
+			phi_diff = (StepSize * Gain_K * (thermal_threshold - Tavg) );
+			phi_new = phi_Old + phi_diff;
+
+			cerr << "TimeStamp\t" << clock->NowTime() <<"\tCONTROLLER"<< id
+				 << "\tAvgT\t" << Tavg << "\tAvgPd\t" << Pdavg << "\tAvgPl\t" << Plavg
+				 << "\tGain_K\t" << Gain_K << "\tError\t" << thermal_threshold - Tavg
+				 << "\tphi_diff\t" << phi_diff << "\tphi_new1\t" << phi_new << flush;
+
+			if(phi_new <= 0.5e3)
+			{
+				phi_new = 0.5e3;
+			}
+			else if(phi_new >= 1.8e3)
+			{
+				phi_new = 1.8e3;
+			}
+
+	//		double vdd = 0.8 + 0.1*(p_ipa->new_freq - 3e9)/1e9;
+	//		cerr << "id: " << id << " tick: " << manifold::kernel::Clock::Master().NowTicks() << " new_freq: " << p_ipa->new_freq
+	//				<< " old_freq: " << clock->freq << " new_vdd: " << vdd << " old_vdd: " << last_vdd << endl;
+	//		clock->set_frequency(p_ipa->new_freq);
+	//		next_frq = p_ipa->new_freq;
+	//
+
+			V_new = VFSlope * phi_new + V0;
+			clock->set_frequency(double(phi_new*1e6));
+			cerr << "\tphi_applied\t" << phi_new << endl;
+
+			char ModuleID[64];
+
+			sprintf(ModuleID,"CORE_DIE:FRT%d",id);
+			ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
+
+			sprintf(ModuleID,"CORE_DIE:SCH%d",id);
+			ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
+
+			sprintf(ModuleID,"CORE_DIE:INT%d",id);
+			ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
+
+			sprintf(ModuleID,"CORE_DIE:FPU%d",id);
+			ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
+
+			sprintf(ModuleID,"CORE_DIE:MEM%d",id);
+			ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
+
+			if (id == NUM_CORES - 1)
+			{
+				reg_sam_iter = 0;
+//				cerr << "Erasing Arrays" << endl << flush;
+				for(int i = 0; i < NUM_CORES; i++)
+					for(int j = 0; j < num_samples; j++)
+					{
+						TArray[i][j] = 0.0;
+						Pd[i][j] = 0.0;
+						Pl[i][j] = 0.0;
+					}
+			}
 		}
-		else if(phi_new >= 1.8e3)
-		{
-			phi_new = 1.8e3;
-		}
-
-//		double vdd = 0.8 + 0.1*(p_ipa->new_freq - 3e9)/1e9;
-//		cerr << "id: " << id << " tick: " << manifold::kernel::Clock::Master().NowTicks() << " new_freq: " << p_ipa->new_freq
-//				<< " old_freq: " << clock->freq << " new_vdd: " << vdd << " old_vdd: " << last_vdd << endl;
-//		clock->set_frequency(p_ipa->new_freq);
-//		next_frq = p_ipa->new_freq;
-//
-
-		V_new = VFSlope * phi_new + V0;
-		clock->set_frequency(double(phi_new*1e6));
-		cerr << "\tphi_applied\t" << phi_new << endl;
-
-		char ModuleID[64];
-
-		sprintf(ModuleID,"CORE_DIE:FRT%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
-
-		sprintf(ModuleID,"CORE_DIE:SCH%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
-
-		sprintf(ModuleID,"CORE_DIE:INT%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
-
-		sprintf(ModuleID,"CORE_DIE:FPU%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
-
-		sprintf(ModuleID,"CORE_DIE:MEM%d",id);
-		ei->update_variable_partition(string(ModuleID),string("vdd"),V_new);
 
 	}
 #endif
@@ -501,7 +547,10 @@ void ei_wrapper_t::tick()
 				Core_Temperature[i] = std::accumulate(CORE_T.begin(), CORE_T.end(), 0.0) / CORE_T.size();
 				Core_Power_d[i] = ad[i] + bd[i] + cd[i] + dd[i] + ed[i];
 				Core_Power_l[i] = (a - ad[i]) + (b - bd[i]) + (c - cd[i]) + (d - dd[i]) + (e - ed[i]);
-
+//				cerr << "Reg_Sam_Iter= " << reg_sam_iter << endl << flush;
+				TArray[i][reg_sam_iter] = Core_Temperature[i];
+				Pd[i][reg_sam_iter] = Core_Power_d[i];
+				Pl[i][reg_sam_iter] = Core_Power_l[i];
 				cerr << "Core" << i << "\tP_D\t" << Core_Power_d[i]
 				                    << "\tP_L\t" << Core_Power_l[i]
 				                    << "\tAVG_T\t" << Core_Temperature[i]
@@ -516,16 +565,6 @@ void ei_wrapper_t::tick()
 //				cerr<<i<<"(power)  \t"<<a<<","<<b<<","<<c<<","<<d<<","<<e<<", "<<f<<"\t"<<s<<"+"<<f<<"="<<s+f<<": "<<T<<endl<<flush;
 //				cerr<<i<<"(leakage)\t"<<al<<","<<bl<<","<<cl<<","<<dl<<","<<el<<", "<<fl<<"\t"<<t<<"+"<<fl<<"="<<t+fl<<endl<<flush;
 				 //cerr<<i<<"(dynamic)\t"<<ad[i]<<","<<bd[i]<<","<<cd[i]<<","<<dd[i]<<","<<ed[i]<<", "<<fd[i]<<endl<<flush;
-				/*
-				if(dvfs_count >= M)
-				{
-					//Exclude the transient
-					// Store it in an array
-					P1[dvfs_count - M] = t+fl;
-					P2[dvfs_count - M] = s+f;
-					TArray[dvfs_count - M] = T;
-				}
-				*/
 			}
 
 			#if 0
@@ -576,6 +615,8 @@ void ei_wrapper_t::tick()
 			{
 				reads[i] = 0; writes[i] = 0;
 			}
+
+			reg_sam_iter += 1;
 		}
 	}
 #endif
