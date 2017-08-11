@@ -1,12 +1,12 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 100000000L; //
+simulation_stop = 1000000000L; //
 
 network_clock_frequency = 3000000000L; // 3GHz
 
-distributed_clock_frequency = [3e9, 3e9, 3e9, 3e9,
-                               3e9, 3e9, 3e9, 3e9,
-                               3e9, 3e9, 3e9, 3e9,
-                               3e9, 3e9, 3e9, 3e9];
+distributed_clock_frequency = [1e9, 1e9, 1e9, 1e9,
+                               1e9, 1e9, 1e9, 1e9,
+                               1e9, 1e9, 1e9, 1e9,
+                               1e9, 1e9, 1e9, 1e9];
 
 network:
 {
@@ -63,5 +63,6 @@ lls_cache:
 mc: //memory controller
 {
     downstream_credits = 128; //credits for sending to network
-    node_idx = [0, 3, 12, 15];
+	node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+	//node_idx = [0, 3, 12, 15];
 };

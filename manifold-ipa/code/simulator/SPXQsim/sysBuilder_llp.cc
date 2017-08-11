@@ -170,7 +170,7 @@ void SysBuilder_llp :: config_components(Config& config)
 	//the node indices of MC are in an array, each value between 0 and MAX_NODES-1
 	Setting& setting_mc = config.lookup("mc.node_idx");
 	int num_mc = setting_mc.getLength(); //number of mem controllers
-	assert(num_mc >=1 && num_mc < MAX_NODES);
+	assert(num_mc >=1 && num_mc <= MAX_NODES);
 
 	this->mc_node_idx_vec.resize(num_mc);
 

@@ -78,7 +78,7 @@
 #include <assert.h>
 #include "mpi.h"
 
-#define USE_EI
+//#define USE_EI
 
 
 using namespace std;

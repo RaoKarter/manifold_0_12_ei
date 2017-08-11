@@ -133,6 +133,7 @@ void inorder_t::set_config(libconfig::Config *parser)
 
 void inorder_t::commit()
 {
+
   // nothing to do
 }
 
@@ -151,7 +152,7 @@ void inorder_t::execute()
     if(inst)
     {
       EX[port]->pop_front(inst->excode); // remove this inst from EX pipe
-      
+      counters->retire_inst.read++;
       switch(inst->memcode)
       {
         case SPX_MEM_LD: // load
@@ -290,6 +291,7 @@ void inorder_t::frontend()
 void inorder_t::fetch(inst_t *inst)
 {
   instQ->push_back(inst);
+  counters->fetch_inst.read++;
 }
 
 void inorder_t::handle_cache_response(int temp, cache_request_t *cache_request)

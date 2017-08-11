@@ -9,7 +9,7 @@
 
 using namespace manifold::ei_wrapper;
 
-#define EI_COMPUTE
+//#define EI_COMPUTE
 #define IVR_SLOPE 5e-6 
 vector<double> ad; 
 vector<double> bd; 
@@ -103,7 +103,7 @@ void ei_wrapper_t::tick()
   if(sam_cycle == (SAMPLING_CYCLE + 2)){
     sam_cycle = 2;
     total_mips = 0.0;
-
+#if 0
     double vdd = 0.8 + 0.1*(p_ipa->new_freq - 3e9)/1e9;
     cerr << "id: " << id << " tick: " << manifold::kernel::Clock::Master().NowTicks() << " new_freq: " << p_ipa->new_freq << " old_freq: " << clock->freq << " new_vdd: " << vdd << " old_vdd: " << last_vdd << endl;
     clock->set_frequency(p_ipa->new_freq);
@@ -125,6 +125,7 @@ void ei_wrapper_t::tick()
   
     sprintf(ModuleID,"CORE_DIE:MEM%d",id);
     ei->update_variable_partition(string(ModuleID),string("vdd"),vdd);
+#endif
 
   }
 

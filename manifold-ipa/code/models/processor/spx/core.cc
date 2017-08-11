@@ -162,6 +162,8 @@ void spx_core_t::tick()
   pipeline->stats.core_time += tick_time;
   pipeline->stats.interval.core_time += tick_time;
 
+  print_stat_info((uint64_t)100000);
+
 #ifdef SPX_SPEED_DEBUG
   gettimeofday(&end,0);
 
@@ -222,6 +224,18 @@ void spx_core_t::handle_cache_response(int temp, cache_request_t *cache_request)
 double uops_total = 0;
 double mops_total = 0;
 double aggr_ipc = 0;
+
+void spx_core_t::print_stat_info(uint64_t sam_cycle)
+{
+	double sp = double(sam_cycle/manifold::kernel::Clock::Master().freq);
+    if(clock_cycle&&((clock_cycle%sam_cycle) == 0))
+    {
+    	cerr << "id: " << core_id <<" cycle: "<<clock->NowTicks()<<"|| fetched inst: "<<pipeline->counters->fetch_inst.read
+    		 <<" committed inst: "<<pipeline->counters->retire_inst.read<<", IPC_inst: "<<((float)pipeline->counters->retire_inst.read)/sam_cycle
+    		 <<", MIPS: "<<pipeline->counters->retire_inst.read/sp/1e6<<endl<<flush;
+    	pipeline->counters->reset();
+    }
+}
 void spx_core_t::print_stats(void)
 {
     uops_total += (double)pipeline->stats.uop_count;

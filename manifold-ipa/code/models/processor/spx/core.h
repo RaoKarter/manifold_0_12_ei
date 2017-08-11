@@ -49,6 +49,7 @@ public:
   pipeline_t *pipeline; // base class of pipeline models
 
   void print_stats(void);
+  void print_stat_info(uint64_t sampling_period);
 #ifdef IPA_CTRL
   ipa_t* ipa;
   manifold::kernel::Clock *clock;
