@@ -41,8 +41,8 @@ Parameters for the LTI model */
 
 //#define c1 303.5091
 #define FIXEDGAIN 0
-#define USE_CONTROLLER 1
-#ifdef USE_CONTROLLER
+#define USE_CONTROLLER 0
+#if USE_CONTROLLER
 #define C_ENABLED 1
 #define C_DISABLED 0
 #else

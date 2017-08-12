@@ -117,10 +117,11 @@ void Dram_sim :: try_send_reply()
 
 //    uarch::mcp_cache_namespace::Mem_msg mem_msg(req.gaddr, req.read);
 //	mem_msg.type = 1;  // MEM RPLY
-#ifdef DBG_DRAMSIM    
-    cerr << dec << "@\t" << dram_clk->NowTicks() << "\tdram_clk\tVault\t" << this->get_nid() << "\treply LD\t\t\tsrc_id\t" << pkt->get_src() << "\tsrc_port\t" << pkt->get_src_port()
-                << "\tdst_id\t" << pkt->get_dst() << "\tdst_port\t" << pkt->get_dst_port() << "\tladdr\t" << hex << req.addr
-                << "\tgaddr\t" << req.gaddr << dec << endl;
+#ifdef DBG_DRAMSIM
+    cerr << dec << "@\t" << dram_clk->NowTicks() << "\tdram_clk\tVault\t" << this->get_nid() << "\treply LD\t\t\tsrc_id\t"
+    		    << pkt->get_src() << "\tsrc_port\t" << pkt->get_src_port()
+                << "\tdst_id\t" << pkt->get_dst() << "\tdst_port\t" << pkt->get_dst_port()
+                << "\tladdr\t" << hex << req.addr << "\tgaddr\t" << req.gaddr << dec << endl;
 #endif
     Send(PORT0, pkt);
     downstream_credits--;

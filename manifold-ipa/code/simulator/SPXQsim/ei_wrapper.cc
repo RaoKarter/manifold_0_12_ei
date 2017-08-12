@@ -9,7 +9,7 @@
 
 using namespace manifold::ei_wrapper;
 
-#define EI_COMPUTE
+//#define EI_COMPUTE
 #define IVR_SLOPE 5e-6 
 vector<double> ad; 
 vector<double> bd; 
@@ -282,13 +282,28 @@ void ei_wrapper_t::tick()
 	}
 #endif
 
-#ifdef EI_COMPUTE
+
 	if(sam_cycle == (SAMPLING_CYCLE + 1))
 	{
 #if C_DISABLED
 		sam_cycle = 1;
 		total_mips = 0.0;
 #endif
+#ifndef EI_COMPUTE
+		synced += 1;
+
+		if(synced == NUM_CORES)
+		{
+			synced = 0;
+			for (int i = 0; i < NUM_CORES; i++)
+			{
+				cerr << "Core" << i << "\tMEM_READS\t" << reads[i] << "\tMEM_WRITES\t" << writes[i] << endl << flush;
+				reads[i] = 0;
+				writes[i] = 0;
+			}
+		}
+#endif
+#ifdef EI_COMPUTE
 		EI::power_t DRAM_P; // Temporary variable to push_data<power_t>
 		char ModuleID[64];
 		clock->SetNowTime(p_cnt->time_tick);
@@ -618,8 +633,9 @@ void ei_wrapper_t::tick()
 
 			reg_sam_iter += 1;
 		}
-	}
 #endif
+	}
+
 
 	if(sam_cycle == SAMPLING_CYCLE)
 	{

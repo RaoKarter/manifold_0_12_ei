@@ -30,7 +30,7 @@ CaffDramMcMap :: CaffDramMcMap(std::vector<int>& nodeIds, const Dsettings& sett)
 	}
 
 	//m_mc_shift_bits = sett.channelShiftBits + ch_bits;
-	m_mc_shift_bits = 10; //4KB page
+	m_mc_shift_bits = 12; //4KB page
     }
 
 }
