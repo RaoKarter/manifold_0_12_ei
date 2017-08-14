@@ -81,7 +81,7 @@
 
 //#include "dram_print_power.h"
 
-#define USE_EI
+//#define USE_EI
 
 using namespace std;
 using namespace manifold::kernel;
@@ -376,7 +376,7 @@ int main(int argc, char** argv)
 	if(mem_str == "CAFFDRAM")
 	{
 		mc_map = new CaffDramMcMap(sysBuilder.mc_node_idx_vec, sysBuilder.dram_settings);
-		l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 12); //page size = 2^12
+		l2_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 12); //page size = 2^12
 		sysBuilder.config_cache_settings(l2_map, mc_map);
 	}
 	else if(mem_str == "DRAMSIM")
@@ -384,7 +384,7 @@ int main(int argc, char** argv)
 
 		manifold::dramsim::Dram_sim :: Set_msg_types(sysBuilder.MEM_MSG_TYPE, sysBuilder.CREDIT_MSG_TYPE);
 		dramsim_mc_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 12); // assuming page size= 2^12
-		l2_map = new PageBasedMap(sysBuilder.proc_node_idx_vec, 12); //page size = 2^12
+		l2_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 12); //page size = 2^12
 		sysBuilder.config_cache_settings(l2_map, dramsim_mc_map);
 		cerr << "DRAMSim2 mc_map address: " << hex << dramsim_mc_map << dec << endl << flush;
 	}
