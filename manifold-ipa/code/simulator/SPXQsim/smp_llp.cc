@@ -58,7 +58,8 @@
 //!
 #include "sysBuilder_llp.h"
 #include "common.h"
-#include "ei_wrapper.h"
+
+#include "n_ei_wrapper.h"
 #include "kernel/clock.h"
 #include "kernel/component.h"
 #include "kernel/manifold.h"
@@ -81,7 +82,15 @@
 
 //#include "dram_print_power.h"
 
-//#define USE_EI
+#ifdef EI_CTRL
+#define USE_EI
+#endif
+
+#ifdef USE_EI
+#include "ei_wrapper.h"
+#else
+#include "n_ei_wrapper.h"
+#endif
 
 using namespace std;
 using namespace manifold::kernel;
@@ -91,9 +100,14 @@ using namespace manifold::mcp_cache_namespace;
 using namespace manifold::iris;
 using namespace manifold::caffdram;
 using namespace manifold::dramsim;
-using namespace manifold::ei_wrapper;
 using namespace libconfig;
+
+#ifdef USE_EI
+using namespace manifold::ei_wrapper;
 using namespace EI;
+#else
+using namespace manifold::n_ei_wrapper;
+#endif
 
 EI::energy_introspector_t *energy_introspector;
 
@@ -525,7 +539,27 @@ int main(int argc, char** argv)
 
 
 	}
-#endif     
+#else
+    vector<n_ei_wrapper_t*> n_ei_device;
+	n_ei_device.reserve(sysBuilder.MAX_NODES);
+	for(int i=0; i<sysBuilder.MAX_NODES; i++)
+		if((node_cids[i].type == CORE_MC_NODE) || (node_cids[i].type == CORE_NODE)) {
+		manifold::spx::spx_core_t* proc_global = (spx_core_t*) Component :: GetComponent<spx_core_t>(node_cids[i].proc_cid);
+		manifold::mcp_cache_namespace::MESI_LLP_cache* l1_global = (MESI_LLP_cache*) Component :: GetComponent<MESI_LLP_cache>(node_cids[i].l1_cache_cid);
+		manifold::mcp_cache_namespace::MESI_LLS_cache* l2_global = (MESI_LLS_cache*) Component :: GetComponent<MESI_LLS_cache>(node_cids[i].l2_cache_cid);
+		Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
+		if(proc_global && l1_global && l2_global && mc)
+		{
+			n_ei_device[i] = new n_ei_wrapper_t(node_clock[i], core_voltage, proc_global->pipeline->counters, l1_global->cache_counter,
+					l2_global->cache_counter, l2_global, mc, sysBuilder.sampling_period, sysBuilder.MAX_NODES, i);
+		}
+		else
+		{
+			cerr << "parsing sim hierachy fails" << endl;
+			exit(1);
+		}
+	}
+#endif
 
     //==========================================================================
     // Manifold runs.

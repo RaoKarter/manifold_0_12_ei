@@ -1,5 +1,5 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 1000000000L; //
+simulation_stop = 50000000L; //
 
 network_clock_frequency = 3000000000L; // 3GHz
 
@@ -8,7 +8,13 @@ distributed_clock_frequency = [0.7e9, 0.7e9, 0.7e9, 0.7e9,
                                0.7e9, 0.7e9, 0.7e9, 0.7e9,
                                0.7e9, 0.7e9, 0.7e9, 0.7e9];
 
-core_voltage = 0.53555; // V = (1.93e-4 * f) + 0.4008
+core_thermal_threshold = [340, 340, 340, 340,
+                          340, 340, 340, 340,
+                          340, 340, 340, 340,
+                          340, 340, 340, 340];
+
+core_voltage = 0.5933; // V = (1.93e-4 * f) + 0.4008
+sampling_period = 1e-5;
 
 network:
 {
@@ -72,5 +78,5 @@ mc: //memory controller
         dev_file = "3d_die.ini";
         sys_file = "3d_die.ini.example";
         size = 256;
-   };
+    };
 };

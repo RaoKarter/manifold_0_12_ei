@@ -1,6 +1,6 @@
 -package.name				16CORE
 -package.thermal_library		3d-ice
--package.thermal_analysis_type	transient
+-package.thermal_analysis_type	steady
 -package.ambient_temperature		300.0
 -package.temperature			300.0
 -package.chip_length			8.4e-3	# 8.4mm

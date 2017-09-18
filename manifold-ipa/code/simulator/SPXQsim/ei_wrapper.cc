@@ -9,7 +9,7 @@
 
 using namespace manifold::ei_wrapper;
 
-//#define EI_COMPUTE
+#define EI_COMPUTE
 #define IVR_SLOPE 5e-6 
 vector<double> ad; 
 vector<double> bd; 
@@ -575,42 +575,15 @@ void ei_wrapper_t::tick()
 				                       << "\tLAYER1\tP_D\t" << dram1_d[i] << "\tP_L\t" << dram_leak_power[1] << "\tAVG_T\t" << DRAM_T[1]
 				                       << "\tLAYER2\tP_D\t" << dram2_d[i] << "\tP_L\t" << dram_leak_power[2] << "\tAVG_T\t" << DRAM_T[2]
 				                       << "\tLAYER3\tP_D\t" << dram3_d[i] << "\tP_L\t" << dram_leak_power[3] << "\tAVG_T\t" << DRAM_T[3]
-				     << "\tMEM_READS\t" << reads[i] << "\tMEM_WRITES\t" << writes[i]
-				     << "\tCPU_FREQ\t" << clock->freq << "\tVdd\t" << V_Old << endl << flush;
+				     << "\tMEM_READS\t" << reads[i] << "\tMEM_WRITES\t" << writes[i] << endl << flush;
 //				cerr<<i<<"(power)  \t"<<a<<","<<b<<","<<c<<","<<d<<","<<e<<", "<<f<<"\t"<<s<<"+"<<f<<"="<<s+f<<": "<<T<<endl<<flush;
 //				cerr<<i<<"(leakage)\t"<<al<<","<<bl<<","<<cl<<","<<dl<<","<<el<<", "<<fl<<"\t"<<t<<"+"<<fl<<"="<<t+fl<<endl<<flush;
 				 //cerr<<i<<"(dynamic)\t"<<ad[i]<<","<<bd[i]<<","<<cd[i]<<","<<dd[i]<<","<<ed[i]<<", "<<fd[i]<<endl<<flush;
 			}
 
-			#if 0
-			EI::grid_t<double> thermal_grid = ei->pull_data<EI::grid_t<double> >(p_cnt->time_tick,"package","16CORE","thermal_grid");
-			for(int col_index = 0; col_index < 50; col_index++) {
-			for(int row_index = 0; row_index < 50; row_index++)
-			  cerr << thermal_grid.pull(row_index,col_index,0) << ",";
-			  cerr << endl;
-			 }
-			cerr << "**************************************************" << endl;
-			#endif
-			#if 0
-			EI::grid_t<double> thermal_grid = ei->pull_data<EI::grid_t<double> >(p_cnt->time_tick,"package","16CORE","thermal_grid");
-			for(int col_index = 0; col_index < 50; col_index++) {
-			for(int row_index = 0; row_index < 50; row_index++)
-			  cerr << thermal_grid.pull(row_index,col_index,1) << ",";
-			  cerr << endl;
-			}
-			cerr << "**************************************************" << endl;
-			#endif
-
 
 			double time = manifold::kernel::Clock::Master().NowTime();
 
-#if 0
-			for(int i=0;i<NUM_CORES;i++)
-			{
-				cerr << "Total mem reads["<<i<< "]\t" << reads[i] << "\tTotal mem writes["<<"]\t" << writes[i] << endl << flush;
-			}
-			cerr << endl;
-#endif
 			cerr << "inst_power\t" << ip << "\tinst_leak\t" << il
 			     <<"\tinst_power_CORE\t" << ipp << "\tinst_leak_CORE\t" << ilp
 			     <<"\tinst_power_L2CACHE\t" << ips << "\tinst_leak_L2CACHE\t" << ils
@@ -625,7 +598,51 @@ void ei_wrapper_t::tick()
 			     << "\taverage_power_CORE\t" << core_energy/time << "\taverage_leak_CORE\t" << core_leakage/time
 			     << "\taverage_power_L2CACHE\t"<< sram_energy/time << "\taverage_leak_L2CACHE\t" << sram_leakage/time
 			     << "\taverage_power_DRAM\t" << dram_energy/time << "\taverage_leak_DRAM\t" << dram_leakage_energy/time << endl << flush;
+#if 1
+			cerr << "CORE_DIE**************************************************" << endl;
+			EI::grid_t<double> thermal_grid = ei->pull_data<EI::grid_t<double> >(p_cnt->time_tick,"package","16CORE","thermal_grid");
+			for(int col_index = 0; col_index < 50; col_index++) {
+			for(int row_index = 0; row_index < 50; row_index++)
+			  cerr << thermal_grid.pull(row_index,col_index,0) << ",";
+			  cerr << endl;
+			 }
 
+			cerr << "CACHE_DIE*************************************************" << endl;
+			for(int col_index = 0; col_index < 50; col_index++) {
+			for(int row_index = 0; row_index < 50; row_index++)
+			  cerr << thermal_grid.pull(row_index,col_index,1) << ",";
+			  cerr << endl;
+			}
+
+			cerr << "DRAM_DIE0*************************************************" << endl;
+			for(int col_index = 0; col_index < 50; col_index++) {
+			for(int row_index = 0; row_index < 50; row_index++)
+			  cerr << thermal_grid.pull(row_index,col_index,2) << ",";
+			  cerr << endl;
+			}
+
+			cerr << "DRAM_DIE1*************************************************" << endl;
+			for(int col_index = 0; col_index < 50; col_index++) {
+			for(int row_index = 0; row_index < 50; row_index++)
+			  cerr << thermal_grid.pull(row_index,col_index,3) << ",";
+			  cerr << endl;
+			}
+
+			cerr << "DRAM_DIE2*************************************************" << endl;
+			for(int col_index = 0; col_index < 50; col_index++) {
+			for(int row_index = 0; row_index < 50; row_index++)
+			  cerr << thermal_grid.pull(row_index,col_index,4) << ",";
+			  cerr << endl;
+			}
+
+			cerr << "DRAM_DIE3*************************************************" << endl;
+			for(int col_index = 0; col_index < 50; col_index++) {
+			for(int row_index = 0; row_index < 50; row_index++)
+			  cerr << thermal_grid.pull(row_index,col_index,5) << ",";
+			  cerr << endl;
+			}
+			cerr << "**************************************************" << endl;
+#endif
 			for(int i=0;i<NUM_CORES;i++)
 			{
 				reads[i] = 0; writes[i] = 0;
@@ -841,7 +858,8 @@ void ei_wrapper_t::tick()
 		cerr << "CORE" << id << "\tcycle\t" << clock->NowTicks() << "\tIPC_inst\t" << ((float)p_cnt->retire_inst.read)/SAMPLING_CYCLE
 				             << "\tMIPS\t" << p_cnt->retire_inst.read/p_cnt->period/1e6 << "\ttotal_MIPS\t" << total_mips
 						     << "\tmem_reads\t" << p_l2cache->memreads<< "\tmem_writes\t"<< p_l2cache->memwrites
-							 << "\tfetched_inst\t" << p_cnt->fetch_inst.read << "\tnop_inst\t" << p_cnt->nop_inst.read << endl << flush;
+							 << "\tfetched_inst\t" << p_cnt->fetch_inst.read << "\tnop_inst\t" << p_cnt->nop_inst.read
+							 << "\tclock_freq\t" << clock->freq << "\tVdd\t" << V_Old << endl << flush;
 		for(int i = 0; i < NUM_CORES; i++)
 		{
 			reads[i] += p_l2cache->mem_reads[i];
