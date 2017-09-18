@@ -33,7 +33,7 @@ class n_ei_wrapper_t : public manifold::kernel::Component
 public:
   n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, manifold::spx::pipeline_counter_t* proc_cnt,
 		  manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
-		  manifold::mcp_cache_namespace::LLS_cache* p_l2, manifold::dramsim::Dram_sim* mc,
+		  manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2, manifold::dramsim::Dram_sim* mc,
 		  double sampling_period, int num_nodes, int uid);
 
   ~n_ei_wrapper_t();
@@ -51,6 +51,7 @@ private:
   manifold::spx::pipeline_counter_t *p_cnt;
   manifold::mcp_cache_namespace::L1_counter_t *l1_cnt;
   manifold::mcp_cache_namespace::L2_counter_t *l2_cnt;
+  manifold::mcp_cache_namespace::LLP_cache *p_l1cache;
   manifold::mcp_cache_namespace::LLS_cache *p_l2cache;
   manifold::dramsim::Dram_sim *mem_ctrl;
 

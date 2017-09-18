@@ -14,8 +14,8 @@ namespace mcp_cache_namespace {
 
 
 
-LLS_cache :: LLS_cache (int nid, const cache_settings& parameters, const L2_cache_settings& settings) :
-    L2_cache (nid, parameters, settings), m_mux(0)
+LLS_cache :: LLS_cache (int nid, const cache_settings& parameters, const L2_cache_settings& settings, manifold::kernel::Clock* clk) :
+    L2_cache (nid, parameters, settings), m_mux(0), m_clock(clk)
 {
     stats_cycles = 0;
     memreads = 0;

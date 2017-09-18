@@ -10,10 +10,10 @@ using namespace manifold::kernel;
 
 LP_LLS_unit :: LP_LLS_unit(LpId_t lp, int nodeId, cache_settings& l1_parameters, cache_settings& l2_parameters,
                            L1_cache_settings& l1_settings, L2_cache_settings& l2_settings,
-                           manifold::kernel::Clock& clk, int credit_type)
+                           manifold::kernel::Clock* clk, manifold::kernel::Clock* l1_clk, int credit_type)
 {
-    m_llp_cid = Component :: Create<MESI_LLP_cache>(lp, nodeId, l1_parameters, l1_settings);
-    m_lls_cid = Component :: Create<MESI_LLS_cache>(lp, nodeId, l2_parameters, l2_settings);
+    m_llp_cid = Component :: Create<MESI_LLP_cache>(lp, nodeId, l1_clk, l1_parameters, l1_settings);
+    m_lls_cid = Component :: Create<MESI_LLS_cache>(lp, nodeId, clk, l2_parameters, l2_settings);
     m_mux_cid = Component :: Create<MuxDemux>(lp, clk, credit_type);
 
     m_llp = Component :: GetComponent<MESI_LLP_cache>(m_llp_cid); 
@@ -41,13 +41,13 @@ LP_LLS_unit :: LP_LLS_unit(LpId_t lp, int nodeId, cache_settings& l1_parameters,
     #if 1
     Manifold :: Connect(m_llp_cid, MESI_LLP_cache::PORT_LOCAL_L2, &MESI_LLP_cache::handle_local_LLS_request,
 			m_lls_cid, MESI_LLS_cache::PORT_LOCAL_L1,
-			&MESI_LLS_cache::handle_llp_incoming, clk, clk, 1, 1);
+			&MESI_LLS_cache::handle_llp_incoming, *(clk), *(l1_clk), 1, 1);
     #endif
 
     if(m_mux) {
-	Clock :: Register(clk, m_llp, &LLP_cache::tick, (void(LLP_cache::*)(void))0);
-	Clock :: Register(clk, m_lls, &LLS_cache::tick, (void(LLS_cache::*)(void))0);
-	Clock :: Register(clk, m_mux, &MuxDemux::tick, (void(MuxDemux::*)(void))0);
+	Clock :: Register(*l1_clk, m_llp, &LLP_cache::tick, (void(LLP_cache::*)(void))0);
+	Clock :: Register(*clk, m_lls, &LLS_cache::tick, (void(LLS_cache::*)(void))0);
+	Clock :: Register(*clk, m_mux, &MuxDemux::tick, (void(MuxDemux::*)(void))0);
     }
 }
 

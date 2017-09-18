@@ -1,12 +1,17 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 50000000L; //
+simulation_stop = 2000000L; //
 
-network_clock_frequency = 3000000000L; // 3GHz
+network_clock_frequency = 1000000000L; // 1GHz
 
 distributed_clock_frequency = [1e9, 1e9, 1e9, 1e9,
                                1e9, 1e9, 1e9, 1e9,
                                1e9, 1e9, 1e9, 1e9,
                                1e9, 1e9, 1e9, 1e9];
+
+cache_clock_frequency = [1e9, 1e9, 1e9, 1e9,
+                         1e9, 1e9, 1e9, 1e9,
+                         1e9, 1e9, 1e9, 1e9,
+                         1e9, 1e9, 1e9, 1e9];
 
 core_thermal_threshold = [340, 340, 340, 340,
                           340, 340, 340, 340,

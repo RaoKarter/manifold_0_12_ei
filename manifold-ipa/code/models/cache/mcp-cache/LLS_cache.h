@@ -15,10 +15,11 @@ class MuxDemux;
 class LLS_cache : public L2_cache {
 public:
     friend class MuxDemux;
+    manifold::kernel::Clock* m_clock;
 
     enum {PORT_L1=0, PORT_LOCAL_L1};
 
-    LLS_cache (int nid, const cache_settings&, const L2_cache_settings&);
+    LLS_cache (int nid, const cache_settings&, const L2_cache_settings&, manifold::kernel::Clock*);
     ~LLS_cache (void);
 
     void set_mux(MuxDemux* m)

@@ -14,7 +14,7 @@ class LP_LLS_unit {
 public:
     LP_LLS_unit(manifold::kernel::LpId_t lp, int nodeId, cache_settings& l1_parameters, cache_settings& l2_parameters,
                            L1_cache_settings& l1_settings, L2_cache_settings& l2_settings,
-                           manifold::kernel::Clock& clk, int credit_type);
+                           manifold::kernel::Clock* clk, manifold::kernel::Clock* cache_clk, int credit_type);
 
     manifold::kernel::CompId_t get_llp_cid() { return m_llp_cid; }
     manifold::kernel::CompId_t get_lls_cid() { return m_lls_cid; }

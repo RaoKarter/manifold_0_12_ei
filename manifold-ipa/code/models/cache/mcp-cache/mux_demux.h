@@ -21,7 +21,7 @@ class MuxDemux : public manifold::kernel::Component {
 public:
     enum { PORT_NET=0 };
 
-    MuxDemux(manifold::kernel::Clock&, int credit_type);
+    MuxDemux(manifold::kernel::Clock*, int credit_type);
     void set_llp_lls(LLP_cache* llp, LLS_cache* lls)
     {
         m_llp = llp;
@@ -50,7 +50,7 @@ private:
     LLP_cache* m_llp;
     LLS_cache* m_lls;
 
-    manifold::kernel::Clock& m_clk;
+    manifold::kernel::Clock* m_clk;
 
     #ifdef FORECAST_NULL
     //std::list<manifold::kernel::Ticks_t> m_output_ticks;
@@ -75,7 +75,7 @@ void MuxDemux :: handle_net(int, manifold::uarch::NetworkPacket* pkt)
     }
     else
     {
-    	std::cerr << "@ " << std::dec <<  m_clk.NowTicks() << " Mux received invalid req; dst port= " << std::endl;
+    	std::cerr << "@ " << std::dec <<  m_clk->NowTicks() << " Mux received invalid req; dst port= " << std::endl;
     	assert(0);
     }
 }

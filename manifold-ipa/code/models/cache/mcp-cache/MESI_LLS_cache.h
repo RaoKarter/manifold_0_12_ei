@@ -9,7 +9,7 @@ namespace mcp_cache_namespace {
 
 class MESI_LLS_cache : public LLS_cache {
 public:
-    MESI_LLS_cache (int nid, const cache_settings&, const L2_cache_settings&);
+    MESI_LLS_cache (int nid, manifold::kernel::Clock*, const cache_settings&, const L2_cache_settings&);
     void print_stats(std::ostream&);
 };
 

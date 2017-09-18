@@ -19,8 +19,8 @@ namespace mcp_cache_namespace {
 
 
 
-LLP_cache :: LLP_cache (int nid, const cache_settings& parameters, const L1_cache_settings& settings) :
-      L1_cache (nid, parameters, settings), m_mux(0)
+LLP_cache :: LLP_cache (int nid, const cache_settings& parameters, const L1_cache_settings& settings, manifold::kernel::Clock* clk) :
+      L1_cache (nid, parameters, settings), m_mux(0), m_clock(clk)
 {
 }
 

@@ -317,7 +317,7 @@ int main(int argc, char** argv)
 #endif
 #endif
     //==========================================================================
-    // Configure distributed clock network.
+    // Configure distributed clock network for Cores
     //==========================================================================
 
 
@@ -325,7 +325,8 @@ int main(int argc, char** argv)
     node_clock.reserve(sysBuilder.MAX_NODES);
 
     Clock network_clock((double)config.lookup("network_clock_frequency"));
-    cout << "Network: clock_frequency = " << network_clock.freq << endl;
+    network_clock.set_frequency(1000000000);
+    cerr << "Network: clock_frequency = " << network_clock.freq << endl;
 
     try {
 
@@ -335,7 +336,7 @@ int main(int argc, char** argv)
       for(int c = 0; c < clock_setting.getLength(); c++) 
       {
         node_clock[c] = new Clock((double)clock_setting[c]);
-        cout << "Node " << c << ": clock_frequency = " << node_clock[c]->freq << endl;
+        cerr << "Core " << c << ": clock_frequency = " << node_clock[c]->freq << endl;
       }
     }
     catch (SettingNotFoundException e) {
@@ -343,9 +344,37 @@ int main(int argc, char** argv)
       exit(1);
     }
     catch (SettingTypeException e) {
-      cout << e.getPath() << " has incorrect type." << endl;
+      cerr << e.getPath() << " has incorrect type." << endl;
       exit(1);
     }
+
+    //==========================================================================
+	// Configure distributed clock network for LLP_LLS_Caches
+	//==========================================================================
+
+
+	vector<Clock*> cache_clock;
+	cache_clock.reserve(sysBuilder.MAX_NODES);
+
+	try {
+
+	  Setting &cache_clock_setting = config.lookup("cache_clock_frequency");
+	  assert(cache_clock_setting.getLength() == sysBuilder.MAX_NODES);
+
+	  for(int c = 0; c < cache_clock_setting.getLength(); c++)
+	  {
+		cache_clock[c] = new Clock((double)cache_clock_setting[c]);
+		cerr << "Cache " << c << ": clock_frequency = " << cache_clock[c]->freq << endl;
+	  }
+	}
+	catch (SettingNotFoundException e) {
+	  cerr << e.getPath() << " not set." << endl;
+	  exit(1);
+	}
+	catch (SettingTypeException e) {
+	  cerr << e.getPath() << " has incorrect type." << endl;
+	  exit(1);
+	}
 
     //==========================================================================
 	// Qsim Interrupt Handler
@@ -421,7 +450,7 @@ int main(int argc, char** argv)
 #endif
 
     double core_voltage((double)config.lookup("core_voltage"));
-    cout << "Initial Core: Voltage = " << core_voltage << endl << flush;
+    cerr << "Initial Core: Voltage = " << core_voltage << endl << flush;
 
     // For Temperature Regulation
     vector<double> therm_thresh;
@@ -434,15 +463,15 @@ int main(int argc, char** argv)
 	  for(int c = 0; c < therm_thresh_setting.getLength(); c++)
 	  {
 		  therm_thresh[c] = (double)therm_thresh_setting[c];
-		  cerr << "Node " << c << ": Therm_Threshold = " << therm_thresh[c] << endl;
+		  cerr << "Core " << c << ": Therm_Threshold = " << therm_thresh[c] << endl;
 	  }
 	}
 	catch (SettingNotFoundException e) {
-	  cout << e.getPath() << " not set." << endl;
+	  cerr << e.getPath() << " not set." << endl;
 	  exit(1);
 	}
 	catch (SettingTypeException e) {
-	  cout << e.getPath() << " has incorrect type." << endl;
+	  cerr << e.getPath() << " has incorrect type." << endl;
 	  exit(1);
 	}
 
@@ -452,7 +481,7 @@ int main(int argc, char** argv)
     //Node ID is the same as its node index: between 0 and MAX_NODES-1
     list<LP_LLS_unit*> lp_lls_units;
 
-    Clock dram_clock(3000000000);	        
+    Clock dram_clock(1000000000);
     
     cerr << "Manifold Master Clock = " << manifold::kernel::Clock::Master().freq << "Hz" << endl;
     cerr << "Sampling period = " << sysBuilder.sampling_period << endl;
@@ -466,7 +495,8 @@ int main(int argc, char** argv)
         node_cids[i].proc_cid = Component :: Create<spx_core_t>(node_lp, node_clock[i], i, qsim_osd, argv[2], cpuid++);
 
         //LP_LLS_unit* unit = new LP_LLS_unit(node_lp, i, sysBuilder.l1_cache_parameters, sysBuilder.l2_cache_parameters, sysBuilder.l1_settings, sysBuilder.l2_settings, *(node_clock[i]), sysBuilder.CREDIT_MSG_TYPE); 
-        LP_LLS_unit* unit = new LP_LLS_unit(node_lp, i, sysBuilder.l1_cache_parameters, sysBuilder.l2_cache_parameters, sysBuilder.l1_settings, sysBuilder.l2_settings, *(node_clock[i]), sysBuilder.CREDIT_MSG_TYPE); 
+        LP_LLS_unit* unit = new LP_LLS_unit(node_lp, i, sysBuilder.l1_cache_parameters, sysBuilder.l2_cache_parameters,
+        		                            sysBuilder.l1_settings, sysBuilder.l2_settings, node_clock[i], cache_clock[i], sysBuilder.CREDIT_MSG_TYPE);
 
         node_cids[i].l1_cache_cid = unit->get_llp_cid();
         node_cids[i].l2_cache_cid = unit->get_lls_cid();
@@ -492,7 +522,8 @@ int main(int argc, char** argv)
         node_cids[i].proc_cid = Component :: Create<spx_core_t>(node_lp, node_clock[i], i, qsim_osd, argv[2], cpuid++);
 
         //LP_LLS_unit* unit = new LP_LLS_unit(node_lp, i, sysBuilder.l1_cache_parameters, sysBuilder.l2_cache_parameters, sysBuilder.l1_settings, sysBuilder.l2_settings, *(node_clock[i]), sysBuilder.CREDIT_MSG_TYPE); 
-        LP_LLS_unit* unit = new LP_LLS_unit(node_lp, i, sysBuilder.l1_cache_parameters, sysBuilder.l2_cache_parameters, sysBuilder.l1_settings, sysBuilder.l2_settings, *(node_clock[i]), sysBuilder.CREDIT_MSG_TYPE); 
+        LP_LLS_unit* unit = new LP_LLS_unit(node_lp, i, sysBuilder.l1_cache_parameters, sysBuilder.l2_cache_parameters,
+        		                            sysBuilder.l1_settings, sysBuilder.l2_settings, node_clock[i], cache_clock[i], sysBuilder.CREDIT_MSG_TYPE);
 
         node_cids[i].l1_cache_cid = unit->get_llp_cid();
         node_cids[i].l2_cache_cid = unit->get_lls_cid();
@@ -529,7 +560,7 @@ int main(int argc, char** argv)
 	    if(proc_global && l1_global && l2_global && mc)
 	    {
 			ei_device[i] = new ei_wrapper_t(node_clock[i], core_voltage, energy_introspector, proc_global->pipeline->counters, proc_global->ipa, l1_global->cache_counter,
-					l2_global->cache_counter, l2_global, mc, therm_thresh[i], sysBuilder.sampling_period,  sysBuilder.MAX_NODES, i);
+					l2_global->cache_counter, l1_global, l2_global, mc, therm_thresh[i], sysBuilder.sampling_period,  sysBuilder.MAX_NODES, i);
 		}
 	    else
 	    {
@@ -551,7 +582,7 @@ int main(int argc, char** argv)
 		if(proc_global && l1_global && l2_global && mc)
 		{
 			n_ei_device[i] = new n_ei_wrapper_t(node_clock[i], core_voltage, proc_global->pipeline->counters, l1_global->cache_counter,
-					l2_global->cache_counter, l2_global, mc, sysBuilder.sampling_period, sysBuilder.MAX_NODES, i);
+					l2_global->cache_counter, l1_global, l2_global, mc, sysBuilder.sampling_period, sysBuilder.MAX_NODES, i);
 		}
 		else
 		{

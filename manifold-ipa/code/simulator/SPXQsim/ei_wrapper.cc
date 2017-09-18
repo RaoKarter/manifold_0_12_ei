@@ -36,10 +36,10 @@ tick_t SAMPLING_CYCLE;
 uint64_t reg_sam_iter;
 
 ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, EI::energy_introspector_t *energy_introspector,
-		manifold::spx::pipeline_counter_t* proc_cnt,manifold::spx::ipa_t* proc_ipa,
+		manifold::spx::pipeline_counter_t* proc_cnt, manifold::spx::ipa_t* proc_ipa,
 		manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
-		manifold::mcp_cache_namespace::LLS_cache* p_l2, manifold::dramsim::Dram_sim *mc, double tt,
-		double sampling_period, int num_nodes, int uid)
+		manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2, manifold::dramsim::Dram_sim *mc,
+		double tt, double sampling_period, int num_nodes, int uid)
 {
 	clock = clk;
 	id = uid;
@@ -83,6 +83,7 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 	p_ipa = proc_ipa;
 	l1_cnt = c1_cnt;
 	l2_cnt = c2_cnt;
+	p_l1cache = p_l1;
 	p_l2cache = p_l2;
 	mem_ctrl = mc;
 	p_cnt->period = sampling_period;
@@ -132,6 +133,7 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 		Pd.resize(num_nodes, vector<double>(num_samples));
 		Pl.resize(num_nodes, vector<double>(num_samples));
 	}
+	cerr << "Cache" << this->id << " L1 freq: " << p_l1cache->m_clock->freq << " L2 freq: " << p_l2cache->m_clock->freq << endl;
 }
 
 ei_wrapper_t::~ei_wrapper_t()

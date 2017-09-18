@@ -11,7 +11,7 @@ using namespace manifold::uarch;
 namespace manifold {
 namespace mcp_cache_namespace {
 
-MuxDemux :: MuxDemux(Clock& clk, int credit_type) : CREDIT_MSG_TYPE(credit_type), m_clk(clk)
+MuxDemux :: MuxDemux(Clock* clk, int credit_type) : CREDIT_MSG_TYPE(credit_type), m_clk(clk)
 {
 }
 

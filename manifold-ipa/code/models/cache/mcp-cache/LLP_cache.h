@@ -14,12 +14,13 @@ class MuxDemux;
 class LLP_cache : public L1_cache {
 public:
     friend class MuxDemux;
+    manifold::kernel::Clock* m_clock;
 
     enum {PORT_LOCAL_L2=2};
 
     enum {LLP_ID=234, LLS_ID=567};
 
-    LLP_cache (int nid, const cache_settings&, const L1_cache_settings&);
+    LLP_cache (int nid, const cache_settings&, const L1_cache_settings&, manifold::kernel::Clock*);
     virtual ~LLP_cache (void);
 
     void set_mux(MuxDemux* m)

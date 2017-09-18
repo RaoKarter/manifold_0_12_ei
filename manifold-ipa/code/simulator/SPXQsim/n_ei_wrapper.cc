@@ -22,9 +22,8 @@ tick_t n_SAMPLING_CYCLE;
 
 
 n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage,
-		manifold::spx::pipeline_counter_t* proc_cnt, manifold::mcp_cache_namespace::L1_counter_t* c1_cnt,
-		manifold::mcp_cache_namespace::L2_counter_t* c2_cnt, manifold::mcp_cache_namespace::LLS_cache* p_l2,
-		manifold::dramsim::Dram_sim *mc,
+		manifold::spx::pipeline_counter_t* proc_cnt, manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
+		manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2,	manifold::dramsim::Dram_sim *mc,
 		double sampling_period, int num_nodes, int uid)
 {
 	clock = clk;
@@ -42,6 +41,7 @@ n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_volta
 	p_cnt = proc_cnt;
 	l1_cnt = c1_cnt;
 	l2_cnt = c2_cnt;
+	p_l1cache = p_l1;
 	p_l2cache = p_l2;
 	mem_ctrl = mc;
 	p_cnt->period = sampling_period;
