@@ -68,7 +68,7 @@ public:
     void print_stats(std::ostream&);
     void print_config(std::ostream&);
 
-    avgPowerBW* getDRAMPowerBWStats();
+    avgPowerBW* getDRAMPowerBWStats(unsigned long);
 
 #ifdef DRAMSIM_UTEST
 public:

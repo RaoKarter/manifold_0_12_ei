@@ -8,7 +8,9 @@
 #ifndef DVFS_H_
 #define DVFS_H_
 
+#include<math.h>
 
+/*---------------- TEMPERATURE REGULATOR PARAMETERS (2014 Paper) ---------------------*/
 /* Initial Conditions
 Parameters for the LTI model */
 //#define a -384.61              // Should be conductances
@@ -31,17 +33,20 @@ Parameters for the LTI model */
 #define q1 1.6e-19                        // Charge on an electron
 #define N 100                            // Number of iterations until control kicks in a.k.a. Control cycle
 #define TRANSIENT_TIME 50                             // Number of iterations  until transient dies out
-#define CoreNum 16                        // Number of cores
+
 //#define NumIter 10000000   // Total number of time steps
-#define fmax 1.8e9                       // Max frequency of core
-#define fmin 0.5e9                         // Min frequency of core
 //#define stepsize 0.7                       // Step Size for the update equation
 #define VarSize 10                        // Array size to calculate the peak to peak variation
-
-
-//#define c1 303.5091
 #define FIXEDGAIN 0
-#define USE_CONTROLLER 0
+/*---------------- TEMPERATURE REGULATOR PARAMETERS (2014 Paper) ---------------------*/
+
+
+/*---------------- TRINIY PARAMETERS ---------------------*/
+#define CoreNum 16                        // Number of cores
+#define fmax 1.5e9                       // Max frequency of core
+#define fmin 0.5e9                         // Min frequency of core
+
+#define USE_CONTROLLER 1
 #if USE_CONTROLLER
 #define C_ENABLED 1
 #define C_DISABLED 0
@@ -49,17 +54,23 @@ Parameters for the LTI model */
 #define C_ENABLED 0
 #define C_DISABLED 1
 #endif
-//f(MHz) Vdd(V)
-//500	0.49705
-//600	0.5163
-//700	0.53555
-//800	0.5548
-//900	0.57405
-//1000	0.5933
-//1100	0.61255
-//1200	0.6318
-//1300	0.65105
-//1400	0.6703
-//1500	0.68955
 
+#define T_MAX 354
+// Temperature Model Parameters
+#define A1 0.9998
+#define B1 -8.46
+#define C1 -37
+#define D1 0.0002*T_MAX
+
+// Static Power Model Parameters
+#define BETA -0.42675
+#define GAMMA 0.000674
+#define DELTA 0.001618
+#define EPSILON -0.09038
+
+#define NUM_AVAIL_FREQS 21
+#define SATURATION_LIMIT 10			// TODO: This parameter should come from config file
+#define IPC_MAX 4					// ISSUE WIDTH
+#define CONTROL_CYCLE 0.001			// TODO: This parameter should come from config file
+/*---------------- TRINIY PARAMETERS ---------------------*/
 #endif /* DVFS_H_ */

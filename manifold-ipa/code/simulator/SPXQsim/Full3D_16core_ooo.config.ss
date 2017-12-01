@@ -1,6 +1,6 @@
 -package.name				16CORE
 -package.thermal_library		3d-ice
--package.thermal_analysis_type	steady
+-package.thermal_analysis_type	transient
 -package.ambient_temperature		300.0
 -package.temperature			300.0
 -package.chip_length			8.4e-3	# 8.4mm
@@ -19,7 +19,7 @@
 -package.conventional_heatsink.heat_transfer_coefficient	2.8e-8
 
 -package.microchannel.type					2rm
--package.microchannel.height					100e-6
+-package.microchannel.height					100e-6	
 -package.microchannel.channel_length				50e-6
 -package.microchannel.wall_length				50e-6
 -package.microchannel.wall_material				SILICON

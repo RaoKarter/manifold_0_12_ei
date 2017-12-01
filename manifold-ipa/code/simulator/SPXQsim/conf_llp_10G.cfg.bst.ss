@@ -1,5 +1,5 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 2000000L; //
+simulation_stop = 1000000000L; //
 
 network_clock_frequency = 1000000000L; // 1GHz
 
@@ -18,8 +18,13 @@ core_thermal_threshold = [340, 340, 340, 340,
                           340, 340, 340, 340,
                           340, 340, 340, 340];
 
-core_voltage = 0.5933; // V = (1.93e-4 * f) + 0.4008
-sampling_period = 1e-5;
+// V = 0.8 + 0.1(f - 3e9)/1e9
+core_voltage = [0.6, 0.6, 0.6, 0.6,
+		0.6, 0.6, 0.6, 0.6,
+		0.6, 0.6, 0.6, 0.6,
+		0.6, 0.6, 0.6, 0.6]; 
+
+sampling_period = 1e-3;
 
 network:
 {
@@ -63,7 +68,7 @@ lls_cache:
     name = "L2";
     type = "DATA";
     size = 0x200000; //2MB
-    assoc = 64;
+    assoc = 8;
     block_size = 64;
     hit_time = 24;
     lookup_time = 24;

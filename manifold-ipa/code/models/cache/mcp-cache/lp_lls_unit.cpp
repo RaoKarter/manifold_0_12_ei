@@ -49,6 +49,9 @@ LP_LLS_unit :: LP_LLS_unit(LpId_t lp, int nodeId, cache_settings& l1_parameters,
 	Clock :: Register(*clk, m_lls, &LLS_cache::tick, (void(LLS_cache::*)(void))0);
 	Clock :: Register(*clk, m_mux, &MuxDemux::tick, (void(MuxDemux::*)(void))0);
     }
+
+//    cerr << "Node" << nodeId << "LLP m_clk: " << (m_llp->get_clock())->freq << " LLP m_clock: " << m_llp->m_clock->freq
+//    						 << "LLS m_clk: " << (m_lls->get_clock())->freq << " LLS m_clock: " << m_lls->m_clock->freq << endl;
 }
 
 

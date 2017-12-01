@@ -474,11 +474,11 @@ bool MultiChannelMemorySystem::willAcceptTransaction()
 	return true; 
 }
 
-avgPowerBW MultiChannelMemorySystem::getIntervalPowerBWStatsMCMS()
+avgPowerBW MultiChannelMemorySystem::getIntervalPowerBWStatsMCMS(unsigned long cycles)
 {
 	for (size_t i=0; i<NUM_CHANS; i++)
 	{
-		return channels[i]->getIntervalPowerBWStatsMS();
+		return channels[i]->getIntervalPowerBWStatsMS(cycles);
 	}
 }
 

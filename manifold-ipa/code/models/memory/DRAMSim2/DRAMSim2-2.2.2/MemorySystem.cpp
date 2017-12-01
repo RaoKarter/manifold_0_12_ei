@@ -236,9 +236,9 @@ void MemorySystem::update()
 	//PRINT("\n"); // two new lines
 }
 
-avgPowerBW MemorySystem::getIntervalPowerBWStatsMS()
+avgPowerBW MemorySystem::getIntervalPowerBWStatsMS(unsigned long cycles)
 {
-	return memoryController->getIntervalPowerBWStats();
+	return memoryController->getIntervalPowerBWStats(cycles);
 }
 
 void MemorySystem::RegisterCallbacks( Callback_t* readCB, Callback_t* writeCB,

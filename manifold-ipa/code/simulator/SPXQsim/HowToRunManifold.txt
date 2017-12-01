@@ -9,3 +9,6 @@ $ make mcpat;make 3dice;make libEI
 $ cd ../../simulator/SPXQsim
 $ make clean;make
 
+If required
+$ autoreconf -siv
+$ ./configure QSIMINC=${QSIM_PREFIX}/include

@@ -386,14 +386,14 @@ if(routers[i] != 0) {
 			Manifold :: Connect(node_cids[i].mc_cid, Controller::PORT0,
 					ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
 					&GenNetworkInterface<NetworkPacket>::handle_new_packet_event, 1);
-			cerr << "Connected CaffDRAM with cid: " << node_cids[i].mc_cid << " to Network with cid: "
-			     << ni_cids[i*2+1] << endl;
+//			cerr << "Connected CaffDRAM with cid: " << node_cids[i].mc_cid << " to Network with cid: "
+//			     << ni_cids[i*2+1] << endl;
 			//interface to mc
 			Manifold :: Connect(ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
 					node_cids[i].mc_cid, Controller::PORT0,
 					&Controller::handle_request<Mem_msg>, 1);
-			cerr << "Connected Network with cid: " << ni_cids[i*2+1] << " to CaffDRAM with cid: "
-	             << node_cids[i].mc_cid << endl;
+//			cerr << "Connected Network with cid: " << ni_cids[i*2+1] << " to CaffDRAM with cid: "
+//	             << node_cids[i].mc_cid << endl;
 	    }
 	    else if (mem_str == "DRAMSIM")
 	    {
@@ -409,14 +409,14 @@ if(routers[i] != 0) {
 			Manifold :: Connect(node_cids[i].mc_cid, Dram_sim::PORT0,
 					ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
 					&GenNetworkInterface<NetworkPacket>::handle_new_packet_event, 1);
-			cerr << "Connected DRAMSim2 with cid: " << node_cids[i].mc_cid << " to Network with cid: "
-				 << ni_cids[i*2+1] << endl;
+//			cerr << "Connected DRAMSim2 with cid: " << node_cids[i].mc_cid << " to Network with cid: "
+//				 << ni_cids[i*2+1] << endl;
 			//interface to mc
 			Manifold :: Connect(ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
 					node_cids[i].mc_cid, Dram_sim::PORT0,
 					&Dram_sim::handle_request<Mem_msg>, 1);
-			cerr << "Connected Network with cid: " << ni_cids[i*2+1] << " to DRAMSim2 with cid: "
-				 << node_cids[i].mc_cid << endl;
+//			cerr << "Connected Network with cid: " << ni_cids[i*2+1] << " to DRAMSim2 with cid: "
+//				 << node_cids[i].mc_cid << endl;
 	    }
 
 	    #endif

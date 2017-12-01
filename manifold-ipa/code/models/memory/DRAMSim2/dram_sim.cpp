@@ -187,9 +187,9 @@ void Dram_sim::tick()
 
 }
 
-avgPowerBW* Dram_sim::getDRAMPowerBWStats()
+avgPowerBW* Dram_sim::getDRAMPowerBWStats(unsigned long cycles)
 {
-	power_bw_data = mem->getIntervalPowerBWStatsMCMS();
+	power_bw_data = mem->getIntervalPowerBWStatsMCMS(cycles);
 //	for(int i = 0; i < NUM_RANKS; i++)
 //	{
 //		cerr << "\tRank" << i << "\tAvg Pwr\t" << power_bw_data.AveragePower[i] << "W"

@@ -19,9 +19,10 @@ using namespace manifold::n_ei_wrapper;
 int n_synced = 0;
 int n_NUM_CORES;
 tick_t n_SAMPLING_CYCLE;
+int src1 = 0, dst1 = 0;
 
 
-n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage,
+n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, vector<manifold::spx::spx_core_t*> p_core,
 		manifold::spx::pipeline_counter_t* proc_cnt, manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
 		manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2,	manifold::dramsim::Dram_sim *mc,
 		double sampling_period, int num_nodes, int uid)
@@ -38,6 +39,7 @@ n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_volta
 	n_SAMPLING_CYCLE = (tick_t)(sampling_period * manifold::kernel::Clock::Master().freq);
 
 	cerr << "n_SAMPLING_CYCLE" << this->id << " " << n_SAMPLING_CYCLE << endl;
+	p_cores_global = p_core;
 	p_cnt = proc_cnt;
 	l1_cnt = c1_cnt;
 	l2_cnt = c2_cnt;
@@ -53,14 +55,23 @@ n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_volta
 	V_Old = init_vdd;
 	num_samples = int(2e-1/sampling_period);
 
-	cerr << "n_ei_wrapper" << id << " pointing to mem_ctrl: " << hex << mem_ctrl << dec
-		 << " num samples " << num_samples << endl << flush;
+//	cerr << "n_ei_wrapper" << id << " pointing to mem_ctrl: " << hex << mem_ctrl << dec
+//		 << " num samples " << num_samples << endl << flush;
 
-	if (id == num_nodes - 1)
-	{
-		n_NUM_CORES = num_nodes;
-		n_synced = 0;
-	}
+//	if (id == num_nodes - 1)
+//	{
+//		n_NUM_CORES = num_nodes;
+//		n_synced = 0;
+//		swap_cores(0, 5);
+//		src1 = 5;
+//		dst1 = 0;
+//	}
+//	cerr << "Printing from Core" << id << endl;
+//	for(int i = 0; i < num_nodes; i++)
+//	{
+//		cerr << "Core" << p_cores_global[i]->get_core_id() << "\t" ;
+//	}
+//	cerr << endl;
 }
 
 n_ei_wrapper_t::~n_ei_wrapper_t()
@@ -74,7 +85,7 @@ uint64_t n_writes[16] = {0};
 
 void n_ei_wrapper_t::tick()
 {
-
+	int temp_src = 0;
 	sam_cycle += 1;
 
 	if(sam_cycle == (n_SAMPLING_CYCLE + 1))
@@ -88,10 +99,28 @@ void n_ei_wrapper_t::tick()
 			n_synced = 0;
 			for (int i = 0; i < n_NUM_CORES; i++)
 			{
-				cerr << "Core" << i << "\tMEM_READS\t" << n_reads[i] << "\tMEM_WRITES\t" << n_writes[i] << endl << flush;
+				cerr << "Core" << i << "\tclock\t" << clock->NowTicks() << "\tMEM_READS\t" << n_reads[i] << "\tMEM_WRITES\t" << n_writes[i] << endl << flush;
 				n_reads[i] = 0;
 				n_writes[i] = 0;
 			}
+
+//			if(clock->NowTicks() % 50000 == 0)
+//			{
+//				cerr << "%%%%%%%%%%%% SWAPPING CORE " << src1 << " WITH CORE " << dst1 << " %%%%%%%%%%%%%" << endl;
+//				swap_cores(0, 5);
+//				temp_src = src1;
+//				src1 = dst1;
+//				dst1 = temp_src;
+
+//				cerr << "Printing from Core" << id << endl;
+//				for(int i = 0; i < n_NUM_CORES; i++)
+//				{
+//					cerr << "Core" << p_cores_global[i]->get_core_id() << "\t" ;
+//				}
+//				cerr << endl;
+//
+//			}
+
 		}
 	}
 
@@ -107,6 +136,7 @@ void n_ei_wrapper_t::tick()
 				             << "\tMIPS\t" << p_cnt->retire_inst.read/p_cnt->period/1e6 << "\ttotal_MIPS\t" << n_total_mips
 						     << "\tmem_reads\t" << p_l2cache->memreads<< "\tmem_writes\t"<< p_l2cache->memwrites
 							 << "\tfetched_inst\t" << p_cnt->fetch_inst.read << "\tnop_inst\t" << p_cnt->nop_inst.read
+							 << "\tidle_cycles\t" << p_cnt->idle_cycle.read
 							 << "\tclock_freq\t" << clock->freq << "\tVdd\t" << V_Old << endl << flush;
 		for(int i = 0; i < n_NUM_CORES; i++)
 		{

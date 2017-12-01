@@ -25,7 +25,6 @@ LLS_cache :: LLS_cache (int nid, const cache_settings& parameters, const L2_cach
     	mem_reads[i] = 0;
     	mem_writes[i] = 0;
     }
-
 }
 
 

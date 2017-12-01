@@ -376,17 +376,25 @@ void outorder_t::frontend()
     core->clock_cycle,stats.last_commit_cycle = core->clock_cycle;
   }
 
-  if(idle_loop) {
+  if(idle_loop)
+  {
     int rc = Qsim_osd->run(core->core_id,1);
-    if (!rc&&!Qsim_osd->booted(core->core_id)) {
-      if(runout_flag == 0) {
+    if (!rc&&!Qsim_osd->booted(core->core_id))
+    {
+      if(runout_flag == 0)
+      {
         cerr << "@ " << dec << core->clock_cycle << " Core " << core->core_id << " : run out of insts" << endl;
         runout_flag = 1;
       }
 		  //manifold :: kernel :: Manifold :: Terminate();      
-    } else if(Qsim_osd->idle(core->core_id)) {
+    }
+    else if(Qsim_osd->idle(core->core_id))
+    {
+      counters->idle_cycle.read++;
       return ;
-    } else { 
+    }
+    else
+    {
       //cerr << "@ " << dec << core->clock_cycle << " Core " << core->core_id << " : recover from idle" << endl;
       idle_loop = false;
       runout_flag = 0;
@@ -411,25 +419,33 @@ if (core->core_id == 1) {
       stats.Mop_count++;
       stats.interval.Mop_count++;
       
-      if(Qsim_osd->get_prot(core->core_id) == Qsim::OSDomain::PROT_KERN) {
+      if(Qsim_osd->get_prot(core->core_id) == Qsim::OSDomain::PROT_KERN)
+      {
         stats.KERN_count++;
         //cerr << "@ " << dec << core->clock_cycle << " Core " << core->core_id << " : in KERN state" << endl;
-      } else {
+      }
+      else
+      {
         stats.USER_count++;
         //cerr << "@ " << dec << core->clock_cycle << " Core " << core->core_id << " : in USER state" << endl;
-     }
+      }
 
       next_inst = new inst_t(core,++Mop_count,++uop_count);
 
-      if(config.qsim == SPX_QSIM_LIB) {
+      if(config.qsim == SPX_QSIM_LIB)
+      {
         int rc = Qsim_osd->run(core->core_id,1);
-        if (!rc&&!Qsim_osd->booted(core->core_id)) {
-          if(runout_flag == 0) {
+        if (!rc&&!Qsim_osd->booted(core->core_id))
+        {
+          if(runout_flag == 0)
+          {
             cerr << "@ " << dec << core->clock_cycle << " Core " << core->core_id << " : run out of insts" << endl;
             runout_flag = 1;
           }
 		      //manifold :: kernel :: Manifold :: Terminate();      
-        } else if(Qsim_osd->idle(core->core_id)) {
+        }
+        else if(Qsim_osd->idle(core->core_id))
+        {
           //cerr << "@ " << dec << core->clock_cycle << " Core " << core->core_id << " : enters idle" << endl;
           idle_loop = true;
         }

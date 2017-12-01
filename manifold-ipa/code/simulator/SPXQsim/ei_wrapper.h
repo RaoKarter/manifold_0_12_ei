@@ -38,10 +38,38 @@ public:
   void tick();
   uint64_t sam_cycle;
   tick_t slack_cycle;
+  tick_t num_cycles_old;
   double last_vdd;
   double next_frq;
   double init_vdd;
   int num_samples;
+
+  double thermal_threshold;
+  double phi_Old;
+  double V_Old;
+  double Core_Total_Power;
+  double ALPHA;
+  double Performance_Slope;
+  double R_P;
+  vector<double>Core_Total_Power_Estimate;
+  vector<double>Core_Temperature_Estimate;
+  vector<double>Z;
+  vector<double>Temperature_Cost;
+  vector<double>Performance_Cost;
+  vector<double>Total_Cost;
+  double Control_Sat_Storage[SATURATION_LIMIT] = {};
+
+  uint64_t Control_Cycle;
+  uint64_t Control_Sat_Counter;
+  struct R_PRange
+  {
+	  double R_P_min;
+	  double R_P_max;
+  }R_HAT;
+  void ComputeR_PRange1(R_PRange*, double );
+  double ComputeR_PRange2(double , bool );
+  void ApplyControl();
+  void ApplyOndemand();
 
 private:
   manifold::kernel::Clock *clock;
@@ -58,11 +86,10 @@ private:
   //DRAM Power arrays
   avgPowerBW* vault;
 
+#if 0
   // Temperature regulation only
   double Beta1;
   double Gamma1;
-  double phi_Old;
-  double V_Old;
   double dT_dPT_Old;
   double dT_dPT_New;
   double phi_diff;
@@ -71,8 +98,7 @@ private:
   double k_design;	// Parameter for leakage power calculation
   double I_s0;		// Subthreshold leakage current
   double StepSize;
-  double thermal_threshold;
-
+#endif
 //  void TL_feedback(int core_id);
 
   int id;
