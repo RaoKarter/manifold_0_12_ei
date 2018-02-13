@@ -28,6 +28,7 @@ vector<double> Core_Performance;
 vector<double> Core_Ops_Byte;
 vector<double> Core_IPC;
 vector<double> Core_Load;
+vector<double> Core_MPKI;
 
 // Global arrays to collect data
 // NUM_CORES * number of samples
@@ -38,6 +39,7 @@ vector< vector<double> > Performance;
 vector< vector<double> > Ops_Byte;
 vector< vector<double> > IPCArray;
 vector< vector<double> > CPU_Load;
+vector< vector<double> > MPKI;
 
 int synced = 0;			// Variable used to figure out when to print power, temperature data.
 int NUM_CORES;			// Total number of cores TODO: Should be a parameters passed or referred to by ei_wrapper
@@ -49,7 +51,7 @@ double u_k[] = {0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.05,1.1,1.15,1
 ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, EI::energy_introspector_t *energy_introspector,
 		manifold::spx::pipeline_counter_t* proc_cnt, manifold::spx::ipa_t* proc_ipa,
 		manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
-		manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2, manifold::dramsim::Dram_sim *mc,
+		manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2, manifold::dramsim::Dram_sim *mc, unsigned DRAM_freq_opt,
 		double tt, double sampling_period, int num_nodes, int uid)
 {
 	clock = clk;
@@ -103,11 +105,35 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 	last_vdd = 0.8;
 	slack_cycle = 0;
 	num_cycles_old = 0;
+    cooldown = false;
+    cooldown_timer = 0;
+
 
 	sam_cycle = 0;
 	V_Old = init_vdd;
 	num_samples = int(CONTROL_CYCLE/sampling_period);	// Num of samples between subsequent control cycles
 
+	DRAM_freq_option = DRAM_freq_opt;
+
+	switch (DRAM_freq_option)
+	{
+	case 1:
+    	cerr << "DRAM_freq_scaling_factor 1" << endl;
+    	break;
+	case 2:
+		cerr << "DRAM_freq_scaling_factor 0.83375" << endl;
+		break;
+	case 3:
+		cerr << "DRAM_freq_scaling_factor 0.66625" << endl;
+		break;
+	case 4:
+		cerr << "DRAM_freq_scaling_factor 0.5" << endl;
+		break;
+	default:
+		cerr << "Wrong option. Defaulting to 1" << endl;
+		DRAM_freq_option = 1;
+		break;
+	}
 #if 0
 //  Temperature regulation parameter init
 //	N1 = 0.1875e9; 		// For a total of 3billion transistors for all 16 cores
@@ -161,6 +187,7 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 		Core_Power_l.resize(num_nodes);
 		Core_IPC.resize(num_nodes);
 		Core_Load.resize(num_nodes);
+		Core_MPKI.resize(num_nodes);
 
 		reg_sam_iter = 0;
 
@@ -171,6 +198,7 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 		Ops_Byte.resize(num_nodes, vector<double>(num_samples));
 		IPCArray.resize(num_nodes, vector<double>(num_samples));
 		CPU_Load.resize(num_nodes, vector<double>(num_samples));
+		MPKI.resize(num_nodes, vector<double>(num_samples));
 		cerr << "SAMPLING_CYCLE" << this->id << " " << SAMPLING_CYCLE << " CONTROL_CYCLE " << CONTROL_CYCLE << endl;
 	}
 
@@ -192,7 +220,7 @@ double total_energy = 0;
 double factor = 5;
 double factor2 = 0.64;
 double factor3 = 2.65;
-double dram_factor = 2;
+double dram_factor = 1;		// 1 for 1GB per channel.
 double total_mips = 0;
 uint64_t reads[16] = {0};
 uint64_t writes[16] = {0};
@@ -376,6 +404,29 @@ void ei_wrapper_t::ComputeR_PRange1(R_PRange* R_hat, double R_i)
 	return;
 }
 
+double ei_wrapper_t::QuantizedFrequency(double u_opt)
+{
+    if(u_opt >= u_k[20])
+    {
+        //cout << "Greater than " << u_k[20] << endl;
+        return u_k[20];
+    }
+    if (u_opt <= u_k[0])
+    {
+        //cout << "Lesser than " << u_k[0] << endl;
+        return u_k[0];
+    }
+
+        for(int i = 0; i < 21; i++)
+        {
+            //cout << "Iteration i= " << i << endl;
+                if(u_opt == u_k[i])
+                        return u_k[i];
+                else if(u_opt > u_k[i] && u_opt < u_k[i+1])
+                        return u_k[i+1];
+        }
+}
+
 void ei_wrapper_t::ApplyOndemand()
 {
 #ifdef C_ENABLED
@@ -392,22 +443,35 @@ void ei_wrapper_t::ApplyOndemand()
 
 	phi_Old = double (clock->freq / 1e9 ); // Freq in GHz
 	cerr << "%%%%%%%%%%%%% CORE " << id << " BEGIN %%%%%%%%%%%%%%%%%" << endl << endl;
-	if (Core_Load[id] == 0)
-	{
-		u_opt = phi_Old - 0.5;
-		if (u_opt <= 0.5)
-			u_opt = 0.5;
-	}
-	else if (Core_Load[id] >= 0.8)
-		u_opt = 1.5;
-	else
-	{
-		u_opt = 0.5 + Core_Load[id];
-		if(u_opt >= 1.5)
-			u_opt = 1.5;
-	}
+    if (Core_Temperature[id] > T_MAX)
+    {
+            // Reduce temperature ASAP
+            u_opt = u_k[0];
+            cerr << "CC\t" << Control_Cycle << "\tCCCore" << id << "\tTTC R_P\t0\tu_opt\t" << u_opt << endl;
+            cooldown_timer = ceil((double)(40e-3) / p_cnt->period); // Wait for 40ms for core to cool down
+            cooldown = true;
+    }
+    else
+    {
 
-	cerr << "CC\t" << Control_Cycle << "\tCCCore" << id << "\tLoad\t" << Core_Load[id] << "\tu_opt\t" << u_opt << endl;
+		if (Core_Load[id] == 0)
+		{
+			u_opt = phi_Old - 0.5;
+			if (u_opt <= 0.5)
+				u_opt = 0.5;
+		}
+		else if (Core_Load[id] >= 0.8)
+			u_opt = 1.5;
+		else
+		{
+			u_opt = QuantizedFrequency(double(0.5 + Core_Load[id]));
+			//u_opt = 0.5 + Core_Load[id];
+			//if(u_opt >= 1.5)
+			//	u_opt = 1.5;
+		}
+
+		cerr << "CC\t" << Control_Cycle << "\tCCCore" << id << "\tLoad\t" << Core_Load[id] << "\tu_opt\t" << u_opt << endl;
+    }
 
 	cerr << "%%%%%%%%%%%%% CORE " << id << "END %%%%%%%%%%%%%%%%%%%" << endl << endl;
 
@@ -773,24 +837,29 @@ void ei_wrapper_t::tick()
 		if (reg_sam_iter == num_samples)
 		{
 
-			Core_Temperature[id] = TArray[id][num_samples-1];
+			//Core_Temperature[id] = TArray[id][num_samples-1];
 			Core_Power_d[id] = std::accumulate(Pd.at(id).begin(), Pd.at(id).end(), 0.0) / (Pd.at(id).size());
 			Core_Power_l[id] = std::accumulate(Pl.at(id).begin(), Pl.at(id).end(), 0.0) / (Pl.at(id).size());
 			Core_Performance[id] = std::accumulate(Performance.at(id).begin(), Performance.at(id).end(), 0.0) / (Performance.at(id).size());
 			Core_Ops_Byte[id] = std::accumulate(Ops_Byte.at(id).begin(), Ops_Byte.at(id).end(), 0.0) / (Ops_Byte.at(id).size());
 			Core_IPC[id] = std::accumulate(IPCArray.at(id).begin(), IPCArray.at(id).end(), 0.0) / (IPCArray.at(id).size());
 			Core_Load[id] = std::accumulate(CPU_Load.at(id).begin(), CPU_Load.at(id).end(), 0.0) / (CPU_Load.at(id).size());
+			Core_MPKI[id] = std::accumulate(MPKI.at(id).begin(), MPKI.at(id).end(), 0.0) / (MPKI.at(id).size());	// This is not very accurate yet
 
-			cerr << "\nCCCORE" << id << "\tcycle\t" << clock->NowTicks() << "\t" << Core_Temperature[id]
+			cerr << "\nCCCORE" << id << "\tcycle\t" << clock->NowTicks() //<< "\t" << Core_Temperature[id]
 			                                                           << "\t" << Core_Power_d[id]
 			                                                           << "\t" << Core_Power_l[id]
 			                                                           << "\t" << Core_Performance[id]
 			                                                           << "\t" << Core_Ops_Byte[id]
 			                                                           << "\t" << Core_IPC[id]
-			                                                           << "\t" << Core_Load[id] << endl;
+			                                                           << "\t" << Core_Load[id]
+																	   << "\t" << Core_MPKI[id]
+			                                                           << endl;
+			// Uncomment this to enable TRINITY DVFS controller
 			//ApplyControl();
 
-			ApplyOndemand();
+			// Uncomment this to enable ondemand style DVFS controller
+			//ApplyOndemand();
 
 
 			if (id == NUM_CORES - 1)
@@ -799,13 +868,14 @@ void ei_wrapper_t::tick()
 				for(int i = 0; i < NUM_CORES; i++)
 					for(int j = 0; j < num_samples; j++)
 					{
-						TArray[i][j] = 0.0;
+						//TArray[i][j] = 0.0;
 						Pd[i][j] = 0.0;
 						Pl[i][j] = 0.0;
 						Performance[i][j] = 0.0;
 						Ops_Byte[i][j] = 0.0;
 						IPCArray[i][j] = 0.0;
 						CPU_Load[i][j] = 0.0;
+						MPKI[i][j] = 0.0;
 					}
 			}
 		}
@@ -852,8 +922,29 @@ void ei_wrapper_t::tick()
 		l2_cnt->reset();
 
 		//***DRAMSIM2 Power***
-		unsigned long cycles = (unsigned long) (p_cnt->period * 800000000); // Assuming 800MHz DRAM Clk at t_CK = 1.25 TODO: Make this a user defined parameter
-		vault = mem_ctrl->getDRAMPowerBWStats(cycles);
+		unsigned long cycles = (unsigned long) (p_cnt->period * 800000000);
+
+		switch (DRAM_freq_option)
+		{
+		case 1:
+			cycles = (unsigned long) (p_cnt->period * 800000000); // t_CK = 1.25
+			break;
+		case 2:
+			cycles = (unsigned long) (p_cnt->period * 667000000); // t_CK = 1.5
+			break;
+		case 3:
+			cycles = (unsigned long) (p_cnt->period * 517000000); // t_CK = 1.87
+			break;
+		case 4:
+			cycles = (unsigned long) (p_cnt->period * 400000000); // t_CK = 2.5
+			break;
+		default:
+			cycles = (unsigned long) (p_cnt->period * 800000000); // t_CK = 1.25
+			break;
+		}
+
+		// If frequency scaling is done, DRAM power estimates have to be scaled accordingly
+		vault = mem_ctrl->getDRAMPowerBWStats(cycles, DRAM_freq_option);
 
 		// dram_factor is a crude way of estimating DRAM power. The current values are for an 8GB DRAM.
 		// We therefore scale the total power by 1/2. With appropriate current values, dram_factor = 1
@@ -951,7 +1042,8 @@ void ei_wrapper_t::tick()
 			vector<double> CORE_T;
 			vector<double> DRAM_T;
 			double core_pd, core_pl, core_t;
-			ei->compute_temperature(p_cnt->time_tick, p_cnt->period, "16CORE");
+			// This part computes the temperature using EI
+			//ei->compute_temperature(p_cnt->time_tick, p_cnt->period, "16CORE");
 
 
 			CORE_T.resize(5);
@@ -977,7 +1069,7 @@ void ei_wrapper_t::tick()
 				a = al + ad[i]; // update FRT total power
 				s += a;		// Accumulate total power
 				t += al;	// Accumulate leakage power
-				CORE_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//CORE_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				sprintf(ModuleID,"CORE_DIE:SCH%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
@@ -985,7 +1077,7 @@ void ei_wrapper_t::tick()
 				b = bl + bd[i];
 				s += b;
 				t += bl;
-				CORE_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//CORE_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				sprintf(ModuleID,"CORE_DIE:INT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
@@ -993,7 +1085,7 @@ void ei_wrapper_t::tick()
 				c = cl + cd[i];
 				s += c;
 				t += cl;
-				CORE_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//CORE_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				sprintf(ModuleID,"CORE_DIE:FPU%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
@@ -1001,7 +1093,7 @@ void ei_wrapper_t::tick()
 				d = dl + dd[i];
 				s += d;
 				t += dl;
-				CORE_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//CORE_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				sprintf(ModuleID,"CORE_DIE:MEM%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
@@ -1009,7 +1101,7 @@ void ei_wrapper_t::tick()
 				e = el + ed[i];
 				s += e;
 				t += el;
-				CORE_T[4] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//CORE_T[4] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 
 
@@ -1018,7 +1110,7 @@ void ei_wrapper_t::tick()
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				fl = update_p.leakage / factor3;
 				f = fl + fd[i];
-				L2CACHE_T = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//L2CACHE_T = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				// DRAMSim2 Temperature
 				sprintf(ModuleID,"DRAM0_DIE:VAULT%d",i);
@@ -1026,28 +1118,28 @@ void ei_wrapper_t::tick()
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[0] = update_p.leakage;
-				DRAM_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//DRAM_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				sprintf(ModuleID,"DRAM1_DIE:VAULT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[1] = update_p.leakage;
-				DRAM_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//DRAM_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				sprintf(ModuleID,"DRAM2_DIE:VAULT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[2] = update_p.leakage;
-				DRAM_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//DRAM_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				sprintf(ModuleID,"DRAM3_DIE:VAULT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[3] = update_p.leakage;
-				DRAM_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+				//DRAM_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
 
 				total_energy += (s + f + dram_pt) * p_cnt->period;
 				core_energy += s * p_cnt->period;
@@ -1072,16 +1164,19 @@ void ei_wrapper_t::tick()
 				inst_dram_p += dram_pt;
 				inst_dram_l += dram_pl;
 
-				core_t = std::accumulate(CORE_T.begin(), CORE_T.end(), 0.0) / CORE_T.size();	// Spatial average temperature of the core
+				//core_t = std::accumulate(CORE_T.begin(), CORE_T.end(), 0.0) / CORE_T.size();	// Spatial average temperature of the core
 				core_pd = ad[i] + bd[i] + cd[i] + dd[i] + ed[i];								// Total core dynamic power
 				core_pl = (a - ad[i]) + (b - bd[i]) + (c - cd[i]) + (d - dd[i]) + (e - ed[i]);	// Total core leakage power
 
 //				cerr << "Reg_Sam_Iter= " << reg_sam_iter << endl;
-				TArray[i][reg_sam_iter] = core_t;
+				//TArray[i][reg_sam_iter] = core_t;
 				Pd[i][reg_sam_iter] = core_pd;
 				Pl[i][reg_sam_iter] = core_pl;
 				if (Performance[i][reg_sam_iter] == 0)	// If no instructions are fetched, ops/byte = 0;
+				{
 					Ops_Byte[i][reg_sam_iter] = 0;
+					MPKI[i][reg_sam_iter] = 0;
+				}
 				else
 				{
 					if ((reads[i] + writes[i]) == 0 )
@@ -1089,21 +1184,23 @@ void ei_wrapper_t::tick()
 					else
 						Ops_Byte[i][reg_sam_iter] = (Performance[i][reg_sam_iter]*p_cnt->period*1e6)/(reads[i]*64);	// Not using write backs because they don't truly reflect
 																													// mem boundedness.
+
+					MPKI[i][reg_sam_iter] = (double)(reads[i] + writes[i]) / (Performance[i][reg_sam_iter]*p_cnt->period*1e6);
 				}
 
 
 				cerr << "Core" << i << "\tP_D\t" << core_pd
 				                    << "\tP_L\t" << core_pl
-				                    << "\tAVG_T\t" << core_t
-				                    << "\tMAX_T\t" << *(std::max_element(CORE_T.begin(), CORE_T.end()))
-				     << "\tL2CACHE" << i << "\tP_D\t" << fd[i] << "\tP_L\t" << fl << "\tT\t" << L2CACHE_T
-				     << "\tVAULT" << i << "\tLAYER0\tP_D\t" << dram0_d[i] << "\tP_L\t" << dram_leak_power[0] << "\tAVG_T\t" << DRAM_T[0]
-				                       << "\tLAYER1\tP_D\t" << dram1_d[i] << "\tP_L\t" << dram_leak_power[1] << "\tAVG_T\t" << DRAM_T[1]
-				                       << "\tLAYER2\tP_D\t" << dram2_d[i] << "\tP_L\t" << dram_leak_power[2] << "\tAVG_T\t" << DRAM_T[2]
-				                       << "\tLAYER3\tP_D\t" << dram3_d[i] << "\tP_L\t" << dram_leak_power[3] << "\tAVG_T\t" << DRAM_T[3]
+				                    //<< "\tAVG_T\t" << core_t
+				                    //<< "\tMAX_T\t" << *(std::max_element(CORE_T.begin(), CORE_T.end()))
+				     << "\tL2CACHE" << i << "\tP_D\t" << fd[i] << "\tP_L\t" << fl //<< "\tT\t" << L2CACHE_T
+				     << "\tVAULT" << i << "\tLAYER0\tP_D\t" << dram0_d[i] << "\tP_L\t" << dram_leak_power[0] //<< "\tAVG_T\t" << DRAM_T[0]
+				                       << "\tLAYER1\tP_D\t" << dram1_d[i] << "\tP_L\t" << dram_leak_power[1] //<< "\tAVG_T\t" << DRAM_T[1]
+				                       << "\tLAYER2\tP_D\t" << dram2_d[i] << "\tP_L\t" << dram_leak_power[2] //<< "\tAVG_T\t" << DRAM_T[2]
+				                       << "\tLAYER3\tP_D\t" << dram3_d[i] << "\tP_L\t" << dram_leak_power[3] //<< "\tAVG_T\t" << DRAM_T[3]
 				     << "\tMEM_READS\t" << reads[i] << "\tMEM_WRITES\t" << writes[i] << "\tOps_Byte\t" << Ops_Byte[i][reg_sam_iter]
-				                                                                                       << endl << flush;
-
+					 << "\tMPKI\t" << MPKI[i][reg_sam_iter]
+				     << endl << flush;
 			}
 
 
@@ -1397,7 +1494,9 @@ void ei_wrapper_t::tick()
 						     << "\tmem_reads\t" << p_l2cache->memreads<< "\tmem_writes\t"<< p_l2cache->memwrites
 							 << "\tfetched_inst\t" << p_cnt->fetch_inst.read << "\tnop_inst\t" << p_cnt->nop_inst.read
 							 << "\tclock_freq\t" << clock->freq << "\tVdd\t" << V_Old
-							 << "\tnum_cycles\t" << num_clock_cycles_this_period << "\tCPU_Load\t" << CPU_Load[id][reg_sam_iter] << endl << flush;
+							 << "\tnum_cycles\t" << num_clock_cycles_this_period << "\tCPU_Load\t" << CPU_Load[id][reg_sam_iter];
+		mem_ctrl->PrintDRAMInstStats();
+		cerr << endl;
 
 		for(int i = 0; i < NUM_CORES; i++)
 		{

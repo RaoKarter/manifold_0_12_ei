@@ -99,6 +99,15 @@ MultiChannelMemorySystem::MultiChannelMemorySystem(const string &deviceIniFilena
 		MemorySystem *channel = new MemorySystem(i, megsOfMemory/NUM_CHANS, (*csvOut), dramsim_log);
 		channels.push_back(channel);
 	}
+
+	cerr << " RL= " << RL << " WL= " << WL << endl;
+	cerr << " READ_TO_PRE_DELAY= " << READ_TO_PRE_DELAY << endl;
+	cerr << " WRITE_TO_PRE_DELAY= " << WRITE_TO_PRE_DELAY << endl;
+	cerr << " READ_TO_WRITE_DELAY= " << READ_TO_WRITE_DELAY << endl;
+	cerr << " READ_AUTOPRE_DELAY= " << READ_AUTOPRE_DELAY << endl;
+	cerr << " WRITE_AUTOPRE_DELAY= " << WRITE_AUTOPRE_DELAY << endl;
+	cerr << " WRITE_TO_READ_DELAY_B= " << WRITE_TO_READ_DELAY_B << endl;
+	cerr << " WRITE_TO_READ_DELAY_R= " << WRITE_TO_READ_DELAY_R << endl;
 }
 /* Initialize the ClockDomainCrosser to use the CPU speed 
 	If cpuClkFreqHz == 0, then assume a 1:1 ratio (like for TraceBasedSim)
@@ -474,12 +483,69 @@ bool MultiChannelMemorySystem::willAcceptTransaction()
 	return true; 
 }
 
-avgPowerBW MultiChannelMemorySystem::getIntervalPowerBWStatsMCMS(unsigned long cycles)
+// This function is ONLY for single channel
+bool MultiChannelMemorySystem::IsQueueEmpty()
+{
+	for (size_t c=0; c<NUM_CHANS; c++)
+	{
+		if (!channels[c]->IsQueueEmpty())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+avgPowerBW MultiChannelMemorySystem::getIntervalPowerBWStatsMCMS(unsigned long cycles, double scaling_factor)
 {
 	for (size_t i=0; i<NUM_CHANS; i++)
 	{
-		return channels[i]->getIntervalPowerBWStatsMS(cycles);
+		return channels[i]->getIntervalPowerBWStatsMS(cycles, scaling_factor);
 	}
+}
+
+bool MultiChannelMemorySystem::setDRAMTiming(uint64_t cpuClkFreqHz, unsigned option)
+{
+	if (DRAM_DFS(option))
+	{
+		setCPUClockSpeed(cpuClkFreqHz);
+		return true;
+	}
+	else
+		return false;
+}
+
+void MultiChannelMemorySystem::PrintDRAMTimings()
+{
+	cerr << " tCK= " << tCK << endl
+		 << " REFRESH_PERIOD= " <<	REFRESH_PERIOD << endl
+		 << " CL= " <<	CL 	<< endl
+		 << " AL= "	<< AL 	<< endl
+		 << " RL= " <<	RL 	<< endl
+		 << " WL= " <<	WL 	<< endl
+		 <<	" BL= " << BL 	<< endl
+		 << " tRAS= " << tRAS 	<< endl
+		 << " tRCD= " << tRCD  	<< endl
+		 <<	" tRRD= " << tRRD  	<< endl
+		 << " tRC= " <<	tRC  	<< endl
+		 << " tRP= " <<	tRP  	<< endl
+		 << " tCCD= " << tCCD  	<< endl
+		 << " tRTP= " << tRTP  	<< endl
+		 << " tWTR= " << tWTR  	<< endl
+		 << " tWR= " <<	tWR  	<< endl
+		 << " tRTRS= " << tRTRS	<< endl
+		 << " tRFC= " << tRFC 	<< endl
+		 << " tFAW= " << tFAW  	<< endl
+		 << " tCKE= " << tCKE 	<< endl
+		 << " tXP= " <<	tXP   	<< endl
+		 << " tCMD= " << tCMD 	<< endl
+		 << " READ_TO_PRE_DELAY= " << READ_TO_PRE_DELAY << endl
+		 << " WRITE_TO_PRE_DELAY= " << WRITE_TO_PRE_DELAY << endl
+		 << " READ_TO_WRITE_DELAY= " << READ_TO_WRITE_DELAY << endl
+		 << " READ_AUTOPRE_DELAY= " << READ_AUTOPRE_DELAY << endl
+		 << " WRITE_AUTOPRE_DELAY= " << WRITE_AUTOPRE_DELAY << endl
+		 << " WRITE_TO_READ_DELAY_B= " << WRITE_TO_READ_DELAY_B << endl
+		 << " WRITE_TO_READ_DELAY_R= " << WRITE_TO_READ_DELAY_R << endl;
 }
 
 void MultiChannelMemorySystem::printStats(bool finalStats) {

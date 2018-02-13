@@ -764,6 +764,16 @@ bool MemoryController::WillAcceptTransaction()
 	return transactionQueue.size() < TRANS_QUEUE_DEPTH;
 }
 
+// This works ONLY for single channel memory
+bool MemoryController::IsQueueEmpty()
+{
+	cerr << "DRAMSim2 " << transactionQueue.size() << endl;
+	if (transactionQueue.size() != 0)
+		return false;
+	else
+		return true;
+}
+
 //allows outside source to make request of memory system
 bool MemoryController::addTransaction(Transaction *trans)
 {
@@ -802,7 +812,7 @@ void MemoryController::resetStats()
 }
 
 //get power and BW statistics from DRAMSim2 wrapper
-avgPowerBW MemoryController::getIntervalPowerBWStats(unsigned long cycles)
+avgPowerBW MemoryController::getIntervalPowerBWStats(unsigned long cycles, double scaling_factor)
 {
 	//if we are not at the end of the epoch, make sure to adjust for the actual number of cycles elapsed
 
@@ -859,8 +869,16 @@ avgPowerBW MemoryController::getIntervalPowerBWStats(unsigned long cycles)
 		burstPower[r] = ((double)burstEnergy[r] / (double)(cyclesElapsed)) * Vdd / 1000.0;
 		refreshPower[r] = ((double) refreshEnergy[r] / (double)(cyclesElapsed)) * Vdd / 1000.0;
 		actprePower[r] = ((double)actpreEnergy[r] / (double)(cyclesElapsed)) * Vdd / 1000.0;
-		averagePower[r] = ((backgroundEnergy[r] + burstEnergy[r] + refreshEnergy[r] + actpreEnergy[r]) / (double)cyclesElapsed) * Vdd / 1000.0;
 
+		// If scaling_factor = 1, DRAM is operating at max frequency. For every other scaling factor,
+		// power is derated using the formula specified in the micron document (calculating DDR3 power)
+		// Note that this is only frequency scaling.
+		backgroundPower[r] = backgroundPower[r] * scaling_factor;
+		burstPower[r] = burstPower[r] * scaling_factor;
+		actprePower[r] = actprePower[r] * scaling_factor;
+
+		averagePower[r] = ((backgroundEnergy[r] + burstEnergy[r] + refreshEnergy[r] + actpreEnergy[r]) / (double)cyclesElapsed) * Vdd / 1000.0;
+		averagePower[r] = backgroundPower[r] + burstPower[r] + actprePower[r] + refreshPower[r];
 /*
 		std::cerr << " == Power Data for Rank        " << r << std::endl;
 		std::cerr << "   Average Power (watts)     : " << averagePower[r] << std::endl;

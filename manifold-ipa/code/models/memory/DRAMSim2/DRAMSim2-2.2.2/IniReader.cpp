@@ -71,6 +71,17 @@ unsigned tCKE;
 unsigned tXP;
 unsigned tCMD;
 
+unsigned RL;
+unsigned WL;
+
+unsigned READ_TO_PRE_DELAY;
+unsigned WRITE_TO_PRE_DELAY;
+unsigned READ_TO_WRITE_DELAY;
+unsigned READ_AUTOPRE_DELAY;
+unsigned WRITE_AUTOPRE_DELAY;
+unsigned WRITE_TO_READ_DELAY_B; //interbank
+unsigned WRITE_TO_READ_DELAY_R; //interrank
+
 unsigned IDD0;
 unsigned IDD1;
 unsigned IDD2P;
@@ -127,6 +138,160 @@ SchedulingPolicy schedulingPolicy;
 AddressMappingScheme addressMappingScheme;
 QueuingStructure queuingStructure;
 
+bool DRAM_DFS(unsigned option)
+{
+	switch (option)
+	{
+	case 1:
+		// DRAM @ 1600 MT/s
+		REFRESH_PERIOD=7800; //7800
+		tCK=1.25;
+
+		CL=11;
+		AL=0;
+		RL=(CL+AL);
+		WL=(RL-1);
+		BL=8; // For 64B data transfer. Use 4 for 32B data transfer
+		tRAS=28; //34
+		tRCD=11;  //12
+		tRRD=5;  //8
+		tRC=39;  //49
+		tRP=11;   //12
+		tCCD=4;  //3
+		tRTP=6;  //6
+		tWTR=6;  //8
+		tWR=12;   //20
+		tRTRS=1;
+		tRFC=88; //72
+		tFAW=24;  //48 Limitation in older DRAM systems. Not in 3D	// Changes
+		tCKE=4; //12
+		tXP=5;   //6
+
+		tCMD=1;
+
+		READ_TO_PRE_DELAY = (AL+BL/2+ std::max(tRTP,tCCD)-tCCD);
+		WRITE_TO_PRE_DELAY = (WL+BL/2+tWR);
+		READ_TO_WRITE_DELAY = (RL+BL/2+tRTRS-WL);
+		READ_AUTOPRE_DELAY = (AL+tRTP+tRP);
+		WRITE_AUTOPRE_DELAY = (WL+BL/2+tWR+tRP);
+		WRITE_TO_READ_DELAY_B = (WL+BL/2+tWTR); //interbank
+		WRITE_TO_READ_DELAY_R = (WL+BL/2+tRTRS-RL); //interrank
+		break;
+
+	case 2:
+		// DRAM @ 1333 MT/s
+
+		REFRESH_PERIOD=7800; //7800
+		tCK=1.5;
+
+		CL=10; 			// Changes
+		AL=0;
+		RL=(CL+AL); 	// Changes
+		WL=(RL-1);  	// Changes
+		BL=8; // For 64B data transfer. Use 4 for 32B data transfer
+		tRAS=24; //34  	// Changes
+		tRCD=10;  //12 	// Changes
+		tRRD=5;  //8	// No Change
+ 		tRC=34;  //49  	// Changes
+		tRP=10;   //12 	// Changes
+		tCCD=4;  //3	// No Change
+		tRTP=5;  //6	// Changes
+		tWTR=5;  //8	// Changes
+		tWR=10;   //20	// Changes
+		tRTRS=1;		// No Change
+		tRFC=74; //72 	// Changes
+		tFAW=20;  //48 Limitation in older DRAM systems. Not in 3D	// Changes
+		tCKE=4; //12
+		tXP=4;   //6	// Changes
+
+		tCMD=1;
+
+		READ_TO_PRE_DELAY = (AL+BL/2+ std::max(tRTP,tCCD)-tCCD);
+		WRITE_TO_PRE_DELAY = (WL+BL/2+tWR);
+		READ_TO_WRITE_DELAY = (RL+BL/2+tRTRS-WL);
+		READ_AUTOPRE_DELAY = (AL+tRTP+tRP);
+		WRITE_AUTOPRE_DELAY = (WL+BL/2+tWR+tRP);
+		WRITE_TO_READ_DELAY_B = (WL+BL/2+tWTR); //interbank
+		WRITE_TO_READ_DELAY_R = (WL+BL/2+tRTRS-RL); //interrank
+		break;
+
+	case 3:
+		// DRAM @ 1066 MT/s
+
+		REFRESH_PERIOD=7800; //7800
+		tCK=1.87;
+
+		CL=8;			// Changes
+		AL=0;
+		RL=(CL+AL);		// Changes
+		WL=(RL-1);		// Changes
+		BL=8; // For 64B data transfer. Use 4 for 32B data transfer
+		tRAS=20; //34	// Changes
+		tRCD=8;  //12	// Changes
+		tRRD=5;  //8	// No Change
+		tRC=28;  //49	// Changes
+		tRP=8;   //12	// Changes
+		tCCD=4;  //3	// No Change
+		tRTP=5;  //6	// Changes
+		tWTR=5;  //8	// Changes
+		tWR=9;   //20	// Changes
+		tRTRS=1;		// No Change
+		tRFC=59; //72	// Changes
+		tFAW=20;  //48 Limitation in older DRAM systems. Not in 3D	// Changes
+		tCKE=3; //12	// Changes
+		tXP=3;   //6	// Changes
+
+		tCMD=1;
+
+		READ_TO_PRE_DELAY = (AL+BL/2+ std::max(tRTP,tCCD)-tCCD);
+		WRITE_TO_PRE_DELAY = (WL+BL/2+tWR);
+		READ_TO_WRITE_DELAY = (RL+BL/2+tRTRS-WL);
+		READ_AUTOPRE_DELAY = (AL+tRTP+tRP);
+		WRITE_AUTOPRE_DELAY = (WL+BL/2+tWR+tRP);
+		WRITE_TO_READ_DELAY_B = (WL+BL/2+tWTR); //interbank
+		WRITE_TO_READ_DELAY_R = (WL+BL/2+tRTRS-RL); //interrank
+		break;
+
+	case 4:
+		// DRAM @ 800 MT/s
+		REFRESH_PERIOD=7800; //7800
+		tCK=2.5;
+
+		CL=6;			// Changes
+		AL=0;
+		RL=(CL+AL);		// Changes
+		WL=(RL-1);		// Changes
+		BL=8; // For 64B data transfer. Use 4 for 32B data transfer
+		tRAS=15; //34	// Changes
+		tRCD=6;  //12	// Changes
+		tRRD=5;  //8	// No Change
+		tRC=21;  //49	// Changes
+		tRP=6;   //12	// Changes
+		tCCD=4;  //3	// No Change
+		tRTP=4;  //6	// Changes
+		tWTR=4;  //8	// Changes
+		tWR=6;   //20	// Changes
+		tRTRS=1;		// No Change
+		tRFC=44; //72	// Changes
+		tFAW=16;  //48 Limitation in older DRAM systems. Not in 3D	// Changes
+		tCKE=3; //12	// Changes
+		tXP=3;   //6	// Changes
+
+		tCMD=1;
+
+		READ_TO_PRE_DELAY = (AL+BL/2+ std::max(tRTP,tCCD)-tCCD);
+		WRITE_TO_PRE_DELAY = (WL+BL/2+tWR);
+		READ_TO_WRITE_DELAY = (RL+BL/2+tRTRS-WL);
+		READ_AUTOPRE_DELAY = (AL+tRTP+tRP);
+		WRITE_AUTOPRE_DELAY = (WL+BL/2+tWR+tRP);
+		WRITE_TO_READ_DELAY_B = (WL+BL/2+tWTR); //interbank
+		WRITE_TO_READ_DELAY_R = (WL+BL/2+tRTRS-RL); //interrank
+		break;
+	default:
+		return false;
+	}
+	return true;
+}
 
 //Map the string names to the variables they set
 static ConfigMap configMap[] =
@@ -237,6 +402,7 @@ void IniReader::WriteParams(std::ofstream &visDataOut, paramType type)
 			visDataOut << endl;
 		}
 	}
+
 	if (type == SYS_PARAM)
 	{
 		visDataOut<<"NUM_RANKS="<<NUM_RANKS <<"\n";
@@ -339,6 +505,17 @@ void IniReader::SetKey(string key, string valueString, bool isSystemParam, size_
 			break;
 		}
 	}
+
+	RL = (CL + AL);
+	WL = (RL -1);
+
+	READ_TO_PRE_DELAY = (AL+BL/2+ std::max(tRTP,tCCD)-tCCD);
+	WRITE_TO_PRE_DELAY = (WL+BL/2+tWR);
+	READ_TO_WRITE_DELAY = (RL+BL/2+tRTRS-WL);
+	READ_AUTOPRE_DELAY = (AL+tRTP+tRP);
+	WRITE_AUTOPRE_DELAY = (WL+BL/2+tWR+tRP);
+	WRITE_TO_READ_DELAY_B = (WL+BL/2+tWTR); //interbank
+	WRITE_TO_READ_DELAY_R = (WL+BL/2+tRTRS-RL); //interrank
 
 	if (configMap[i].variablePtr == NULL)
 	{

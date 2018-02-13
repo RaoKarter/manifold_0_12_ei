@@ -84,10 +84,12 @@ mc: //memory controller
     downstream_credits = 128; //credits for sending to network
     type = "DRAMSIM";
     //type = "CAFFDRAM";
+    dram_clock_frequency = 800000000; // 800MHz
     dramsim2:
     {
         dev_file = "3d_die.ini";
         sys_file = "3d_die.ini.example";
         size = 256;
+        freq_scaling = 1;
     };
 };

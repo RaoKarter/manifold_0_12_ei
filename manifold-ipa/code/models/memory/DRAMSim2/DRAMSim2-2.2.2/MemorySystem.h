@@ -62,7 +62,8 @@ public:
 	bool addTransaction(bool isWrite, uint64_t addr);
 	void printStats(bool finalStats);
 	bool WillAcceptTransaction();
-	avgPowerBW getIntervalPowerBWStatsMS(unsigned long);
+	avgPowerBW getIntervalPowerBWStatsMS(unsigned long, double);
+	bool IsQueueEmpty();
 	void RegisterCallbacks(
 	    Callback_t *readDone,
 	    Callback_t *writeDone,

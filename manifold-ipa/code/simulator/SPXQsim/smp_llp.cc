@@ -34,6 +34,7 @@
 //! - spx_core_t: a processor model of spx.
 //!                  It is built with the QSim library and uses QSim to get instructions.
 //! - CaffDRAM: a memory controller model.
+//! - DRAMSim2: a memory controller model.
 //! - mcp-cache: a coherence cache model.
 //! - Iris: a cycle level interconnection network model.
 //!
@@ -47,11 +48,13 @@
 //! 
 //! To run this program, type:
 //! @code
-//! mpirun -np 1 spx_llp <conf_file>  <spx_conf_file>  <state_file>  <benchmark_tar_file>
+//! mpirun -np 1 spx_llp <config_file>  <spx_config_file> <qsim_type> <state_file> <EI_config_file> <benchmark_tar_file>
 //! @endcode
-//! <conf_file>: the name of the configuration file.
-//! <sepx_conf_file>: the name of the spx configuration file.
+//! <config_file>: the name of the configuration file.
+//! <spx_config_file>: the name of the spx configuration file.
+//! <qsim_type>: the name of QSim simulation type i.e. qsim_lib
 //! <state_file>: the name of the QSim state file.
+//! <EI_config_file>: the name of the EI configuration file.
 //! <benchmark_tar_file>: the name of the benchmark tar file.
 //!
 //!
@@ -423,7 +426,6 @@ int main(int argc, char** argv)
 	}
 	else if(mem_str == "DRAMSIM")
 	{
-
 		manifold::dramsim::Dram_sim :: Set_msg_types(sysBuilder.MEM_MSG_TYPE, sysBuilder.CREDIT_MSG_TYPE);
 		dramsim_mc_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 12); // assuming page size= 2^12
 		l2_map = new PageBasedMap(sysBuilder.mc_node_idx_vec, 12); //page size = 2^12
@@ -498,7 +500,8 @@ int main(int argc, char** argv)
     //Node ID is the same as its node index: between 0 and MAX_NODES-1
     list<LP_LLS_unit*> lp_lls_units;
 
-    Clock dram_clock((double)config.lookup("network_clock_frequency"));
+    //Clock dram_clock( ( (double)config.lookup("mc.dramsim2.dram_clock_frequency") ) * 1e6 );
+    Clock dram_clock((double)config.lookup("mc.dram_clock_frequency"));
     
     cerr << "Manifold Master Clock = " << manifold::kernel::Clock::Master().freq << "Hz" << endl;
     cerr << "Sampling period = " << sysBuilder.sampling_period << endl;
@@ -535,7 +538,7 @@ int main(int argc, char** argv)
         else if(mem_str == "DRAMSIM")
         {
         	cerr << "Creating DRAMSim2 @ node: " << i << endl;
-        	node_cids[i].mc_cid = Component :: Create<Dram_sim>(node_lp, i, dramsim_settings, &dram_clock);
+        	node_cids[i].mc_cid = Component :: Create<Dram_sim>(node_lp, i, dramsim_settings, &dram_clock, sysBuilder.MAX_NODES);
         	Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
         	if (mc)
         		mc->set_mc_map(dramsim_mc_map);
@@ -586,7 +589,7 @@ int main(int argc, char** argv)
 	    if(proc_global && l1_global && l2_global && mc)
 	    {
 			ei_device[i] = new ei_wrapper_t(node_clock[i], core_voltage[i], energy_introspector, proc_global->pipeline->counters, proc_global->ipa, l1_global->cache_counter,
-					l2_global->cache_counter, l1_global, l2_global, mc, therm_thresh[i], sysBuilder.sampling_period,  sysBuilder.MAX_NODES, i);
+					l2_global->cache_counter, l1_global, l2_global, mc, sysBuilder.DRAM_freq_option, therm_thresh[i], sysBuilder.sampling_period,  sysBuilder.MAX_NODES, i);
 		}
 	    else
 	    {
@@ -619,12 +622,12 @@ int main(int argc, char** argv)
 			manifold::spx::spx_core_t* proc_global = (spx_core_t*) Component :: GetComponent<spx_core_t>(node_cids[i].proc_cid);
 			manifold::mcp_cache_namespace::MESI_LLP_cache* l1_global = (MESI_LLP_cache*) Component :: GetComponent<MESI_LLP_cache>(node_cids[i].l1_cache_cid);
 			manifold::mcp_cache_namespace::MESI_LLS_cache* l2_global = (MESI_LLS_cache*) Component :: GetComponent<MESI_LLS_cache>(node_cids[i].l2_cache_cid);
-			//Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
+			Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
 			//if(proc_global && l1_global && l2_global && mc)
 			if(proc_global && l1_global && l2_global)
 			{
 				n_ei_device[i] = new n_ei_wrapper_t(node_clock[i], core_voltage[i], p_cores, proc_global->pipeline->counters, l1_global->cache_counter,
-						l2_global->cache_counter, l1_global, l2_global, NULL, sysBuilder.sampling_period, sysBuilder.MAX_NODES, i);
+						l2_global->cache_counter, l1_global, l2_global, mc, sysBuilder.DRAM_freq_option, sysBuilder.sampling_period, sysBuilder.MAX_NODES, i);
 			}
 			else
 			{
@@ -638,6 +641,8 @@ int main(int argc, char** argv)
     // Manifold runs.
     //==========================================================================
     Manifold::StopAt(sysBuilder.STOP);
+    // Uncomment this to ensure all components are configured and connected appropriately
+    //assert(0);
     Manifold::Run();
 
 #ifdef REDIRECT_COUT

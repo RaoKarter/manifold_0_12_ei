@@ -79,6 +79,9 @@ private:
 	static void WriteParams(std::ofstream &visDataOut, paramType t);
 	static void Trim(string &str);
 };
+
+/* DRAM DFS support function */
+	bool DRAM_DFS(unsigned option);
 }
 
 

@@ -53,7 +53,7 @@ class MultiChannelMemorySystem : public SimulatorObject
 			void update();
 			void printStats(bool finalStats=false);
 			ostream &getLogFile();
-			avgPowerBW getIntervalPowerBWStatsMCMS(unsigned long);
+			avgPowerBW getIntervalPowerBWStatsMCMS(unsigned long, double);
 			void RegisterCallbacks( 
 				TransactionCompleteCB *readDone,
 				TransactionCompleteCB *writeDone,
@@ -61,6 +61,9 @@ class MultiChannelMemorySystem : public SimulatorObject
 
 	void InitOutputFiles(string tracefilename);
 	void setCPUClockSpeed(uint64_t cpuClkFreqHz);
+	bool setDRAMTiming(uint64_t cpuClkFreqHz, unsigned option);
+	bool IsQueueEmpty();
+	void PrintDRAMTimings();
 
 	//output file
 	std::ofstream visDataOut;

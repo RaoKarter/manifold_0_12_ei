@@ -68,7 +68,8 @@ public:
 	void update();
 	void printStats(bool finalStats = false);
 	void resetStats();
-	avgPowerBW getIntervalPowerBWStats(unsigned long);
+	avgPowerBW getIntervalPowerBWStats(unsigned long, double);
+	bool IsQueueEmpty();
 
 
 	//fields

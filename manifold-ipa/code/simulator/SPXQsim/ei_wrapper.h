@@ -29,7 +29,7 @@ public:
 		  manifold::spx::pipeline_counter_t* proc_cnt, manifold::spx::ipa_t* proc_ipa,
 		  manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
 		  manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2,
-		  manifold::dramsim::Dram_sim* mc, double thermal_threshold,
+		  manifold::dramsim::Dram_sim* mc, unsigned DRAM_freq_opt, double thermal_threshold,
 		  double sampling_period, int num_nodes, int uid);
 
   ~ei_wrapper_t();
@@ -61,6 +61,9 @@ public:
 
   uint64_t Control_Cycle;
   uint64_t Control_Sat_Counter;
+  bool cooldown;
+  uint64_t cooldown_timer;
+  unsigned DRAM_freq_option;
   struct R_PRange
   {
 	  double R_P_min;
@@ -70,6 +73,7 @@ public:
   double ComputeR_PRange2(double , bool );
   void ApplyControl();
   void ApplyOndemand();
+  double QuantizedFrequency(double);
 
 private:
   manifold::kernel::Clock *clock;

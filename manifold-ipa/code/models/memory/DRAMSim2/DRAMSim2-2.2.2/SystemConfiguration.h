@@ -85,8 +85,10 @@ extern float tCK;
 
 extern unsigned CL;
 extern unsigned AL;
-#define RL (CL+AL)
-#define WL (RL-1)
+//#define RL (CL+AL)
+//#define WL (RL-1)
+extern unsigned RL;
+extern unsigned WL;
 extern unsigned BL;
 extern unsigned tRAS;
 extern unsigned tRCD;
@@ -110,6 +112,7 @@ extern unsigned tCMD;
 extern unsigned NUM_DEVICES;
 
 //same bank
+/*
 #define READ_TO_PRE_DELAY (AL+BL/2+ max(tRTP,tCCD)-tCCD)
 #define WRITE_TO_PRE_DELAY (WL+BL/2+tWR)
 #define READ_TO_WRITE_DELAY (RL+BL/2+tRTRS-WL)
@@ -117,6 +120,15 @@ extern unsigned NUM_DEVICES;
 #define WRITE_AUTOPRE_DELAY (WL+BL/2+tWR+tRP)
 #define WRITE_TO_READ_DELAY_B (WL+BL/2+tWTR) //interbank
 #define WRITE_TO_READ_DELAY_R (WL+BL/2+tRTRS-RL) //interrank
+*/
+
+extern unsigned READ_TO_PRE_DELAY;
+extern unsigned WRITE_TO_PRE_DELAY;
+extern unsigned READ_TO_WRITE_DELAY;
+extern unsigned READ_AUTOPRE_DELAY;
+extern unsigned WRITE_AUTOPRE_DELAY;
+extern unsigned WRITE_TO_READ_DELAY_B; //interbank
+extern unsigned WRITE_TO_READ_DELAY_R; //interrank
 
 extern unsigned JEDEC_DATA_BUS_BITS;
 

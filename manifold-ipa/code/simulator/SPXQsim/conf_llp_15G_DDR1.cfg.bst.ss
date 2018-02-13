@@ -1,17 +1,17 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 1000000000L; //
+simulation_stop = 500000000L; //
 
-network_clock_frequency = 1000000000L; // 1GHz
+network_clock_frequency = 3000000000L; // 1GHz
 
-distributed_clock_frequency = [1e9, 1e9, 1e9, 1e9,
-                               1e9, 1e9, 1e9, 1e9,
-                               1e9, 1e9, 1e9, 1e9,
-                               1e9, 1e9, 1e9, 1e9];
+distributed_clock_frequency = [1.5e9, 1.5e9, 1.5e9, 1.5e9,
+                               1.5e9, 1.5e9, 1.5e9, 1.5e9,
+                               1.5e9, 1.5e9, 1.5e9, 1.5e9,
+                               1.5e9, 1.5e9, 1.5e9, 1.5e9];
 
-cache_clock_frequency = [1e9, 1e9, 1e9, 1e9,
-                         1e9, 1e9, 1e9, 1e9,
-                         1e9, 1e9, 1e9, 1e9,
-                         1e9, 1e9, 1e9, 1e9];
+cache_clock_frequency = [1.5e9, 1.5e9, 1.5e9, 1.5e9,
+                         1.5e9, 1.5e9, 1.5e9, 1.5e9,
+                         1.5e9, 1.5e9, 1.5e9, 1.5e9,
+                         1.5e9, 1.5e9, 1.5e9, 1.5e9];
 
 core_thermal_threshold = [340, 340, 340, 340,
                           340, 340, 340, 340,
@@ -19,10 +19,10 @@ core_thermal_threshold = [340, 340, 340, 340,
                           340, 340, 340, 340];
 
 // V = 0.8 + 0.1(f - 3e9)/1e9
-core_voltage = [0.6, 0.6, 0.6, 0.6,
-		0.6, 0.6, 0.6, 0.6,
-		0.6, 0.6, 0.6, 0.6,
-		0.6, 0.6, 0.6, 0.6]; 
+core_voltage = [0.65, 0.65, 0.65, 0.65,
+		0.65, 0.65, 0.65, 0.65,
+		0.65, 0.65, 0.65, 0.65,
+		0.65, 0.65, 0.65, 0.65]; 
 
 sampling_period = 1e-3;
 
@@ -43,7 +43,7 @@ network:
     credit_msg_type = 789;
 };
 
-processor:	
+processor:
 {
     node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 };
@@ -80,19 +80,18 @@ lls_cache:
 
 mc: //memory controller
 { 
-    node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-    //node_idx = [0, 3, 12, 15];
+    //node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    node_idx = [3, 6, 9, 12];
     downstream_credits = 128; //credits for sending to network
-    //type = "CAFFDRAM";
     type = "DRAMSIM";
-    dram_clock_frequency = 800000000; // 800MHz
+    //type = "CAFFDRAM";
+    dram_clock_frequency = 800000000;  //800MHz
     dramsim2:
     {
-        //dev_file = "3d_die_4GB.ini";
-        dev_file = "3d_die.ini";
+        dev_file = "3d_die_DDR1.ini";
         sys_file = "3d_die.ini.example";
-        //size = 1024;
-        size = 256;
-        freq_scaling = 1;
+        size = 1024;
+        //size = 256;
+        freq_scaling_option = 1;
     };
 };

@@ -174,6 +174,12 @@ bool MemorySystem::WillAcceptTransaction()
 	return memoryController->WillAcceptTransaction();
 }
 
+// This works ONLY for single channel memory
+bool MemorySystem::IsQueueEmpty()
+{
+	return memoryController->IsQueueEmpty();
+}
+
 bool MemorySystem::addTransaction(bool isWrite, uint64_t addr)
 {
 	TransactionType type = isWrite ? DATA_WRITE : DATA_READ;
@@ -236,9 +242,9 @@ void MemorySystem::update()
 	//PRINT("\n"); // two new lines
 }
 
-avgPowerBW MemorySystem::getIntervalPowerBWStatsMS(unsigned long cycles)
+avgPowerBW MemorySystem::getIntervalPowerBWStatsMS(unsigned long cycles, double scaling_factor)
 {
-	return memoryController->getIntervalPowerBWStats(cycles);
+	return memoryController->getIntervalPowerBWStats(cycles, scaling_factor);
 }
 
 void MemorySystem::RegisterCallbacks( Callback_t* readCB, Callback_t* writeCB,

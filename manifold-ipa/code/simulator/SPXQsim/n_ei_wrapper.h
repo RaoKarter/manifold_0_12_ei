@@ -34,6 +34,7 @@ public:
   n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, vector<manifold::spx::spx_core_t*> p_core, manifold::spx::pipeline_counter_t* proc_cnt,
 		  manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
 		  manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2, manifold::dramsim::Dram_sim* mc,
+		  unsigned DRAM_freq_opt,
 		  double sampling_period, int num_nodes, int uid);
 
   ~n_ei_wrapper_t();
@@ -52,6 +53,7 @@ public:
   double init_vdd;
   int num_samples;
   vector<manifold::spx::spx_core_t*> p_cores_global;
+  unsigned DRAM_freq_option;
 
 private:
   manifold::kernel::Clock *clock;
@@ -62,6 +64,9 @@ private:
   manifold::mcp_cache_namespace::LLP_cache *p_l1cache;
   manifold::mcp_cache_namespace::LLS_cache *p_l2cache;
   manifold::dramsim::Dram_sim *mem_ctrl;
+
+  //DRAM Power arrays
+  avgPowerBW* vault;
 
   double V_Old;
   int id;

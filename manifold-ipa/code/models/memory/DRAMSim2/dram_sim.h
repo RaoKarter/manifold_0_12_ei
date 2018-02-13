@@ -45,7 +45,7 @@ class Dram_sim : public manifold::kernel::Component {
 public:
     enum {PORT0=0};
 
-    Dram_sim(int nid, const Dram_sim_settings& dram_settings, manifold::kernel::Clock*);
+    Dram_sim(int nid, const Dram_sim_settings& dram_settings, manifold::kernel::Clock*, uint64_t nc);
     ~Dram_sim() {};
 
     int get_nid() { return m_nid; }
@@ -68,7 +68,11 @@ public:
     void print_stats(std::ostream&);
     void print_config(std::ostream&);
 
-    avgPowerBW* getDRAMPowerBWStats(unsigned long);
+    avgPowerBW* getDRAMPowerBWStats(unsigned long, unsigned);
+    void ResetDRAMInstStats();
+    void PrintDRAMInstStats();
+    void changeDRAMTiming(unsigned option);
+    bool CheckMCQueueStatus() { return mem->IsQueueEmpty(); }
 
 #ifdef DRAMSIM_UTEST
 public:
@@ -109,6 +113,7 @@ private:
     Callback_t *write_cb;
 //    Callback_t *power_cb;
     avgPowerBW power_bw_data;
+    uint64_t num_cores;
 
     /* callbacks for read and write */
     void read_complete(unsigned id, uint64_t address, uint64_t done_cycle);
@@ -117,6 +122,12 @@ private:
     bool limitExceeds();        // check if input has to be stopped because the output is full
     void try_send_reply();     // send reply if there's any and there's credit
     void send_credit();
+    // This function sets a flag to true when operating in the normal mode i.e. fixed timings
+    // Once the flag is false i.e. we need to change DRAM timings, it halts any new requests from
+    // being sent to the MC until the MC queue is cleared. Once the past requests in the queue
+    // are handled, DRAM timings are changed and the flag is set to true.
+    bool DRAMOperationMode;	// true = fixed timings normal operation, false = waiting for MC queue to clear
+    unsigned DRAM_DFS_option;	// 1 = 1600 MT/s, 2 = 1333 MT/s, 3 = 1066 MT/s, 4 = 800 MT/s
 
     //stat
     unsigned stats_n_reads;
@@ -125,6 +136,8 @@ private:
     uint64_t stats_totalMemLat;
     std::map<int, unsigned> stats_n_reads_per_source;
     std::map<int, unsigned> stats_n_writes_per_source;
+    std::vector<int> inst_stats_n_reads_per_source;
+    std::vector<int> inst_stats_n_writes_per_source; // Not used currently
     std::vector<unsigned int> m_incoming_reqs_size;
 
 #ifdef DRAMSIM_UTEST
@@ -160,7 +173,9 @@ void Dram_sim :: handle_request(int in_port, manifold::uarch::NetworkPacket* pkt
     if (req->is_read())
     {
 		stats_n_reads++;
-		stats_n_reads_per_source[pkt->get_src()]++;
+		//stats_n_reads_per_source[pkt->get_src()]++;
+		stats_n_reads_per_source[pkt->get_core_id()]++;
+		inst_stats_n_reads_per_source[pkt->get_core_id()]++;
 		req->set_mem_response(); //make it explicit the reply is a memory response. This is a temp solution!!!!!!!!!!!!!!!!!!
 								 //The MC should send its own type.
 

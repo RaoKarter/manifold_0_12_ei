@@ -179,6 +179,7 @@ void SysBuilder_llp :: config_components(Config& config)
 			chars = config.lookup("mc.dramsim2.sys_file");
 			m_SYS_FILE = chars;
 			m_MEM_SIZE = config.lookup("mc.dramsim2.size");
+			DRAM_freq_option = config.lookup("mc.dramsim2.freq_scaling_option");
 		}
 		catch (SettingNotFoundException e) {
 			cout << e.getPath() << " not set." << endl;

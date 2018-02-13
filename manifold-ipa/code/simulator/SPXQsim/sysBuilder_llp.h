@@ -105,6 +105,7 @@ public:
     std::string m_DEV_FILE; //device file name
 	std::string m_SYS_FILE; //system file name
 	unsigned m_MEM_SIZE; //mem size;
+	unsigned DRAM_freq_option; //For DRAM DFS
 
     vector<int> mc_node_idx_vec;
     set<int> mc_node_idx_set; //set is used to ensure each index is unique
