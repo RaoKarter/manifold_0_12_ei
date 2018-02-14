@@ -161,6 +161,8 @@ public:
 
     fetch_inst.reset();
     retire_inst.reset();
+    nop_inst.reset();
+    idle_cycle.reset();
   }
   // Frontend components (including inst cache)
   EI::counters_t l1_btb, l2_btb, ras, inst_tlb;
@@ -191,6 +193,8 @@ public:
   // Count fetched/committed insts
   EI::counters_t fetch_inst;
   EI::counters_t retire_inst;
+  EI::counters_t nop_inst;
+  EI::counters_t idle_cycle;
 /*
 // Frontend components (including inst cache)
   libEI::counter_t l1_btb, l2_btb, ras, inst_tlb;

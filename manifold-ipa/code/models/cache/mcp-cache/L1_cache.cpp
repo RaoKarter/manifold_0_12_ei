@@ -632,15 +632,18 @@ void L1_cache::write_reply (cache_req *request)
 void L1_cache :: send_msg_to_peer_or_l2(Coh_msg* msg)
 {
     msg->src_id = node_id;
+    msg->core_id = node_id;
     if(msg->dst_id == -1) //destination is L2
 	msg->dst_id = l2_map->lookup(msg->addr);
 
+//    cerr<<"L1_cache"<<node_id<<" send_msg_to_peer_or_l2 addr"<<hex<<msg->addr<<dec<<" to L2_cache"<<msg->dst_id<<endl<<flush;
     DBG_L1_CACHE_ID(cerr, "L1_cache node " << node_id << " sending msg= " << msg->msg << " to node " << msg->dst_id << " addr= " <<hex<< msg->addr <<dec<< endl);
 
     NetworkPacket* pkt = new NetworkPacket;
     pkt->type = COH_MSG;
     pkt->src = node_id;
     pkt->dst = msg->dst_id;
+    pkt->core_id = msg->core_id;
     *((Coh_msg*)(pkt->data)) = *msg;
     pkt->data_size = sizeof(Coh_msg);
     delete msg;

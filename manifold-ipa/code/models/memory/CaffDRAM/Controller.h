@@ -100,7 +100,7 @@ private:
 	//stats
 	unsigned stats_max_output_buffer_size;
 
-        manifold::kernel::Clock *clock;
+	manifold::kernel::Clock *clock;
 
 };
 
@@ -131,66 +131,71 @@ void Controller :: handle_request(int, uarch::NetworkPacket* pkt)
 
     T* req = (T*)(pkt->data);
 
-    if(req->is_read()) {
+    if(req->is_read())
+    {
 #ifdef DBG_CAFFDRAM
 cerr << "@" << dec << manifold::kernel::Manifold::NowTicks() << "mc received LD, src= " << pkt->get_src() << " port= " << pkt->get_src_port() << " addr= " <<hex<< req->get_addr() <<dec<<endl;
 #endif
-	//stats
-	m_ld_misses[pkt->get_src()]++;
-	/*
-	m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
-	                                          Req_info(OpMemLd, req->u.mem.originator_id, req->u.mem.source_id, req->u.mem.addr)));
-						  */
+		//stats
+	//	m_ld_misses[pkt->get_src()]++;
+		m_ld_misses[req->get_core_id()]++;
+		/*
+		m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
+												  Req_info(OpMemLd, req->u.mem.originator_id, req->u.mem.source_id, req->u.mem.addr)));
+							  */
 
-	//req->u.mem.msg = LD_RESPONSE;
+		//req->u.mem.msg = LD_RESPONSE;
 
-	req->set_mem_response(); //make it explicit the reply is a memory response. This is a temp solution!!!!!!!!!!!!!!!!!!
-	                         //The MC should send its own type.
+		req->set_mem_response(); //make it explicit the reply is a memory response. This is a temp solution!!!!!!!!!!!!!!!!!!
+								 //The MC should send its own type.
 
-	req->set_dst(pkt->get_src());
-	req->set_dst_port(pkt->get_src_port());
-	req->set_src(m_nid);
-	req->set_src_port(0);
-	manifold::kernel::Ticks_t latency = processRequest(req->get_addr(), manifold::kernel::Manifold::NowTicks()); //????????????? using default clock here.
-	//The return value of processRequest() is the actual (or absolute) time of when the request
-	//is completed, but Sendtick requires time relative to now. So we must pass to SendTick
-	//the return value - now.
+		req->set_dst(pkt->get_src());
+		req->set_dst_port(pkt->get_src_port());
+		req->set_src(m_nid);
+		req->set_src_port(0);
+		manifold::kernel::Ticks_t latency = processRequest(req->get_addr(), manifold::kernel::Manifold::NowTicks()); //????????????? using default clock here.
+		//The return value of processRequest() is the actual (or absolute) time of when the request
+		//is completed, but Sendtick requires time relative to now. So we must pass to SendTick
+		//the return value - now.
 
-	//reuse the network packet object.
-	pkt->set_dst(pkt->get_src());
-	pkt->set_dst_port(pkt->get_src_port());
-	pkt->set_src(m_nid);
-	pkt->set_src_port(0);
-	//SendTick(PORT0, pkt, latency - manifold::kernel::Manifold::NowTicks());
-	manifold::kernel::Manifold::Schedule(latency - manifold::kernel::Manifold::NowTicks(), &Controller::request_complete, this, pkt, true);
+		//reuse the network packet object.
+		pkt->set_dst(pkt->get_src());
+		pkt->set_dst_port(pkt->get_src_port());
+		pkt->set_src(m_nid);
+		pkt->set_src_port(0);
+		//SendTick(PORT0, pkt, latency - manifold::kernel::Manifold::NowTicks());
+		manifold::kernel::Manifold::Schedule(latency - manifold::kernel::Manifold::NowTicks(), &Controller::request_complete, this, pkt, true);
     }
-    else { //write request
+    else
+    { //write request
 #ifdef DBG_CAFFDRAM
 cerr << "@" << dec << manifold::kernel::Manifold::NowTicks() << "mc received ST, src= " << pkt->get_src() << " port= " << pkt->get_src_port() << " addr= " <<hex<< req->get_addr() <<dec<<endl;
 #endif
-	//stats
-	m_stores[req->get_src()]++;
-	/*
-	m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
-	                                          Req_info(OpMemSt, req->u.mem.originator_id, req->u.mem.source_id, req->u.mem.addr)));
-						  */
-	manifold::kernel::Ticks_t latency = processRequest(req->get_addr(), manifold::kernel::Manifold::NowTicks()); //????????????? using default clock here.
-        if(m_send_st_response) {
-	    req->set_dst(pkt->get_src());
-	    req->set_dst_port(pkt->get_src_port());
-	    req->set_src(m_nid);
-	    req->set_src_port(0);
-	    //The return value of processRequest() is the actual (or absolute) time of when the request
-	    //is completed, but Sendtick requires time relative to now. So we must pass to SendTick
-	    //the return value - now.
-	    //reuse the network packet object.
-	    pkt->set_dst(pkt->get_src());
-	    pkt->set_dst_port(pkt->get_src_port());
-	    pkt->set_src(m_nid);
-	    pkt->set_src_port(0);
-	    //SendTick(PORT0, pkt, latency - manifold::kernel::Manifold::NowTicks());
-	}
-	manifold::kernel::Manifold::Schedule(latency - manifold::kernel::Manifold::NowTicks(), &Controller::request_complete, this, pkt, false);
+		//stats
+		//m_stores[req->get_src()]++;
+		m_stores[req->get_core_id()]++;
+		/*
+		m_req_info.insert(pair<Ticks_t, Req_info>(Manifold::NowTicks(),
+												  Req_info(OpMemSt, req->u.mem.originator_id, req->u.mem.source_id, req->u.mem.addr)));
+							  */
+		manifold::kernel::Ticks_t latency = processRequest(req->get_addr(), manifold::kernel::Manifold::NowTicks()); //????????????? using default clock here.
+		if(m_send_st_response)
+		{
+			req->set_dst(pkt->get_src());
+			req->set_dst_port(pkt->get_src_port());
+			req->set_src(m_nid);
+			req->set_src_port(0);
+			//The return value of processRequest() is the actual (or absolute) time of when the request
+			//is completed, but Sendtick requires time relative to now. So we must pass to SendTick
+			//the return value - now.
+			//reuse the network packet object.
+			pkt->set_dst(pkt->get_src());
+			pkt->set_dst_port(pkt->get_src_port());
+			pkt->set_src(m_nid);
+			pkt->set_src_port(0);
+			//SendTick(PORT0, pkt, latency - manifold::kernel::Manifold::NowTicks());
+		}
+		manifold::kernel::Manifold::Schedule(latency - manifold::kernel::Manifold::NowTicks(), &Controller::request_complete, this, pkt, false);
     }
 }
 

@@ -17,6 +17,7 @@ using namespace manifold::uarch;
 using namespace manifold::spx;
 using namespace manifold::mcp_cache_namespace;
 using namespace manifold::caffdram;
+using namespace manifold::dramsim;
 using namespace manifold::iris;
 using namespace libconfig;
 
@@ -168,6 +169,27 @@ void SysBuilder_llp :: config_components(Config& config)
 #if 1
 	//memory controller configuration
 	//the node indices of MC are in an array, each value between 0 and MAX_NODES-1
+	const char* mem_chars = config.lookup("mc.type");
+	mem_str = mem_chars;
+	if(mem_str == "DRAMSIM")
+	{
+		try {
+			const char* chars = config.lookup("mc.dramsim2.dev_file");
+			m_DEV_FILE = chars;
+			chars = config.lookup("mc.dramsim2.sys_file");
+			m_SYS_FILE = chars;
+			m_MEM_SIZE = config.lookup("mc.dramsim2.size");
+			DRAM_freq_option = config.lookup("mc.dramsim2.freq_scaling_option");
+		}
+		catch (SettingNotFoundException e) {
+			cout << e.getPath() << " not set." << endl;
+			exit(1);
+		}
+		catch (SettingTypeException e) {
+			cout << e.getPath() << " has incorrect type." << endl;
+			exit(1);
+		}
+	}
 	Setting& setting_mc = config.lookup("mc.node_idx");
 	int num_mc = setting_mc.getLength(); //number of mem controllers
 	assert(num_mc >=1 && num_mc <= MAX_NODES);
@@ -192,6 +214,9 @@ void SysBuilder_llp :: config_components(Config& config)
 #endif
 #endif
 	MC_DOWNSTREAM_CREDITS = config.lookup("mc.downstream_credits");
+
+	// EI Controller
+	sampling_period = config.lookup("sampling_period");
 
     }
     catch (SettingNotFoundException e) {
@@ -348,21 +373,55 @@ if(routers[i] != 0) {
 	    //network interface X.
 
 	    #if 1
-	    Controller* mc = Component :: GetComponent<Controller>(node_cids[i].mc_cid);
-	    if(mc != 0 ) {
-		if(nis[i] != 0) { //only true when both are in the same LP
-		    assert(mc->get_nid() == (int)nis[i]->get_id());
-		}
+	    if (mem_str == "CAFFDRAM")
+	    {
+	    	Controller* mc = Component :: GetComponent<Controller>(node_cids[i].mc_cid);
+			if(mc != 0 )
+			{
+				if(nis[i] != 0)
+				{ //only true when both are in the same LP
+					assert(mc->get_nid() == (int)nis[i]->get_id());
+				}
+			}
+			//mc to interface
+			Manifold :: Connect(node_cids[i].mc_cid, Controller::PORT0,
+					ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
+					&GenNetworkInterface<NetworkPacket>::handle_new_packet_event, 1);
+//			cerr << "Connected CaffDRAM with cid: " << node_cids[i].mc_cid << " to Network with cid: "
+//			     << ni_cids[i*2+1] << endl;
+			//interface to mc
+			Manifold :: Connect(ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
+					node_cids[i].mc_cid, Controller::PORT0,
+					&Controller::handle_request<Mem_msg>, 1);
+//			cerr << "Connected Network with cid: " << ni_cids[i*2+1] << " to CaffDRAM with cid: "
+//	             << node_cids[i].mc_cid << endl;
 	    }
+	    else if (mem_str == "DRAMSIM")
+	    {
+	    	Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
+	    	if(mc != 0)
+	    	{
+	    		if(nis[i] != 0)
+				{ //only true when both are in the same LP
+					assert(mc->get_nid() == (int)nis[i]->get_id());
+				}
+	    	}
+	    	//mc to interface
+			Manifold :: Connect(node_cids[i].mc_cid, Dram_sim::PORT0,
+					ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
+					&GenNetworkInterface<NetworkPacket>::handle_new_packet_event, 1);
+//			cerr << "Connected DRAMSim2 with cid: " << node_cids[i].mc_cid << " to Network with cid: "
+//				 << ni_cids[i*2+1] << endl;
+			//interface to mc
+			Manifold :: Connect(ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
+					node_cids[i].mc_cid, Dram_sim::PORT0,
+					&Dram_sim::handle_request<Mem_msg>, 1);
+//			cerr << "Connected Network with cid: " << ni_cids[i*2+1] << " to DRAMSim2 with cid: "
+//				 << node_cids[i].mc_cid << endl;
+	    }
+
 	    #endif
-	    //mc to interface
-	    Manifold :: Connect(node_cids[i].mc_cid, Controller::PORT0,
-				ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
-				&GenNetworkInterface<NetworkPacket>::handle_new_packet_event, 1);
-	    //interface to mc
-	    Manifold :: Connect(ni_cids[i*2+1], GenNetworkInterface<NetworkPacket>::TERMINAL_PORT,
-				node_cids[i].mc_cid, Controller::PORT0,
-				&Controller::handle_request<Mem_msg>, 1);
+
 
 	} else if (node_cids[i].type == CORE_NODE) {
 	    #if 1
@@ -426,7 +485,8 @@ void SysBuilder_llp :: config_cache_settings(manifold::uarch::DestMap* l2_map, m
     L1_cache :: Set_msg_types(COH_MSG_TYPE, CREDIT_MSG_TYPE);
     L2_cache :: Set_msg_types(COH_MSG_TYPE, MEM_MSG_TYPE, CREDIT_MSG_TYPE);
 
-    Controller :: Set_msg_types(MEM_MSG_TYPE, CREDIT_MSG_TYPE);
+    if (mem_str == "CAFFDRAM")
+    	Controller :: Set_msg_types(MEM_MSG_TYPE, CREDIT_MSG_TYPE);
 
 }
 
@@ -478,9 +538,20 @@ void SysBuilder_llp :: print_stats(const Node_cid_llp node_cids[])
 		l2->print_stats(cerr);
 	    }
 
-	    Controller* mc = Component :: GetComponent<Controller>(node_cids[i].mc_cid);
-	    if(mc)
-		mc->print_stats(cerr);
+	    if(mem_str == "CAFFDRAM")
+	    {
+	        Controller* mc = Component :: GetComponent<Controller>(node_cids[i].mc_cid);
+	        if(mc)
+				mc->print_stats(cerr);
+	    }
+	    else if (mem_str == "DRAMSIM")
+	    {
+	    	Dram_sim* mc = Component :: GetComponent<Dram_sim>(node_cids[i].mc_cid);
+	    	if(mc)
+				mc->print_stats(cerr);
+	    }
+
+
 #endif
 	}
     }

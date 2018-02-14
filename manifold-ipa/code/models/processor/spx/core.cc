@@ -162,7 +162,7 @@ void spx_core_t::tick()
   pipeline->stats.core_time += tick_time;
   pipeline->stats.interval.core_time += tick_time;
 
-  print_stat_info((uint64_t)100000);
+  //print_stat_info((uint64_t)100000);
 
 #ifdef SPX_SPEED_DEBUG
   gettimeofday(&end,0);
@@ -236,6 +236,7 @@ void spx_core_t::print_stat_info(uint64_t sam_cycle)
     	pipeline->counters->reset();
     }
 }
+
 void spx_core_t::print_stats(void)
 {
     uops_total += (double)pipeline->stats.uop_count;

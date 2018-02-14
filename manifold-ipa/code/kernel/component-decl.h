@@ -100,6 +100,7 @@ public:
   virtual ~Component();
 
   void set_clock(Clock& c) { m_clk = &c; }
+  Clock* get_clock() { return m_clk; }
   
   int getComponentId() const { return myId; }    
   void setComponentId(CompId_t newId) { myId = newId; }

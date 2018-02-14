@@ -14,10 +14,17 @@ namespace mcp_cache_namespace {
 
 
 
-LLS_cache :: LLS_cache (int nid, const cache_settings& parameters, const L2_cache_settings& settings) :
-    L2_cache (nid, parameters, settings), m_mux(0)
+LLS_cache :: LLS_cache (int nid, const cache_settings& parameters, const L2_cache_settings& settings, manifold::kernel::Clock* clk) :
+    L2_cache (nid, parameters, settings), m_mux(0), m_clock(clk)
 {
     stats_cycles = 0;
+    memreads = 0;
+    memwrites = 0;
+    for(int i = 0; i < CORE_COUNT; i++)
+    {
+    	mem_reads[i] = 0;
+    	mem_writes[i] = 0;
+    }
 }
 
 
@@ -93,6 +100,7 @@ void LLS_cache :: send_msg_to_l1(Coh_msg* msg)
 
 void LLS_cache::get_from_memory (Coh_msg *request)
 {
+	memreads++;
     Mem_msg req;
     req.type = Mem_msg :: MEM_REQ;
     req.addr = request->addr;
@@ -100,6 +108,9 @@ void LLS_cache::get_from_memory (Coh_msg *request)
     req.src_id = node_id;
     req.src_port = LLP_cache :: LLS_ID;
     req.dst_id = mc_map->lookup(request->addr);
+//    cerr << "LLS_cache"<<node_id<<" get_from_mem addr "<<hex<<request->addr<<dec<<" from LLP_cache"<<request->core_id<<endl<<flush;
+    req.core_id = request->core_id;
+    mem_reads[req.core_id]++;
 
     DBG_LLS_CACHE_ID(cerr,  " get from memory node " << req.dst_id << " for 0x" << hex << req.addr << dec << endl);
 
@@ -109,6 +120,7 @@ void LLS_cache::get_from_memory (Coh_msg *request)
     pkt->src_port = LLP_cache :: LLS_ID;
     pkt->dst = req.dst_id;
     pkt->dst_port = 0;
+    pkt->core_id = request->core_id;
 
     *((Mem_msg*)(pkt->data)) = req;
     pkt->data_size = sizeof(Mem_msg);
@@ -122,7 +134,7 @@ void LLS_cache::get_from_memory (Coh_msg *request)
 
 void LLS_cache::dirty_to_memory (paddr_t addr)
 {
-
+	memwrites++;
     DBG_LLS_CACHE_ID(cerr, " dirty write to memory for 0x" << hex << addr << dec << endl);
 
     Mem_msg req;
@@ -132,6 +144,9 @@ void LLS_cache::dirty_to_memory (paddr_t addr)
     req.src_id = node_id;
     req.src_port = LLP_cache :: LLS_ID;
     req.dst_id = mc_map->lookup(addr);
+    req.core_id = node_id;
+//    cerr << "LLS_cache"<<node_id<<" dirty_to_mem addr "<<hex<<addr<<dec<<endl<<flush;
+    mem_writes[node_id]++;
 
     NetworkPacket* pkt = new NetworkPacket;
     pkt->type = MEM_MSG;
@@ -139,6 +154,7 @@ void LLS_cache::dirty_to_memory (paddr_t addr)
     pkt->src_port = LLP_cache :: LLS_ID;
     pkt->dst = req.dst_id;
     pkt->dst_port = 0;
+    pkt->core_id = node_id;
 
     *((Mem_msg*)(pkt->data)) = req;
     pkt->data_size = sizeof(Coh_msg);

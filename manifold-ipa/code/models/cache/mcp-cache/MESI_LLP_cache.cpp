@@ -83,8 +83,8 @@ void MESI_LLP_cache_client :: invalidate()
 
 
 
-MESI_LLP_cache :: MESI_LLP_cache (int nid, cache_settings my_settings, const L1_cache_settings& settings) :
-    LLP_cache (nid, my_settings, settings)
+MESI_LLP_cache :: MESI_LLP_cache (int nid, manifold::kernel::Clock* m_clock, cache_settings my_settings, const L1_cache_settings& settings) :
+    LLP_cache (nid, my_settings, settings, m_clock)
 {
     clients.resize(my_table->get_num_entries());
     hash_entries.resize(my_table->get_num_entries());

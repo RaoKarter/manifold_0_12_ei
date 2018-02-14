@@ -76,7 +76,6 @@ public:
 	unsigned int bankMask;
 	unsigned int rankMask;
 
-
 	Dsettings(
 	    int numChannels = 2,//1
 	    int numRanks = 4,//2

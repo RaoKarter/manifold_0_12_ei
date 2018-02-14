@@ -20,6 +20,8 @@ public:
     void set_dst(int d) { dst = d; }
     int get_dst_port() { return dst_port; }
     void set_dst_port(int d) { dst_port = d; }
+    void set_core_id(int c) { core_id = c; }
+    int get_core_id() { return core_id; }
 //    int get_term() { return term; }
 //    int set_term() {}
 
@@ -30,6 +32,7 @@ public:
     int dst_port;
     char data[MAX_SIZE];
     int data_size;
+    int core_id;
 
 //    int term;
 };

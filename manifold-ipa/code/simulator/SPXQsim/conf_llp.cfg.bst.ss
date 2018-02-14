@@ -1,12 +1,14 @@
 //simulation_stop = 700000000000L; //
-simulation_stop = 10000000L; //
+simulation_stop = 1000000000L; //
 
 network_clock_frequency = 3000000000L; // 3GHz
 
-distributed_clock_frequency = [1e9, 1e9, 1e9, 1e9,
-                               1e9, 1e9, 1e9, 1e9,
-                               1e9, 1e9, 1e9, 1e9,
-                               1e9, 1e9, 1e9, 1e9];
+distributed_clock_frequency = [2e9, 2e9, 2e9, 2e9,
+                               2e9, 2e9, 2e9, 2e9,
+                               2e9, 2e9, 2e9, 2e9,
+                               2e9, 2e9, 2e9, 2e9];
+
+core_voltage = 0.9783; // V = (1.93e-4 * f) + 0.4008
 
 network:
 {
@@ -60,9 +62,25 @@ lls_cache:
     downstream_credits = 128; //credits for sending to network
 };
 
+//mc: //memory controller
+//{
+//    type = "CAFFDRAM";
+//    downstream_credits = 128; //credits for sending to network
+//    node_idx = [0, 3, 12, 15];
+//};
+
 mc: //memory controller
-{
+{ 
+    node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    //node_idx = [0, 3, 12, 15];
     downstream_credits = 128; //credits for sending to network
-	node_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-	//node_idx = [0, 3, 12, 15];
+    type = "DRAMSIM";
+    dram_clock_frequency = 800000000;	// 800MHz
+    dramsim2:
+    {
+        dev_file = "3d_die.ini";
+        sys_file = "3d_die.ini.example";
+        size = 256;
+        freq_scaling_option = 1;
+   };
 };

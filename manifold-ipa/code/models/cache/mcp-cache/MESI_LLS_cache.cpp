@@ -115,8 +115,8 @@ void MESI_LLS_cache_manager :: ignore()
 
 
 
-MESI_LLS_cache :: MESI_LLS_cache (int nid, const cache_settings& parameters, const L2_cache_settings& settings) :
-    LLS_cache (nid, parameters, settings)
+MESI_LLS_cache :: MESI_LLS_cache (int nid, manifold::kernel::Clock* m_clock, const cache_settings& parameters, const L2_cache_settings& settings) :
+    LLS_cache (nid, parameters, settings, m_clock)
 {
     managers.resize(my_table->get_num_entries());
     hash_entries.resize(my_table->get_num_entries());

@@ -21,11 +21,11 @@ class MuxDemux : public manifold::kernel::Component {
 public:
     enum { PORT_NET=0 };
 
-    MuxDemux(manifold::kernel::Clock&, int credit_type);
+    MuxDemux(manifold::kernel::Clock*, int credit_type);
     void set_llp_lls(LLP_cache* llp, LLS_cache* lls)
     {
         m_llp = llp;
-	m_lls = lls;
+        m_lls = lls;
     }
 
     void tick();
@@ -50,7 +50,7 @@ private:
     LLP_cache* m_llp;
     LLS_cache* m_lls;
 
-    manifold::kernel::Clock& m_clk;
+    manifold::kernel::Clock* m_clk;
 
     #ifdef FORECAST_NULL
     //std::list<manifold::kernel::Ticks_t> m_output_ticks;
@@ -65,15 +65,18 @@ void MuxDemux :: handle_net(int, manifold::uarch::NetworkPacket* pkt)
 {
     int port = pkt->dst_port;
 
-    if(port == LLP_cache::LLP_ID) {
-	m_llp->handle_peer_and_manager_request(0, pkt);
+    if(port == LLP_cache::LLP_ID)
+    {
+    	m_llp->handle_peer_and_manager_request(0, pkt);
     }
-    else if(port == LLP_cache::LLS_ID) {
-	m_lls->handle_incoming<T>(0, pkt);
+    else if(port == LLP_cache::LLS_ID)
+    {
+    	m_lls->handle_incoming<T>(0, pkt);
     }
-    else {
-      std::cerr << "@ " << std::dec <<  m_clk.NowTicks() << " Mux received invalid req; dst port= " << std::endl;
-	assert(0);
+    else
+    {
+    	std::cerr << "@ " << std::dec <<  m_clk->NowTicks() << " Mux received invalid req; dst port= " << std::endl;
+    	assert(0);
     }
 }
 

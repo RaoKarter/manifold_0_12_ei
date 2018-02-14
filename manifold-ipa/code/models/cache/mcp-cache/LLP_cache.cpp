@@ -19,8 +19,8 @@ namespace mcp_cache_namespace {
 
 
 
-LLP_cache :: LLP_cache (int nid, const cache_settings& parameters, const L1_cache_settings& settings) :
-      L1_cache (nid, parameters, settings), m_mux(0)
+LLP_cache :: LLP_cache (int nid, const cache_settings& parameters, const L1_cache_settings& settings, manifold::kernel::Clock* clk) :
+      L1_cache (nid, parameters, settings), m_mux(0), m_clock(clk)
 {
 }
 
@@ -84,9 +84,9 @@ void LLP_cache :: send_msg_to_peer_or_l2(Coh_msg* msg)
     else {
         msg->dst_port = LLP_ID;
     }
-
+    msg->core_id = node_id;
     DBG_LLP_CACHE_ID(cerr,  " sending msg= " << msg->msg << " to node " << msg->dst_id << " port= " << msg->dst_port << " addr= " <<hex<< msg->addr <<dec<< endl);
-
+//    cerr<<"LLP_cache"<<node_id<<" send_msg_to_peer_or_l2 addr "<<hex<<msg->addr<<dec<<" to LLS_cache"<<msg->dst_id<<endl<<flush;
 #ifdef DBG_MCP_CACHE_LLP_CACHE
 //cerr << "LLP_cache node " << node_id << " sending msg= " << msg->msg << " to node " << msg->dst_id << " port= " << msg->dst_port << " addr= " <<hex<< msg->addr <<dec<< endl;
 #endif
@@ -101,6 +101,7 @@ void LLP_cache :: send_msg_to_peer_or_l2(Coh_msg* msg)
 	pkt->src_port = msg->src_port;
 	pkt->dst = msg->dst_id;
 	pkt->dst_port = msg->dst_port;
+	pkt->core_id = node_id;
 	*((Coh_msg*)(pkt->data)) = *msg;
 	pkt->data_size = sizeof(Coh_msg);
 	delete msg;

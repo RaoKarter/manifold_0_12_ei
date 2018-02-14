@@ -49,7 +49,20 @@ int CaffDramMcMap :: lookup(uint64_t addr)
     }
 }
 
+uint64_t CaffDramMcMap :: get_local_addr(uint64_t addr)
+{
+    if(m_nodeIds.size() == 1)
+    {
+        return addr;
+    }
+    else
+    {
+        uint64_t up_addr = addr >> (m_mc_shift_bits + mc_selector_bits);
+        uint64_t lo_addr = addr & m_mc_shift_bits;
 
+        return (up_addr << m_mc_shift_bits) | lo_addr;
+    }
+}
 
 
 } //namespace caffdram

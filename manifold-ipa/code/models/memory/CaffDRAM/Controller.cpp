@@ -51,6 +51,8 @@ Controller::Controller(Clock *clk, int nid, const Dsettings& s, int credits, boo
 	stats_last_requests_count_change_tick = 0;
 	stats_requests_count_integration = 0;
 	stats_non_zero_requests_ticks = 0;
+
+	cerr << "Created CaffDRAM with cid: " << this->getComponentId() << " node id: " << m_nid << endl;
 }
 
 Controller::~Controller() {

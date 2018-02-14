@@ -206,6 +206,7 @@ void L1_cache :: handle_processor_request(int, T* request)
     if(stalled_client_req_buffer.size() > stats_stall_buffer_max_size)
 	stats_stall_buffer_max_size = stalled_client_req_buffer.size();
 
+    assert(request->source_id == node_id);
     if(request->is_read()) {
 	stats_processor_read_requests++;
 #ifdef MCP_CACHE_COUNTERS

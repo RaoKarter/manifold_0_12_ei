@@ -48,6 +48,8 @@ public:
 
   pipeline_t *pipeline; // base class of pipeline models
 
+  int get_core_id() { return core_id; }
+  void set_core_id(int c_id) { core_id = c_id; }
   void print_stats(void);
   void print_stat_info(uint64_t sampling_period);
 #ifdef IPA_CTRL

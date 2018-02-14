@@ -18,6 +18,7 @@
 #include "mcp-cache/MESI_LLP_cache.h"
 #include "mcp-cache/MESI_LLS_cache.h"
 #include "CaffDRAM/Controller.h"
+#include "DRAMSim2/dram_sim.h"
 #include "spx/core.h"
 
 
@@ -97,10 +98,20 @@ public:
     manifold::iris::Torus6p<manifold::uarch::NetworkPacket>* myTorus6p;
 
     //mc
+    string mem_str;
     int MC_DOWNSTREAM_CREDITS;
     manifold::caffdram::Dsettings dram_settings;  //use default values
+    // For DRAMSIM
+    std::string m_DEV_FILE; //device file name
+	std::string m_SYS_FILE; //system file name
+	unsigned m_MEM_SIZE; //mem size;
+	unsigned DRAM_freq_option; //For DRAM DFS
+
     vector<int> mc_node_idx_vec;
     set<int> mc_node_idx_set; //set is used to ensure each index is unique
+
+    // For EI Controller
+    double sampling_period;
 };
 
 #if 0

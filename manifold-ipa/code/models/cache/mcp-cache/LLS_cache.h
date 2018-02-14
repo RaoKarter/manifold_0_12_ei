@@ -2,6 +2,7 @@
 #define MANIFOLD_MCP_CACHE_LLS_CACHE_H
 
 #include "L2_cache.h"
+#define CORE_COUNT 16
 
 
 using namespace std;
@@ -14,10 +15,11 @@ class MuxDemux;
 class LLS_cache : public L2_cache {
 public:
     friend class MuxDemux;
+    manifold::kernel::Clock* m_clock;
 
     enum {PORT_L1=0, PORT_LOCAL_L1};
 
-    LLS_cache (int nid, const cache_settings&, const L2_cache_settings&);
+    LLS_cache (int nid, const cache_settings&, const L2_cache_settings&, manifold::kernel::Clock*);
     ~LLS_cache (void);
 
     void set_mux(MuxDemux* m)
@@ -35,6 +37,27 @@ public:
     void print_stats(std::ostream&);
 
     manifold::uarch::NetworkPacket* pop_from_output_buffer();
+
+    uint64_t mem_reads[CORE_COUNT];
+    uint64_t mem_writes[CORE_COUNT];
+
+    uint64_t memreads;
+    uint64_t memwrites;
+
+    void clear_mem_counters()
+    {
+    	for(int i = 0; i < CORE_COUNT; i++)
+    	{
+    		mem_reads[i] = 0;
+    		mem_writes[i] = 0;
+    	}
+    }
+
+    void clear_my_counters()
+    {
+    	memreads = 0;
+    	memwrites = 0;
+    }
 
 private:
     MuxDemux* m_mux;
