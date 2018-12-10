@@ -55,7 +55,8 @@ Parameters for the LTI model */
 #define C_DISABLED 1
 #endif
 
-#define T_MAX 354
+#define TEMPCOMPUTE 1
+#define T_MAX 343
 // Temperature Model Parameters
 #define A1 0.9998
 #define B1 -8.46
@@ -69,7 +70,7 @@ Parameters for the LTI model */
 #define EPSILON -0.09038
 
 #define NUM_AVAIL_FREQS 21
-#define SATURATION_LIMIT 10			// TODO: This parameter should come from config file
+#define SATURATION_LIMIT 1			// TODO: This parameter should come from config file
 #define IPC_MAX 4					// ISSUE WIDTH
 #define CONTROL_CYCLE 0.001			// TODO: This parameter should come from config file
 /*---------------- TRINIY PARAMETERS ---------------------*/

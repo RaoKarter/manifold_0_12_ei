@@ -642,7 +642,7 @@ int main(int argc, char** argv)
     //==========================================================================
     Manifold::StopAt(sysBuilder.STOP);
     // Uncomment this to ensure all components are configured and connected appropriately
-    //assert(0);
+//    assert(0);
     Manifold::Run();
 
 #ifdef REDIRECT_COUT

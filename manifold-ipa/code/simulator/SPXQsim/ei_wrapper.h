@@ -64,6 +64,7 @@ public:
   bool cooldown;
   uint64_t cooldown_timer;
   unsigned DRAM_freq_option;
+  unsigned CoreDRAMControllerState;
   struct R_PRange
   {
 	  double R_P_min;
@@ -73,7 +74,9 @@ public:
   double ComputeR_PRange2(double , bool );
   void ApplyControl();
   void ApplyOndemand();
+  void ApplyCoreDRAMControl();
   double QuantizedFrequency(double);
+  double ConvertDRAMOptionToFrequency(unsigned);
 
 private:
   manifold::kernel::Clock *clock;

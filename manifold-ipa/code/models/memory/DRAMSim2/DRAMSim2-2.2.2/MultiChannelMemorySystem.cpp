@@ -515,6 +515,31 @@ bool MultiChannelMemorySystem::setDRAMTiming(uint64_t cpuClkFreqHz, unsigned opt
 		return false;
 }
 
+double MultiChannelMemorySystem::getDRAMFrequency()
+{
+	if(tCK == 1.25)
+	{
+		return 0.8;
+	}
+	else if(tCK == 1.5)
+	{
+		return 0.677;
+	}
+	else if(tCK == 1.87)
+	{
+		return 0.533;
+	}
+	else if(tCK == 2.5)
+	{
+		return 0.4;
+	}
+	else
+	{
+		cerr << "Wrong value of tCK.. exiting.." << endl;
+		exit(0);
+	}
+}
+
 void MultiChannelMemorySystem::PrintDRAMTimings()
 {
 	cerr << " tCK= " << tCK << endl

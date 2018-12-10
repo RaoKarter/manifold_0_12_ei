@@ -23,12 +23,15 @@ vector<double> dram3_d;
 
 vector<double> Core_Power_l;
 vector<double> Core_Power_d;
-vector<double> Core_Temperature;
 vector<double> Core_Performance;
 vector<double> Core_Ops_Byte;
 vector<double> Core_IPC;
 vector<double> Core_Load;
 vector<double> Core_MPKI;
+vector<double> Core_Temperature;
+
+
+
 
 // Global arrays to collect data
 // NUM_CORES * number of samples
@@ -162,6 +165,7 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 	Total_Cost.resize(NUM_AVAIL_FREQS);
 	Control_Cycle = 0;
 	Control_Sat_Counter = 0;
+	CoreDRAMControllerState = 0;
 
 	if (id == num_nodes - 1)
 	{
@@ -180,7 +184,7 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 		dram2_d.resize(num_nodes);
 		dram3_d.resize(num_nodes);
 
-		Core_Temperature.resize(num_nodes);
+
 		Core_Performance.resize(num_nodes);
 		Core_Ops_Byte.resize(num_nodes);
 		Core_Power_d.resize(num_nodes);
@@ -189,9 +193,12 @@ ei_wrapper_t::ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, 
 		Core_Load.resize(num_nodes);
 		Core_MPKI.resize(num_nodes);
 
+		Core_Temperature.resize(num_nodes);
+		TArray.resize(num_nodes, vector<double>(num_samples));
+
 		reg_sam_iter = 0;
 
-		TArray.resize(num_nodes, vector<double>(num_samples));
+
 		Pd.resize(num_nodes, vector<double>(num_samples));
 		Pl.resize(num_nodes, vector<double>(num_samples));
 		Performance.resize(num_nodes, vector<double>(num_samples));
@@ -507,6 +514,125 @@ void ei_wrapper_t::ApplyOndemand()
 
 	phi_Old = u_opt;
 	V_Old = V_new;
+	Control_Cycle += 1;
+#endif
+}
+
+double ei_wrapper_t::ConvertDRAMOptionToFrequency(unsigned opt)
+{
+	switch(opt)
+	{
+	case 1:
+	{
+		return 0.8;
+		break;
+	}
+	case 2:
+	{
+		return 0.677;
+		break;
+	}
+	case 3:
+	{
+		return 0.533;
+		break;
+	}
+	case 4:
+	{
+		return 0.4;
+		break;
+	}
+	default:
+	{
+		cerr << "Wrong value for DRAM frequency option. Exiting..." << endl;
+		assert(0);
+	}
+	}
+}
+
+void ei_wrapper_t::ApplyCoreDRAMControl()
+{
+#ifdef C_ENABLED
+	double core_u_opt = 0.0;
+	double core_V_new = 0.0;
+	unsigned dram_u_opt = 1;
+	bool statechange = false;
+
+	phi_Old = double (clock->freq / 1e9 ); // Freq in GHz
+	cerr << "%%%%%%%%%%%%% CORE " << id << " BEGIN %%%%%%%%%%%%%%%%%" << endl << endl;
+	if (Core_Ops_Byte[id] < 1)
+	{
+		if (CoreDRAMControllerState != 1)
+		{
+			core_u_opt = 1.65;
+			dram_u_opt = 1;
+			core_V_new = 0.8 + 0.1*(core_u_opt - 3);
+			CoreDRAMControllerState = 1;
+			statechange = true;
+		}
+	}
+	else if (Core_Ops_Byte[id] >= 1 && Core_Ops_Byte[id] < 2)
+	{
+		if (CoreDRAMControllerState != 2)
+		{
+			core_u_opt = 1.90;
+			dram_u_opt = 1;
+			core_V_new = 0.8 + 0.1*(core_u_opt - 3);
+			CoreDRAMControllerState = 2;
+			statechange = true;
+		}
+	}
+	else
+	{
+		if (CoreDRAMControllerState != 3)
+		{
+			core_u_opt = 3.0;
+			dram_u_opt = 4;
+			core_V_new = 0.8 + 0.1*(core_u_opt - 3);
+			CoreDRAMControllerState = 3;
+			statechange = true;
+		}
+	}
+
+	if (statechange)
+	{
+		clock->set_frequency(double(core_u_opt*1e9));
+	//		cerr << "Changed CPU Clock and L2 Cache Clock" << endl;
+		p_l1cache->m_clock->set_frequency(double(core_u_opt*1e9));
+
+		mem_ctrl->changeDRAMTiming(dram_u_opt);
+
+		char ModuleID[64];
+
+		sprintf(ModuleID,"CORE_DIE:FRT%d",id);
+		ei->update_variable_partition(string(ModuleID),string("vdd"),core_V_new);
+
+		sprintf(ModuleID,"CORE_DIE:SCH%d",id);
+		ei->update_variable_partition(string(ModuleID),string("vdd"),core_V_new);
+
+		sprintf(ModuleID,"CORE_DIE:INT%d",id);
+		ei->update_variable_partition(string(ModuleID),string("vdd"),core_V_new);
+
+		sprintf(ModuleID,"CORE_DIE:FPU%d",id);
+		ei->update_variable_partition(string(ModuleID),string("vdd"),core_V_new);
+
+		sprintf(ModuleID,"CORE_DIE:MEM%d",id);
+		ei->update_variable_partition(string(ModuleID),string("vdd"),core_V_new);
+
+		sprintf(ModuleID,"DL2_DIE:SPOT%d",id);
+		ei->update_variable_partition(string(ModuleID),string("vdd"),core_V_new);
+
+		cerr << "CC\t" << Control_Cycle << "\tCCCore" << id << "\tLoad\t" << Core_Load[id] << "\tu_opt\t" << core_u_opt
+			 << "\tdram_u_opt\t" << ConvertDRAMOptionToFrequency(dram_u_opt) << "\tControllerState\t" << CoreDRAMControllerState << endl;
+	}
+	else
+	{
+		cerr << "CC\t" << Control_Cycle << "\tCCCore" << id << "\tLoad\t" << Core_Load[id] << "\tu_opt\t" << phi_Old
+		     << "\tdram_u_opt\t" << mem_ctrl->getDRAMFrequency() << "\tControllerState\t" << CoreDRAMControllerState << endl;
+	}
+
+	phi_Old = core_u_opt;
+	V_Old = core_V_new;
 	Control_Cycle += 1;
 #endif
 }
@@ -837,7 +963,9 @@ void ei_wrapper_t::tick()
 		if (reg_sam_iter == num_samples)
 		{
 
-			//Core_Temperature[id] = TArray[id][num_samples-1];
+#ifdef TEMPCOMPUTE
+			Core_Temperature[id] = TArray[id][num_samples-1];
+#endif
 			Core_Power_d[id] = std::accumulate(Pd.at(id).begin(), Pd.at(id).end(), 0.0) / (Pd.at(id).size());
 			Core_Power_l[id] = std::accumulate(Pl.at(id).begin(), Pl.at(id).end(), 0.0) / (Pl.at(id).size());
 			Core_Performance[id] = std::accumulate(Performance.at(id).begin(), Performance.at(id).end(), 0.0) / (Performance.at(id).size());
@@ -846,7 +974,10 @@ void ei_wrapper_t::tick()
 			Core_Load[id] = std::accumulate(CPU_Load.at(id).begin(), CPU_Load.at(id).end(), 0.0) / (CPU_Load.at(id).size());
 			Core_MPKI[id] = std::accumulate(MPKI.at(id).begin(), MPKI.at(id).end(), 0.0) / (MPKI.at(id).size());	// This is not very accurate yet
 
-			cerr << "\nCCCORE" << id << "\tcycle\t" << clock->NowTicks() //<< "\t" << Core_Temperature[id]
+			cerr << "\nCCCORE" << id << "\tcycle\t" << clock->NowTicks()
+#ifdef TEMPCOMPUTE
+					<< "\t" << Core_Temperature[id]
+#endif
 			                                                           << "\t" << Core_Power_d[id]
 			                                                           << "\t" << Core_Power_l[id]
 			                                                           << "\t" << Core_Performance[id]
@@ -861,6 +992,7 @@ void ei_wrapper_t::tick()
 			// Uncomment this to enable ondemand style DVFS controller
 			//ApplyOndemand();
 
+			//ApplyCoreDRAMControl();
 
 			if (id == NUM_CORES - 1)
 			{
@@ -868,7 +1000,9 @@ void ei_wrapper_t::tick()
 				for(int i = 0; i < NUM_CORES; i++)
 					for(int j = 0; j < num_samples; j++)
 					{
-						//TArray[i][j] = 0.0;
+#ifdef TEMPCOMPUTE
+						TArray[i][j] = 0.0;
+#endif
 						Pd[i][j] = 0.0;
 						Pl[i][j] = 0.0;
 						Performance[i][j] = 0.0;
@@ -933,7 +1067,7 @@ void ei_wrapper_t::tick()
 			cycles = (unsigned long) (p_cnt->period * 667000000); // t_CK = 1.5
 			break;
 		case 3:
-			cycles = (unsigned long) (p_cnt->period * 517000000); // t_CK = 1.87
+			cycles = (unsigned long) (p_cnt->period * 533000000); // t_CK = 1.87
 			break;
 		case 4:
 			cycles = (unsigned long) (p_cnt->period * 400000000); // t_CK = 2.5
@@ -1041,9 +1175,12 @@ void ei_wrapper_t::tick()
 			double L2CACHE_T;
 			vector<double> CORE_T;
 			vector<double> DRAM_T;
-			double core_pd, core_pl, core_t;
+			double core_t;
+			double core_pd, core_pl;
 			// This part computes the temperature using EI
-			//ei->compute_temperature(p_cnt->time_tick, p_cnt->period, "16CORE");
+#ifdef TEMPCOMPUTE
+			ei->compute_temperature(p_cnt->time_tick, p_cnt->period, "16CORE");
+#endif
 
 
 			CORE_T.resize(5);
@@ -1069,7 +1206,9 @@ void ei_wrapper_t::tick()
 				a = al + ad[i]; // update FRT total power
 				s += a;		// Accumulate total power
 				t += al;	// Accumulate leakage power
-				//CORE_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#ifdef TEMPCOMPUTE
+				CORE_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 
 				sprintf(ModuleID,"CORE_DIE:SCH%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
@@ -1077,7 +1216,9 @@ void ei_wrapper_t::tick()
 				b = bl + bd[i];
 				s += b;
 				t += bl;
-				//CORE_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#ifdef TEMPCOMPUTE
+				CORE_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 
 				sprintf(ModuleID,"CORE_DIE:INT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
@@ -1085,7 +1226,9 @@ void ei_wrapper_t::tick()
 				c = cl + cd[i];
 				s += c;
 				t += cl;
-				//CORE_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#ifdef TEMPCOMPUTE
+				CORE_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 
 				sprintf(ModuleID,"CORE_DIE:FPU%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
@@ -1093,16 +1236,18 @@ void ei_wrapper_t::tick()
 				d = dl + dd[i];
 				s += d;
 				t += dl;
-				//CORE_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
-
+#ifdef TEMPCOMPUTE
+				CORE_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 				sprintf(ModuleID,"CORE_DIE:MEM%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				el = update_p.leakage * factor2;
 				e = el + ed[i];
 				s += e;
 				t += el;
-				//CORE_T[4] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
-
+#ifdef TEMPCOMPUTE
+				CORE_T[4] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 
 
 				// L2 Cache Temperature
@@ -1110,37 +1255,42 @@ void ei_wrapper_t::tick()
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				fl = update_p.leakage / factor3;
 				f = fl + fd[i];
-				//L2CACHE_T = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
-
+#ifdef TEMPCOMPUTE
+				L2CACHE_T = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 				// DRAMSim2 Temperature
 				sprintf(ModuleID,"DRAM0_DIE:VAULT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[0] = update_p.leakage;
-				//DRAM_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
-
+#ifdef TEMPCOMPUTE
+				DRAM_T[0] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 				sprintf(ModuleID,"DRAM1_DIE:VAULT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[1] = update_p.leakage;
-				//DRAM_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
-
+#ifdef TEMPCOMPUTE
+				DRAM_T[1] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 				sprintf(ModuleID,"DRAM2_DIE:VAULT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[2] = update_p.leakage;
-				//DRAM_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
-
+#ifdef TEMPCOMPUTE
+				DRAM_T[2] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 				sprintf(ModuleID,"DRAM3_DIE:VAULT%d",i);
 				update_p = ei->pull_data<EI::power_t>(p_cnt->time_tick,string("partition"),string(ModuleID),string("power"));
 				dram_pt += update_p.total;
 				dram_pl += update_p.leakage;
 				dram_leak_power[3] = update_p.leakage;
-				//DRAM_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
-
+#ifdef TEMPCOMPUTE
+				DRAM_T[3] = ei->pull_data<double>(p_cnt->time_tick,string("partition"),string(ModuleID),string("temperature"));
+#endif
 				total_energy += (s + f + dram_pt) * p_cnt->period;
 				core_energy += s * p_cnt->period;
 				sram_energy += f * p_cnt->period;
@@ -1164,12 +1314,16 @@ void ei_wrapper_t::tick()
 				inst_dram_p += dram_pt;
 				inst_dram_l += dram_pl;
 
-				//core_t = std::accumulate(CORE_T.begin(), CORE_T.end(), 0.0) / CORE_T.size();	// Spatial average temperature of the core
+#ifdef TEMPCOMPUTE
+				core_t = std::accumulate(CORE_T.begin(), CORE_T.end(), 0.0) / CORE_T.size();	// Spatial average temperature of the core
+#endif
 				core_pd = ad[i] + bd[i] + cd[i] + dd[i] + ed[i];								// Total core dynamic power
 				core_pl = (a - ad[i]) + (b - bd[i]) + (c - cd[i]) + (d - dd[i]) + (e - ed[i]);	// Total core leakage power
 
 //				cerr << "Reg_Sam_Iter= " << reg_sam_iter << endl;
-				//TArray[i][reg_sam_iter] = core_t;
+#ifdef TEMPCOMPUTE
+				TArray[i][reg_sam_iter] = core_t;
+#endif
 				Pd[i][reg_sam_iter] = core_pd;
 				Pl[i][reg_sam_iter] = core_pl;
 				if (Performance[i][reg_sam_iter] == 0)	// If no instructions are fetched, ops/byte = 0;
@@ -1191,13 +1345,30 @@ void ei_wrapper_t::tick()
 
 				cerr << "Core" << i << "\tP_D\t" << core_pd
 				                    << "\tP_L\t" << core_pl
-				                    //<< "\tAVG_T\t" << core_t
-				                    //<< "\tMAX_T\t" << *(std::max_element(CORE_T.begin(), CORE_T.end()))
-				     << "\tL2CACHE" << i << "\tP_D\t" << fd[i] << "\tP_L\t" << fl //<< "\tT\t" << L2CACHE_T
-				     << "\tVAULT" << i << "\tLAYER0\tP_D\t" << dram0_d[i] << "\tP_L\t" << dram_leak_power[0] //<< "\tAVG_T\t" << DRAM_T[0]
-				                       << "\tLAYER1\tP_D\t" << dram1_d[i] << "\tP_L\t" << dram_leak_power[1] //<< "\tAVG_T\t" << DRAM_T[1]
-				                       << "\tLAYER2\tP_D\t" << dram2_d[i] << "\tP_L\t" << dram_leak_power[2] //<< "\tAVG_T\t" << DRAM_T[2]
-				                       << "\tLAYER3\tP_D\t" << dram3_d[i] << "\tP_L\t" << dram_leak_power[3] //<< "\tAVG_T\t" << DRAM_T[3]
+#ifdef TEMPCOMPUTE
+				                    << "\tAVG_T\t" << core_t
+				                    << "\tMAX_T\t" << *(std::max_element(CORE_T.begin(), CORE_T.end()))
+#endif
+				     << "\tL2CACHE" << i << "\tP_D\t" << fd[i] << "\tP_L\t" << fl
+#ifdef TEMPCOMPUTE
+				     << "\tAVG_T\t" << L2CACHE_T
+#endif
+				     << "\tVAULT" << i << "\tLAYER0\tP_D\t" << dram0_d[i] << "\tP_L\t" << dram_leak_power[0]
+#ifdef TEMPCOMPUTE
+				                                                                                          << "\tAVG_T\t" << DRAM_T[0]
+#endif
+				                       << "\tLAYER1\tP_D\t" << dram1_d[i] << "\tP_L\t" << dram_leak_power[1]
+#ifdef TEMPCOMPUTE
+				                                                                                          << "\tAVG_T\t" << DRAM_T[1]
+#endif
+				                       << "\tLAYER2\tP_D\t" << dram2_d[i] << "\tP_L\t" << dram_leak_power[2]
+#ifdef TEMPCOMPUTE
+				                                                                                          << "\tAVG_T\t" << DRAM_T[2]
+#endif
+				                       << "\tLAYER3\tP_D\t" << dram3_d[i] << "\tP_L\t" << dram_leak_power[3]
+#ifdef TEMPCOMPUTE
+				                                                                                          << "\tAVG_T\t" << DRAM_T[3]
+#endif
 				     << "\tMEM_READS\t" << reads[i] << "\tMEM_WRITES\t" << writes[i] << "\tOps_Byte\t" << Ops_Byte[i][reg_sam_iter]
 					 << "\tMPKI\t" << MPKI[i][reg_sam_iter]
 				     << endl << flush;
@@ -1495,7 +1666,7 @@ void ei_wrapper_t::tick()
 							 << "\tfetched_inst\t" << p_cnt->fetch_inst.read << "\tnop_inst\t" << p_cnt->nop_inst.read
 							 << "\tclock_freq\t" << clock->freq << "\tVdd\t" << V_Old
 							 << "\tnum_cycles\t" << num_clock_cycles_this_period << "\tCPU_Load\t" << CPU_Load[id][reg_sam_iter];
-		mem_ctrl->PrintDRAMInstStats();
+		//mem_ctrl->PrintDRAMInstStats();
 		cerr << endl;
 
 		for(int i = 0; i < NUM_CORES; i++)

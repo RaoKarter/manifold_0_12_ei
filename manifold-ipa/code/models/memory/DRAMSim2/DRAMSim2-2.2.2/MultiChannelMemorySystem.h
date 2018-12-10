@@ -62,6 +62,7 @@ class MultiChannelMemorySystem : public SimulatorObject
 	void InitOutputFiles(string tracefilename);
 	void setCPUClockSpeed(uint64_t cpuClkFreqHz);
 	bool setDRAMTiming(uint64_t cpuClkFreqHz, unsigned option);
+	double getDRAMFrequency();
 	bool IsQueueEmpty();
 	void PrintDRAMTimings();
 

@@ -53,6 +53,19 @@ Dram_sim::Dram_sim (int nid, const Dram_sim_settings& dram_settings, Clock* clk,
     inst_stats_n_reads_per_source.resize(num_cores);
 
     cerr << "Created DRAMSim2 with cid: " << this->getComponentId() << " nodeid: " << this->get_nid() << " clock(Hz): " << dram_clk->freq << endl << flush;
+/*
+    uint64_t temp_freq = 800000000;
+    if (this->get_nid() == 1) {
+    	if(!mem->setDRAMTiming(temp_freq, 1)) {
+			cerr << " MC unable to change to DFS option " << DRAM_DFS_option << " retaining previous." << endl;
+		}
+    	else {
+    		cerr << " MC" << this->get_nid() << " freq changed to: " << temp_freq << " DRAM_DFS_option " << DRAM_DFS_option << endl;
+    		mem->PrintDRAMTimings();
+    	}
+
+    }
+*/
 #ifdef DBG_DRAMSIM
     cout << "Created DRAM with id: " << m_nid << endl;
 #endif
@@ -249,6 +262,10 @@ void Dram_sim::changeDRAMTiming(unsigned option)
 	DRAM_DFS_option = option;
 }
 
+double Dram_sim::getDRAMFrequency()
+{
+	return mem->getDRAMFrequency();
+}
 void Dram_sim::PrintDRAMInstStats()
 {
 	uint64_t total_reads = std::accumulate(inst_stats_n_reads_per_source.begin(), inst_stats_n_reads_per_source.end(), 0);

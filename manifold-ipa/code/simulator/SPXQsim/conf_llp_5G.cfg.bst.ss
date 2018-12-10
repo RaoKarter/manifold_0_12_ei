@@ -90,6 +90,6 @@ mc: //memory controller
         dev_file = "3d_die.ini";
         sys_file = "3d_die.ini.example";
         size = 256;
-        freq_scaling = 1;
+        freq_scaling_option = 1;
     };
 };

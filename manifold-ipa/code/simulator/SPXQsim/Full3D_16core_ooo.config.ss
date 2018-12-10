@@ -2,7 +2,7 @@
 -package.thermal_library		3d-ice
 -package.thermal_analysis_type	transient
 -package.ambient_temperature		300.0
--package.temperature			300.0
+-package.temperature			323.0
 -package.chip_length			8.4e-3	# 8.4mm
 -package.chip_width			8.4e-3	# 8.4mm
 -package.grid_rows			50
@@ -315,7 +315,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -336,7 +336,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -357,7 +357,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -378,7 +378,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -399,7 +399,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -420,7 +420,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -441,7 +441,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -462,7 +462,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -483,7 +483,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -504,7 +504,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -525,7 +525,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -546,7 +546,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -567,7 +567,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -588,7 +588,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -609,7 +609,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -630,7 +630,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -653,7 +653,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -674,7 +674,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -695,7 +695,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -716,7 +716,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -737,7 +737,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -758,7 +758,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -779,7 +779,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -800,7 +800,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -821,7 +821,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -842,7 +842,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -863,7 +863,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -884,7 +884,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -905,7 +905,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -926,7 +926,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -947,7 +947,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -968,7 +968,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -991,7 +991,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1012,7 +1012,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1033,7 +1033,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1054,7 +1054,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1075,7 +1075,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1096,7 +1096,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1117,7 +1117,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1138,7 +1138,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1159,7 +1159,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1180,7 +1180,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1201,7 +1201,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1222,7 +1222,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1243,7 +1243,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1264,7 +1264,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1285,7 +1285,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1306,7 +1306,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1329,7 +1329,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1350,7 +1350,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1371,7 +1371,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1392,7 +1392,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1413,7 +1413,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1434,7 +1434,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1455,7 +1455,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1476,7 +1476,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1497,7 +1497,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1518,7 +1518,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1539,7 +1539,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1560,7 +1560,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1581,7 +1581,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1602,7 +1602,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1623,7 +1623,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1644,7 +1644,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1668,7 +1668,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1689,7 +1689,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1710,7 +1710,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1731,7 +1731,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1752,7 +1752,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1773,7 +1773,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1794,7 +1794,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1815,7 +1815,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1836,7 +1836,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1857,7 +1857,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1878,7 +1878,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1899,7 +1899,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1920,7 +1920,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type	        core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1941,7 +1941,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1962,7 +1962,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -1983,7 +1983,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2007,7 +2007,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2028,7 +2028,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2049,7 +2049,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2070,7 +2070,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2091,7 +2091,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2115,7 +2115,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2136,7 +2136,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2157,7 +2157,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2178,7 +2178,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2199,7 +2199,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2223,7 +2223,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2244,7 +2244,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2265,7 +2265,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2286,7 +2286,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2307,7 +2307,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2331,7 +2331,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2352,7 +2352,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2373,7 +2373,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2394,7 +2394,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2415,7 +2415,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2439,7 +2439,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2460,7 +2460,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2481,7 +2481,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2502,7 +2502,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2523,7 +2523,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2547,7 +2547,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2568,7 +2568,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2589,7 +2589,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2610,7 +2610,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2631,7 +2631,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2655,7 +2655,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2676,7 +2676,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2697,7 +2697,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2718,7 +2718,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2739,7 +2739,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2763,7 +2763,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2784,7 +2784,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2805,7 +2805,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2826,7 +2826,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2847,7 +2847,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2871,7 +2871,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2892,7 +2892,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2913,7 +2913,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2934,7 +2934,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2955,7 +2955,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -2979,7 +2979,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3000,7 +3000,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3021,7 +3021,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3042,7 +3042,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3063,7 +3063,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3087,7 +3087,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3108,7 +3108,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3129,7 +3129,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3150,7 +3150,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3171,7 +3171,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3195,7 +3195,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3216,7 +3216,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3237,7 +3237,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3258,7 +3258,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3279,7 +3279,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3303,7 +3303,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3324,7 +3324,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3345,7 +3345,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3366,7 +3366,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3387,7 +3387,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3411,7 +3411,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3432,7 +3432,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3453,7 +3453,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3474,7 +3474,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3495,7 +3495,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3519,7 +3519,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3540,7 +3540,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3561,7 +3561,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3582,7 +3582,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3603,7 +3603,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3627,7 +3627,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3648,7 +3648,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3669,7 +3669,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3690,7 +3690,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false
@@ -3711,7 +3711,7 @@
 -partition.opt_for_clk			true # optimize the result on clock
 -partition.embedded			false # embedded processor?
 -partition.feature_size		16e-9 # technology node in meters
--partition.temperature			300 # temperature in Kelvin
+-partition.temperature			323 # temperature in Kelvin
 -partition.component_type		core # core, uncore, llc(non-private caches)
 -partition.clock_frequency		1.000000e+09 # clock frequency in Hz
 -partition.longer_channel_device		false

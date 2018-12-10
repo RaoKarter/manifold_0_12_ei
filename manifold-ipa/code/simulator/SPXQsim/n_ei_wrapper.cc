@@ -27,6 +27,12 @@ vector<double> ddr_power1;
 vector<double> ddr_power2;
 vector<double> ddr_power3;
 
+vector<double> n_Core_Performance;
+vector< vector<double> > n_Performance;
+vector<double> n_Core_Ops_Byte;
+vector< vector<double> > n_Ops_Byte;
+
+uint64_t n_reg_sam_iter;	// Counter for number of samples between two control cycles
 n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_voltage, vector<manifold::spx::spx_core_t*> p_core,
 		manifold::spx::pipeline_counter_t* proc_cnt, manifold::mcp_cache_namespace::L1_counter_t* c1_cnt, manifold::mcp_cache_namespace::L2_counter_t* c2_cnt,
 		manifold::mcp_cache_namespace::LLP_cache* p_l1, manifold::mcp_cache_namespace::LLS_cache* p_l2,	manifold::dramsim::Dram_sim *mc,
@@ -59,7 +65,7 @@ n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_volta
 	slack_cycle = 0;
 	sam_cycle = 0;
 	V_Old = init_vdd;
-	num_samples = int(2e-1/sampling_period);
+	num_samples = int(CONTROL_CYCLE/sampling_period);
 	DRAM_freq_option = DRAM_freq_opt;
 
 	switch (DRAM_freq_option)
@@ -108,7 +114,14 @@ n_ei_wrapper_t::n_ei_wrapper_t(manifold::kernel::Clock* clk, double supply_volta
 		ddr_power1.resize(num_nodes);
 		ddr_power2.resize(num_nodes);
 		ddr_power3.resize(num_nodes);
+
+		n_reg_sam_iter = 0;
+		n_Core_Performance.resize(num_nodes);
+		n_Performance.resize(num_nodes, vector<double>(num_samples));
+		n_Core_Ops_Byte.resize(num_nodes);
+		n_Ops_Byte.resize(num_nodes, vector<double>(num_samples));
 		n_NUM_CORES = num_nodes;
+		Control_Cycle = 0;
 	}
 }
 
@@ -127,10 +140,53 @@ void n_ei_wrapper_t::tick()
 	int temp_src = 0;
 	sam_cycle += 1;
 
+	if(sam_cycle == (n_SAMPLING_CYCLE + 2) )
+	{
+		//cerr << "sam_cycle" << this->id << "= 2" << endl << flush;
+		sam_cycle = 2;
+		n_total_mips = 0.0;
+		if (n_reg_sam_iter == num_samples)
+		{
+
+			n_Core_Performance[id] = std::accumulate(n_Performance.at(id).begin(), n_Performance.at(id).end(), 0.0) / (n_Performance.at(id).size());
+			n_Core_Ops_Byte[id] = std::accumulate(n_Ops_Byte.at(id).begin(), n_Ops_Byte.at(id).end(), 0.0) / (n_Ops_Byte.at(id).size());
+
+			cerr << "CCCORE" << id << "\tcycle\t" << clock->NowTicks() //<< "\t" << Core_Temperature[id]
+			                                                           << "\t" << n_Core_Performance[id]
+			                                                           << "\t" << n_Core_Ops_Byte[id]
+			                                                           << endl;
+			Control_Cycle++;
+			/*
+			if (Control_Cycle == 50)
+			{
+				unsigned opt = 4;
+				cerr << "@ " << clock->NowTicks() << " ei_controller asked MC to change frequency." << endl;
+				mem_ctrl->changeDRAMTiming(opt);
+			}
+			if (Control_Cycle == 100)
+			{
+				unsigned opt = 2;
+				cerr << "@ " << clock->NowTicks() << " ei_controller asked MC to change frequency." << endl;
+				mem_ctrl->changeDRAMTiming(opt);
+			}
+			*/
+			if (id == n_NUM_CORES - 1)
+			{
+				n_reg_sam_iter = 0;
+				for(int i = 0; i < n_NUM_CORES; i++)
+					for(int j = 0; j < num_samples; j++)
+					{
+						n_Performance[i][j] = 0.0;
+						n_Ops_Byte[i][j] = 0.0;
+					}
+			}
+		}
+	}
+
 	if(sam_cycle == (n_SAMPLING_CYCLE + 1))
 	{
-		sam_cycle = 1;
-		n_total_mips = 0.0;
+		//sam_cycle = 1;
+		//n_total_mips = 0.0;
 		n_synced += 1;
 
 		unsigned long cycles = (unsigned long) (p_cnt->period * 800000000);
@@ -144,7 +200,7 @@ void n_ei_wrapper_t::tick()
 			cycles = (unsigned long) (p_cnt->period * 667000000); // t_CK = 1.5
 			break;
 		case 3:
-			cycles = (unsigned long) (p_cnt->period * 517000000); // t_CK = 1.87
+			cycles = (unsigned long) (p_cnt->period * 533000000); // t_CK = 1.87
 			break;
 		case 4:
 			cycles = (unsigned long) (p_cnt->period * 400000000); // t_CK = 2.5
@@ -168,8 +224,20 @@ void n_ei_wrapper_t::tick()
 			n_synced = 0;
 			for (int i = 0; i < n_NUM_CORES; i++)
 			{
+				if (n_Performance[i][n_reg_sam_iter] == 0)	// If no instructions are fetched, ops/byte = 0;
+				{
+					n_Ops_Byte[i][n_reg_sam_iter] = 0;
+				}
+				else
+				{
+					if (n_reads[i] == 0 )
+						n_Ops_Byte[i][n_reg_sam_iter] = (n_Performance[i][n_reg_sam_iter]*p_cnt->period*1e6);	// Avoiding inf
+					else
+						n_Ops_Byte[i][n_reg_sam_iter] = (n_Performance[i][n_reg_sam_iter]*p_cnt->period*1e6)/(n_reads[i]*64);	// Not using write backs because they don't truly reflect
+																													// mem boundedness.
+				}
 				cerr << "Core" << i << "\tclock\t" << clock->NowTicks() << "\tMEM_READS\t" << n_reads[i] << "\tMEM_WRITES\t" << n_writes[i]
-																		<< "\tTotalBytes\t" << ddr_bytestxed[i] << "\tBandwidth\t" << ddr_bandwidth[i]
+																		<< "\tOpsByte\t" << n_Ops_Byte[i][n_reg_sam_iter] << "\tBandwidth\t" << ddr_bandwidth[i]
 																		<< "\tAveragePower0\t" << ddr_power0[i]
 																		<< "\tAveragePower1\t" << ddr_power1[i]
 																		<< "\tAveragePower2\t" << ddr_power2[i]
@@ -178,7 +246,7 @@ void n_ei_wrapper_t::tick()
 				n_reads[i] = 0;
 				n_writes[i] = 0;
 			}
-
+			n_reg_sam_iter += 1;
 //			if(clock->NowTicks() == 100000)
 //			{
 //				cerr << "%%%%%%%%%%%% SWAPPING CORE " << src1 << " WITH CORE " << dst1 << " %%%%%%%%%%%%%" << endl;
@@ -206,16 +274,17 @@ void n_ei_wrapper_t::tick()
 		char ModuleID[64];
 		bool var1;
 		p_cnt->time_tick += p_cnt->period; // update time_tick
+		n_Performance[id][n_reg_sam_iter] = p_cnt->retire_inst.read/p_cnt->period/1e6;
 		n_total_mips += p_cnt->retire_inst.read/p_cnt->period/1e6;
 		cerr << "CORE" << id << "\tcycle\t" << clock->NowTicks() << "\tIPC_inst\t" << ((float)p_cnt->retire_inst.read)/n_SAMPLING_CYCLE
-				             << "\tMIPS\t" << p_cnt->retire_inst.read/p_cnt->period/1e6 << "\ttotal_MIPS\t" << n_total_mips
+				             << "\tMIPS\t" << n_Performance[id][n_reg_sam_iter] << "\ttotal_MIPS\t" << n_total_mips
 						     << "\tmem_reads\t" << p_l2cache->memreads<< "\tmem_writes\t"<< p_l2cache->memwrites
 							 << "\tfetched_inst\t" << p_cnt->fetch_inst.read << "\tnop_inst\t" << p_cnt->nop_inst.read
 							 << "\tidle_cycles\t" << p_cnt->idle_cycle.read;
 							 //<< "\tclock_freq\t" << clock->freq << "\tVdd\t" << V_Old;
 		mem_ctrl->PrintDRAMInstStats();
 		cerr << endl;
-		var1 = mem_ctrl->CheckMCQueueStatus();
+		//var1 = mem_ctrl->CheckMCQueueStatus();
 		for(int i = 0; i < n_NUM_CORES; i++)
 		{
 			n_reads[i] += p_l2cache->mem_reads[i];
@@ -226,21 +295,21 @@ void n_ei_wrapper_t::tick()
 		p_l2cache->clear_mem_counters();
 
 	}
-/*
-	if (clock->NowTicks() == 100000)
-	{
-		unsigned opt = 4;
-		cerr << "@ " << clock->NowTicks() << " ei_controller asked MC to change frequency." << endl;
-		mem_ctrl->changeDRAMTiming(opt);
-	}
 
-	if (clock->NowTicks() == 200000)
-	{
-		unsigned opt = 2;
-		cerr << "@ " << clock->NowTicks() << " ei_controller asked MC to change frequency." << endl;
-		mem_ctrl->changeDRAMTiming(opt);
-	}
-*/
+//	if (clock->NowTicks() == 12000000)
+//	{
+//		unsigned opt = 4;
+//		cerr << "@ " << clock->NowTicks() << " ei_controller asked MC to change frequency." << endl;
+//		mem_ctrl->changeDRAMTiming(opt);
+//	}
+//
+//	if (clock->NowTicks() == 24000000)
+//	{
+//		unsigned opt = 2;
+//		cerr << "@ " << clock->NowTicks() << " ei_controller asked MC to change frequency." << endl;
+//		mem_ctrl->changeDRAMTiming(opt);
+//	}
+
 }
 
 

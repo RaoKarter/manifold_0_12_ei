@@ -13,6 +13,7 @@
 #include <algorithm> //For max_element
 #include "kernel/component.h"
 #include "kernel/clock.h"
+#include "dvfs.h"
 
 
 #include "../../models/cache/mcp-cache/hash_table.h"
@@ -54,6 +55,7 @@ public:
   int num_samples;
   vector<manifold::spx::spx_core_t*> p_cores_global;
   unsigned DRAM_freq_option;
+  uint64_t Control_Cycle;
 
 private:
   manifold::kernel::Clock *clock;

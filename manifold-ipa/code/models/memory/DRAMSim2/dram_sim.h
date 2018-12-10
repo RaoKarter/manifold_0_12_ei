@@ -73,6 +73,7 @@ public:
     void PrintDRAMInstStats();
     void changeDRAMTiming(unsigned option);
     bool CheckMCQueueStatus() { return mem->IsQueueEmpty(); }
+    double getDRAMFrequency();
 
 #ifdef DRAMSIM_UTEST
 public:

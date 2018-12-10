@@ -240,14 +240,14 @@ void input_power(energy_introspector_t *energy_introspector, int iter)
 
 int main(int argc, char* argv[])
 {
-  energy_introspector_t *energy_introspector = new energy_introspector_t((char*)"CONFIG/3DICE/3d-ice_test.config");
-
   if (argc < 2)
   {
     cout << "Requires filename, number of time steps and period (s) to be passed." << endl;
     cout << "Usage: ./test-3dice filename.txt time_steps period" << endl;
     exit(0);
   }
+
+  energy_introspector_t *energy_introspector = new energy_introspector_t((char*)"CONFIG/3DICE/3d-ice_test1.config");
 
   string line;
   string::size_type sz;
